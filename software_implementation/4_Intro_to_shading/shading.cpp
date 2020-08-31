@@ -91,8 +91,15 @@ struct Options
     Vec3f backgroundColor = kDefaultBackgroundColor;
     // Set the matrix from which th the camera will come from (from 3D Viewing: the Pinhole Camera Model )
     Matrix44f cameraToWorld;
+    /* The amount by which you displace or move the point in the normal direction is left to the user and 
+        can be tweaked on a scene basis. This value is often refer to in ray-tracer as shadow bias
+    */
     float bias = 0.0001;
-    uint32_t maxDepth = 5;
+    /* The number of times a reflection ray is reflected off of surfaces is called the ray depth.\
+        Though for most scenes using a depth much greater than 4 or 5 (use >5 when dealing with very complex transparent surfaces are rendered (such as water splashes) ) 
+        generally doesn't make much of visual difference.
+    */
+    uint32_t maxDepth = 10;
 };
 
 enum MaterialType { kDiffuse, kReflection, kReflectionAndRefraction };
@@ -785,8 +792,8 @@ int main(int argc, char **argv)
     options.fov = 36.87;
     options.maxDepth = 10;
     options.bias = 0.001;
-    //options.width = 1024;
-    //options.height = 747;
+    options.width = 1920;
+    options.height = 1080;
     options.cameraToWorld = Matrix44f(-0.972776, 0, -0.231748, 0, -0.114956, 0.8683, 0.482536, 0, 0.201227, 0.49604, -0.844661, 0, 6.696465, 22.721296, -30.097976, 1);
     
     TriangleMesh *mesh1 = loadPolyMeshFromFile("./backdrop.geo", Matrix44f::kIdentity);

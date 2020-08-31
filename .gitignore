@@ -1,6 +1,9 @@
 # Images
 *.ppm
 
+# Executables
+shading
+
 # Prerequisites
 *.d
 
