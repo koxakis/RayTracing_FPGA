@@ -46,13 +46,14 @@
     Example 2:  Whole plane
     Example 3:  4 Glasses refraction
     Example 4:  Horizontal Plane
+    Example 5:  Utah Teapod
 
     Pattern 1:  Blurry checkerboard
     Pattern 2:  Diagonal checkerboard
     Pattern 3:  Stripled 
 
 */
-#define EXAMPLE_1
+#define EXAMPLE_5
 #define PATTERN_3
 
 static const float kInfinity = std::numeric_limits<float>::max();
@@ -90,6 +91,10 @@ struct Options
     float fov = 90;
     Vec3f backgroundColor = kDefaultBackgroundColor;
     // Set the matrix from which th the camera will come from (from 3D Viewing: the Pinhole Camera Model )
+    /* Normals are a special kind of vector because they are not transformed by 4x4 affine 
+        transformation matrices the same way than vectors are. They need to be transformed 
+        instead by the inverse of the matrix
+    */
     Matrix44f cameraToWorld;
     /* The amount by which you displace or move the point in the normal direction is left to the user and 
         can be tweaked on a scene basis. This value is often refer to in ray-tracer as shadow bias
@@ -927,6 +932,21 @@ int main(int argc, char **argv)
     }
     // Light source
     Matrix44f l2w(11.146836, -5.781569, -0.0605886, 0, -1.902827, -3.543982, -11.895445, 0, 5.459804, 10.568624, -4.02205, 0, 0, 0, 0, 1);
+#endif
+#ifdef EXAMPLE_5
+    options.fov = 18;
+    options.width = 1920;
+    options.height = 1080;
+    options.cameraToWorld = Matrix44f(0.931056, 0, 0.364877, 0, 0.177666, 0.873446, -0.45335, 0, -0.3187, 0.48692, 0.813227, 0, -41.229214, 81.862351, 112.456908, 1);
+    
+    TriangleMesh *mesh = loadPolyMeshFromFile("./teapot.geo", Matrix44f(1.624241, 0, 2.522269, 0, 0, 3, 0, 0, -2.522269, 0, 1.624241, 0, 0, 0, 0, 1));
+    if (mesh != nullptr) {
+        mesh->type = kDiffuse;
+        mesh->albedo = 0.18;
+        objects.push_back(std::unique_ptr<Object>(mesh));
+    }
+
+    Matrix44f l2w(0.95292, 0.289503, 0.0901785, 0, -0.0960954, 0.5704, -0.815727, 0, -0.287593, 0.768656, 0.571365, 0, 0, 0, 0, 1);
 #endif
     lights.push_back(std::unique_ptr<Light>(new DistantLight(l2w, 1, 1)));
     
