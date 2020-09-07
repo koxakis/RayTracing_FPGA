@@ -1,9 +1,9 @@
-APP = shading
+APP = acceleration_BBOX
 CC=g++
 CLEANBROKEN = '1'
 # Add -pg for GNU profiling remove -g
-LIBS = -Wall -pg -fpermissive -O4
-SRC = shading.cpp
+LIBS = -Wall -p -std=c++14 -fpermissive -O4 -DACCEL_BBOX
+SRC = acceleration.cpp
 OBJ = $(SRC:.ccp=.o)
 
 all: build

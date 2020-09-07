@@ -1,9 +1,9 @@
-APP = shading
+APP = phong
 CC=g++
 CLEANBROKEN = '1'
 # Add -pg for GNU profiling remove -g
 LIBS = -Wall -pg -fpermissive -O4
-SRC = shading.cpp
+SRC = phong.cpp
 OBJ = $(SRC:.ccp=.o)
 
 all: build

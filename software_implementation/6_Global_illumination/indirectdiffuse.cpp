@@ -44,6 +44,8 @@
 
 #include "geometry.h"
 
+#define GI
+
 static const float kInfinity = std::numeric_limits<float>::max();
 static const float kEpsilon = 1e-8;
 static const Vec3f kDefaultBackgroundColor = Vec3f(0.235294, 0.67451, 0.843137);
@@ -390,12 +392,12 @@ TriangleMesh* loadPolyMeshFromFile(const char *file, const Matrix44f &o2w)
 class Light
 {
 public:
+    Matrix44f lightToWorld;
     Light(const Matrix44f &l2w, const Vec3f &c = 1, const float &i = 1) : lightToWorld(l2w), color(c), intensity(i) {}
     virtual ~Light() {}
     virtual void illuminate(const Vec3f &P, Vec3f &, Vec3f &, float &) const = 0;
     Vec3f color;
     float intensity;
-    Matrix44f lightToWorld;
 };
 
 // [comment]
@@ -471,7 +473,7 @@ bool trace(
     return (isect.hitObject != nullptr);
 }
 
-
+// Sep 1: Create a Local Coordinate System Oriented along the Shading Normal N
 void createCoordinateSystem(const Vec3f &N, Vec3f &Nt, Vec3f &Nb) 
 { 
     if (std::fabs(N.x) > std::fabs(N.y))
@@ -481,6 +483,7 @@ void createCoordinateSystem(const Vec3f &N, Vec3f &Nt, Vec3f &Nb)
     Nb = N.crossProduct(Nt);
 }
 
+// Create Samples on the Hemisphere
 Vec3f uniformSampleHemisphere(const float &r1, const float &r2) 
 { 
     // cos(theta) = u1 = y
@@ -536,26 +539,33 @@ Vec3f castRay(
                 // [/comment]
                 Vec3f indirectLigthing = 0;
 #ifdef GI
+                // number of samples N
                 uint32_t N = 128;// / (depth + 1);
                 Vec3f Nt, Nb;
                 createCoordinateSystem(hitNormal, Nt, Nb);
                 float pdf = 1 / (2 * M_PI);
                 for (uint32_t n = 0; n < N; ++n) {
+                    // Create Samples on the Hemisphere
                     float r1 = distribution(generator);
                     float r2 = distribution(generator);
                     Vec3f sample = uniformSampleHemisphere(r1, r2);
+                    // Step 3: Transform the Random Samples to the Shaded Point Local Coordinate System
+                    // We will use the vectors of Cartesian coordinate system directly without building a matrix 
                     Vec3f sampleWorld( 
                         sample.x * Nb.x + sample.y * hitNormal.x + sample.z * Nt.x,
                         sample.x * Nb.y + sample.y * hitNormal.y + sample.z * Nt.y,
                         sample.x * Nb.z + sample.y * hitNormal.z + sample.z * Nt.z);
                     // don't forget to divide by PDF and multiply by cos(theta)
+                    // Step 4, 5 and 6: Trace the Indirect Rays
+                    // Race the ray, and accumulate the returned color to a temporary variable
                     indirectLigthing += r1 * castRay(hitPoint + sampleWorld * options.bias,
                         sampleWorld, objects, lights, options, depth + 1) / pdf;
                 }
                 // divide by N
+                // divide the result of indirectLightContrib by the number of samples N (Monte Carlo integration)
                 indirectLigthing /= (float)N;
 #endif
-
+                // Step 7: Add the Contribution of the Indirect Diffuse to the Illumination of the Shaded Point
                 hitColor = (directLighting / M_PI + 2 * indirectLigthing) * isect.hitObject->albedo;
                 break;
             }

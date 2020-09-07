@@ -1,9 +1,9 @@
-APP = shading
+APP = teapot
 CC=g++
 CLEANBROKEN = '1'
 # Add -pg for GNU profiling remove -g
-LIBS = -Wall -pg -fpermissive -O4
-SRC = shading.cpp
+LIBS = -Wall -g -fpermissive -O4
+SRC = teapot.cpp
 OBJ = $(SRC:.ccp=.o)
 
 all: build

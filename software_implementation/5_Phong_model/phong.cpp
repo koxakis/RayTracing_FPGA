@@ -388,12 +388,12 @@ TriangleMesh* loadPolyMeshFromFile(const char *file, const Matrix44f &o2w)
 class Light
 {
 public:
+    Matrix44f lightToWorld;
     Light(const Matrix44f &l2w, const Vec3f &c = 1, const float &i = 1) : lightToWorld(l2w), color(c), intensity(i) {}
     virtual ~Light() {}
     virtual void illuminate(const Vec3f &P, Vec3f &, Vec3f &, float &) const = 0;
     Vec3f color;
     float intensity;
-    Matrix44f lightToWorld;
 };
 
 // [comment]

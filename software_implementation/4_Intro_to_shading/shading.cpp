@@ -53,7 +53,7 @@
 
 */
 #define EXAMPLE_1
-#define PATTERN_2
+#define PATTERN_3
 
 static const float kInfinity = std::numeric_limits<float>::max();
 static const float kEpsilon = 1e-8;
@@ -93,6 +93,8 @@ struct Options
     Matrix44f cameraToWorld;
     /* The amount by which you displace or move the point in the normal direction is left to the user and 
         can be tweaked on a scene basis. This value is often refer to in ray-tracer as shadow bias
+        As you can see the bias is generally a very small value. The amount of bias required depends on 
+        different factors such as the scene scale, the object curvature, the object distance to the camera, etc.
     */
     float bias = 0.0001;
     /* The number of times a reflection ray is reflected off of surfaces is called the ray depth.\
@@ -117,7 +119,12 @@ class Object
     Matrix44f objectToWorld, worldToObject;
     const char *name;
     MaterialType type = kDiffuse;
+    // Index of refraction (also sometimes referred to as ior)
     float ior = 1;
+    // The albedo terms defines the ratio of reflected light over the amount of incident light
+    /* The reason we set the albedo default value to 0.18 is because object's from the real world 
+        reflect on average around 18% of the light they receive
+    */
     Vec3f albedo = 0.18;
 };
 
@@ -502,9 +509,10 @@ public:
     }
 };
 
-// [comment]
-// Point lights are also unaffected by rotation 
-// [/comment]
+/* Point lights are also unaffected by rotation 
+    We will assume that the point light source is originally created at the origin of the world coordinate system.
+    To modify its position in 3D space, we will use the light-to-world transformation matrix.
+*/
 class PointLight : public Light
 {
     Vec3f pos;
@@ -514,11 +522,18 @@ public:
     // P: is the shaded point
     void illuminate(const Vec3f &P, Vec3f &lightDir, Vec3f &lightIntensity, float &distance) const
     {
+        // this is also where we will compute the light intensity for a given P
         lightDir = (P - pos);
+        // compute the square distance
         float r2 = lightDir.norm();
         distance = sqrt(r2);
+        // normalize the incident light ray direction
         lightDir.x /= distance, lightDir.y /= distance, lightDir.z /= distance;
         // avoid division by 0
+        /* We can use the square of this vector length to attenuate the light 
+            intensity according to the inverse square law
+        */
+        // apply square falloff
         lightIntensity = color * intensity / (4 * M_PI * r2);
     }
 };
@@ -556,9 +571,11 @@ bool trace(
     return (isect.hitObject != nullptr);
 }
 
-// [comment]
-// Compute reflection direction
-// [/comment]
+/* If the object that the primary ray hit is a mirror like surface, then we 
+    compute the reflection direction using the incident view direction 
+    (the primary ray direction) and the normal of the surface at the intersection point.
+    R = I−2(N⋅I)N
+*/
 Vec3f reflect(const Vec3f &I, const Vec3f &N)
 {
     return I - 2 * I.dotProduct(N) * N;
@@ -575,6 +592,7 @@ Vec3f refract(const Vec3f &I, const Vec3f &N, const float &ior)
     if (cosi < 0) { cosi = -cosi; } else { std::swap(etai, etat); n= -N; } 
     float eta = etai / etat; 
     float k = 1 - eta * eta * (1 - cosi * cosi); 
+    // total internal reflection. There is no refraction in this case  if (k < 0) 
     return k < 0 ? 0 : eta * I + (eta * cosi - sqrtf(k)) * n; 
 }
 
@@ -586,7 +604,11 @@ void fresnel(const Vec3f &I, const Vec3f &N, const float &ior, float &kr)
     float cosi = clamp(-1, 1, I.dotProduct(N));
     float etai = 1, etat = ior; 
     if (cosi > 0) { std::swap(etai, etat); } 
-    // Compute sini using Snell's law
+    /* There is another way of computing or finding out when the incident light is totally reflected 
+        rather than being refracted. You need to compute the sine of the angle of refraction. If sinθ2 
+        is greater than 1, then we have a case of total internal reflection. Note that this value can 
+        easily be computed using Snell's law: 
+    */
     float sint = etai / etat * sqrtf(std::max(0.f, 1 - cosi * cosi)); 
     // Total internal reflection
     if (sint >= 1) { 
@@ -608,6 +630,12 @@ inline float modulo(const float &f)
     return f - std::floor(f);
 }
 
+/* First you can store all the lights in a list and pass this list to the castRay() function 
+    which is where shading is done. We then iterate over all the lights and add their contribution 
+    to the shaded point illumination. the light contribution is attenuated by the cosine of the 
+    angle between P's normal and the light direction. This term is different for each light and thus 
+    need to computed for each light. Similarly a shadow ray needs to be cast for each light as well
+*/
 Vec3f castRay(
     const Vec3f &orig, const Vec3f &dir,
     const std::vector<std::unique_ptr<Object>> &objects,
@@ -639,21 +667,31 @@ Vec3f castRay(
                     Vec3f lightDir, lightIntensity;
                     IsectInfo isectShad;
                     lights[i]->illuminate(hitPoint, lightDir, lightIntensity, isectShad.tNear);
+                    /* we just call the trace function again (line 16) and set the variable vis to false if the trace function 
+                        returns true (the intersection point is in shadow, thus the point is not illuminated by the directional 
+                        light source) and true otherwise (the intersection point is not in shadow, thus the point is illuminated 
+                        by the light source)
+                    */
                     bool vis = !trace(hitPoint + hitNormal * options.bias, -lightDir, objects, isectShad, kShadowRay);
                     // compute the pattern
-                    float angle = deg2rad(45);
-                    float s = hitTexCoordinates.x * cos(angle) - hitTexCoordinates.y * sin(angle);
-                    float t = hitTexCoordinates.y * cos(angle) + hitTexCoordinates.x * sin(angle);
-                    float scaleS = 20, scaleT = 20;
                     #ifdef PATTERN_1
+                    float scaleS = 20, scaleT = 20;
                     float pattern = (cos(hitTexCoordinates.y * 2 * M_PI * scaleT) * sin(hitTexCoordinates.x * 2 * M_PI * scaleS) + 1) * 0.5; // isect.hitObject->albedo
                     #endif
                     #ifdef PATTERN_2
+                    float scaleS = 20, scaleT = 20;
+                    float angle = deg2rad(45);
+                    float s = hitTexCoordinates.x * cos(angle) - hitTexCoordinates.y * sin(angle);
+                    float t = hitTexCoordinates.y * cos(angle) + hitTexCoordinates.x * sin(angle);
                     float pattern = (modulo(s * scaleS) < 0.5) ^ (modulo(t * scaleT) < 0.5);
                     #endif
                     #ifdef PATTERN_3
+                    float scaleS = 20;
+                    float angle = deg2rad(45);
+                    float s = hitTexCoordinates.x * cos(angle) - hitTexCoordinates.y * sin(angle);
                     float pattern = (modulo(s * scaleS) < 0.5);
                     #endif
+                    // If the point is in shadow, the point is black. If vis is set to true, then the color of the point is left unchanged
                     hitColor += vis * pattern * lightIntensity * std::max(0.f, hitNormal.dotProduct(-lightDir));
                 }
                 break;
@@ -823,6 +861,7 @@ int main(int argc, char **argv)
     xform1[3][2] = -3;
     Sphere *sph1 = new Sphere(xform1, 5);
     sph1->type = kReflectionAndRefraction;
+    // Light source
     Matrix44f l2w(11.146836, -5.781569, -0.0605886, 0, -1.902827, -3.543982, -11.895445, 0, 5.459804, 10.568624, -4.02205, 0, 0, 0, 0, 1);
 
 #endif
@@ -840,6 +879,7 @@ int main(int argc, char **argv)
         mesh->smoothShading = false;
         objects.push_back(std::unique_ptr<Object>(mesh));
     }
+    // Light source
     Matrix44f l2w(11.146836, -5.781569, -0.0605886, 0, -1.902827, -3.543982, -11.895445, 0, 5.459804, 10.568624, -4.02205, 0, 0, 0, 0, 1);
 #endif
 #ifdef EXAMPLE_3
@@ -863,7 +903,7 @@ int main(int argc, char **argv)
         mesh1->albedo = 0.18;
         objects.push_back(std::unique_ptr<Object>(mesh1));
     }
-    
+    // Light source
     Matrix44f l2w(0.95292, 0.289503, 0.0901785, 0, -0.0960954, 0.5704, -0.815727, 0, -0.287593, 0.768656, 0.571365, 0, 0, 0, 0, 1);
 #endif
 #ifdef EXAMPLE_4
@@ -885,6 +925,7 @@ int main(int argc, char **argv)
         mesh->smoothShading = false;
         objects.push_back(std::unique_ptr<Object>(mesh));
     }
+    // Light source
     Matrix44f l2w(11.146836, -5.781569, -0.0605886, 0, -1.902827, -3.543982, -11.895445, 0, 5.459804, 10.568624, -4.02205, 0, 0, 0, 0, 1);
 #endif
     lights.push_back(std::unique_ptr<Light>(new DistantLight(l2w, 1, 1)));

@@ -400,14 +400,15 @@ public:
             
             T pivotsize = t[i][i];
             
-            if (pivotsize < 0)
+            if (pivotsize < 0){
                 pivotsize = -pivotsize;
+            }
                 
                 for (j = i + 1; j < 4; j++) {
                     T tmp = t[j][i];
                     
-                    if (tmp < 0)
-                        tmp = -tmp;
+                    if (tmp < 0) {
+                        tmp = -tmp; }
                         
                         if (tmp > pivotsize) {
                             pivot = j;
