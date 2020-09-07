@@ -2,7 +2,7 @@ APP = shading
 CC=g++
 CLEANBROKEN = '1'
 # Add -pg for GNU profiling remove -g
-LIBS = -Wall -pg -fpermissive -O4
+LIBS = -Wall -p -std=c++11 -fpermissive -O4
 SRC = shading.cpp
 OBJ = $(SRC:.ccp=.o)
 
