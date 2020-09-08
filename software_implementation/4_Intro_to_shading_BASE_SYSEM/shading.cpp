@@ -62,8 +62,9 @@ static const float kEpsilon = 1e-8;
 static const Vec3f kDefaultBackgroundColor = Vec3f(0.235294, 0.67451, 0.843137);
 template <> const Matrix44f Matrix44f::kIdentity = Matrix44f();
 
-// In computer graphics, clamping is the process of limiting a position to an area. Unlike wrapping, 
-//  clamping merely moves the point to the nearest available value.
+/* In computer graphics, clamping is the process of limiting a position to an area. Unlike wrapping, 
+clamping merely moves the point to the nearest available value.
+*/
 inline
 float clamp(const float &lo, const float &hi, const float &v)
 { return std::max(lo, std::min(hi, v)); }
@@ -84,28 +85,27 @@ struct Options
 	// set field of view 
 	/* Below the scene is set with the attributes such as scale, image aspec ratio set in such a way
 	that the rendered image resembles the pinhole camera model 
-	*/
 
-	/* calculated based on 90 degrees of horizontal FOV
-			usual values 30-45 70 90-100
+	calculated based on 90 degrees of horizontal FOV
+	usual values 30-45 70 90-100
 	*/
 	float fov = 90;
 	Vec3f backgroundColor = kDefaultBackgroundColor;
 	// Set the matrix from which th the camera will come from (from 3D Viewing: the Pinhole Camera Model )
 	/* Normals are a special kind of vector because they are not transformed by 4x4 affine 
-			transformation matrices the same way than vectors are. They need to be transformed 
-			instead by the inverse of the matrix
+	transformation matrices the same way than vectors are. They need to be transformed 
+	instead by the inverse of the matrix
 	*/
 	Matrix44f cameraToWorld;
 	/* The amount by which you displace or move the point in the normal direction is left to the user and 
-			can be tweaked on a scene basis. This value is often refer to in ray-tracer as shadow bias
-			As you can see the bias is generally a very small value. The amount of bias required depends on 
-			different factors such as the scene scale, the object curvature, the object distance to the camera, etc.
+	can be tweaked on a scene basis. This value is often refer to in ray-tracer as shadow bias
+	As you can see the bias is generally a very small value. The amount of bias required depends on 
+	different factors such as the scene scale, the object curvature, the object distance to the camera, etc.
 	*/
 	float bias = 0.0001;
 	/* The number of times a reflection ray is reflected off of surfaces is called the ray depth.\
-			Though for most scenes using a depth much greater than 4 or 5 (use >5 when dealing with very complex transparent surfaces are rendered (such as water splashes) ) 
-			generally doesn't make much of visual difference.
+	Though for most scenes using a depth much greater than 4 or 5 (use >5 when dealing with very complex transparent surfaces are rendered (such as water splashes) ) 
+	generally doesn't make much of visual difference.
 	*/
 	uint32_t maxDepth = 4;
 };
@@ -115,22 +115,21 @@ enum MaterialType { kDiffuse, kReflection, kReflectionAndRefraction, kPhong };
 class Object
 {
  public:
-	// [comment]
 	// Setting up the object-to-world and world-to-object matrix
-	// [/comment]
 	Object(const Matrix44f &o2w) : objectToWorld(o2w), worldToObject(o2w.inverse()) {}
 	virtual ~Object() {}
 	virtual bool intersect(const Vec3f &, const Vec3f &, float &, uint32_t &, Vec2f &) const = 0;
 	virtual void getSurfaceProperties(const Vec3f &, const Vec3f &, const uint32_t &, const Vec2f &, Vec3f &, Vec2f &) const = 0;
 	Matrix44f objectToWorld, worldToObject;
 	const char *name;
+	// Select material type
 	MaterialType type = kDiffuse;
 	// Index of refraction (also sometimes referred to as ior)
 	float ior = 1;
 	// The albedo terms defines the ratio of reflected light over the amount of incident light
 	// albedo = reflect light / incident light 
 	/* The reason we set the albedo default value to 0.18 is because object's from the real world 
-			reflect on average around 18% of the light they receive
+	reflect on average around 18% of the light they receive
 	*/
 	Vec3f albedo = 0.18;
 	// phong model diffuse weight
@@ -141,13 +140,14 @@ class Object
 	float n = 10;   
 };
 
-// [comment]
 // Compute the roots of a quadratic equation
-// [/comment]
 bool solveQuadratic(const float &a, const float &b, const float &c, float &x0, float &x1)
 {
 	float discr = b * b - 4 * a * c;
-	if (discr < 0) return false;
+	if (discr < 0) 
+		{
+			return false;
+		}
 	else if (discr == 0) 
 		{
 			x0 = x1 = - 0.5 * b / a;
@@ -155,8 +155,8 @@ bool solveQuadratic(const float &a, const float &b, const float &c, float &x0, f
 	else 
 		{
 			float q = (b > 0) ?
-					-0.5 * (b + sqrt(discr)) :
-					-0.5 * (b - sqrt(discr));
+				-0.5 * (b + sqrt(discr)) :
+				-0.5 * (b - sqrt(discr));
 			x0 = q / a;
 			x1 = c / q;
 		}
@@ -164,9 +164,7 @@ bool solveQuadratic(const float &a, const float &b, const float &c, float &x0, f
 	return true;
 }
 
-// [comment]
 // Sphere class. A sphere type object
-// [/comment]
 class Sphere : public Object
 {
 public:
@@ -175,9 +173,8 @@ public:
 			o2w.multVecMatrix(Vec3f(0), center);
 			this->name = "sphere";
 		}
-	// [comment]
+
 	// Ray-sphere intersection test
-	// [/comment]
 	bool intersect(
 			const Vec3f &orig,
 			const Vec3f &dir,
@@ -193,20 +190,25 @@ public:
 			float c = L.dotProduct(L) - radius2;
 			if (!solveQuadratic(a, b, c, t0, t1)) return false;
 
-			if (t0 > t1) std::swap(t0, t1);
+			if (t0 > t1)
+				{
+					std::swap(t0, t1);
+				}
 
-			if (t0 < 0) {
+			if (t0 < 0) 
+				{
 					t0 = t1; // if t0 is negative, let's use t1 instead
-					if (t0 < 0) return false; // both t0 and t1 are negative
-			}
+					if (t0 < 0)
+						{
+							return false; // both t0 and t1 are negative
+						}
+				}
 
 			tNear = t0;
 
 			return true;
 		}
-	// [comment]
 	// Set surface data such as normal and texture coordinates at a given point on the surface
-	// [/comment]
 	void getSurfaceProperties(
 			const Vec3f &hitPoint,
 			const Vec3f &viewDirection,
@@ -231,9 +233,9 @@ public:
 };
 
 bool rayTriangleIntersect(
-    const Vec3f &orig, const Vec3f &dir,
-    const Vec3f &v0, const Vec3f &v1, const Vec3f &v2,
-    float &t, float &u, float &v)
+	const Vec3f &orig, const Vec3f &dir,
+	const Vec3f &v0, const Vec3f &v1, const Vec3f &v2,
+	float &t, float &u, float &v)
 {
 	// find if the ray intersects the triangle 
 
@@ -259,7 +261,6 @@ bool rayTriangleIntersect(
     // ray and triangle are parallel if det is close to 0
     if (fabs(det) < kEpsilon) return false;
 #endif
-
 
 	// compute once and multiply to find u,v and t
     // 1/P*E1 in the equation 
@@ -327,10 +328,10 @@ public:
 	for (uint32_t i = 0; i < maxVertIndex; ++i) 
 		{
 			/* The object-to-world matrix is passed to the constructor of the TriangleMesh class 
-					which in turn passes it on to the constructor of the Object class (line 13). 
-					Finally, in the constructor of the triangle mesh class, we loop over all the vertices 
-					making the mesh and set the mesh vertices to the input vertices transformed by the 
-					object-to-world matrix (lines 19-22):
+			which in turn passes it on to the constructor of the Object class (line 13). 
+			Finally, in the constructor of the triangle mesh class, we loop over all the vertices 
+			making the mesh and set the mesh vertices to the input vertices transformed by the 
+			object-to-world matrix (lines 19-22):
 			*/
 			objectToWorld.multVecMatrix(verts[i], P[i]);
 		}	
@@ -338,7 +339,6 @@ public:
 		// allocate memory to store triangle indices
 		trisIndex = std::unique_ptr<uint32_t []>(new uint32_t [numTris * 3]);
 		uint32_t l = 0;
-		// [comment]
 		// Generate the triangle index array
 		// Keep in mind that there is generally 1 vertex attribute for each vertex of each face.
 		// So for example if you have 2 quads, you only have 6 vertices but you have 2 * 4
@@ -347,12 +347,9 @@ public:
 		// vertex attribute (st, normals, etc.) whose size is equal to the number of triangles
 		// multiplied by 3, and then set the value of the vertex attribute at each vertex
 		// of each triangle using the input array (normals[], st[], etc.)
-		// [/comment]
 		N = std::unique_ptr<Vec3f []>(new Vec3f[numTris * 3]);
 		sts = std::unique_ptr<Vec2f []>(new Vec2f[numTris * 3]);
-		// [comment]
 		// Computing the transpse of the object-to-world inverse matrix
-		// [/comment]
 		Matrix44f transformNormals = worldToObject.transpose();
 		// generate the triangle index array and set normals and st coordinates
 		for (uint32_t i = 0, k = 0; i < nfaces; ++i) 
@@ -362,9 +359,7 @@ public:
 						trisIndex[l] = vertsIndex[k];
 						trisIndex[l + 1] = vertsIndex[k + j + 1];
 						trisIndex[l + 2] = vertsIndex[k + j + 2];
-						// [comment]
 						// Transforming normals
-						// [/comment]
 						transformNormals.multDirMatrix(normals[k], N[l]);
 						transformNormals.multDirMatrix(normals[k + j + 1], N[l + 1]);
 						transformNormals.multDirMatrix(normals[k + j + 2], N[l + 2]);
@@ -391,7 +386,7 @@ public:
 					const Vec3f &v2 = P[trisIndex[j + 2]];
 					float t = kInfinity, u, v;
 					/* a ray may intersect more than one triangle from the mesh therefore we also 
-							need to keep track of the nearest intersection distance as we iterate over the triangles.            
+					need to keep track of the nearest intersection distance as we iterate over the triangles.            
 					*/
 					if (rayTriangleIntersect(orig, dir, v0, v1, v2, t, u, v) && t < tNear) 
 						{
@@ -408,17 +403,17 @@ public:
 
     // Compute Normal at the intersecion point as well as texture coordinates
     void getSurfaceProperties(
-        const Vec3f &hitPoint,
-        const Vec3f &viewDirection,
-        const uint32_t &triIndex,
-        const Vec2f &uv,
-        Vec3f &hitNormal,
-        Vec2f &hitTextureCoordinates) const
+			const Vec3f &hitPoint,
+			const Vec3f &viewDirection,
+			const uint32_t &triIndex,
+			const Vec2f &uv,
+			Vec3f &hitNormal,
+			Vec2f &hitTextureCoordinates) const
     {
 			if (smoothShading) 
 				{
 					/* Combine the point barycentric coordinate and the triangle vertex normals 
-							to compute the point interpolated smooth normal 
+					to compute the point interpolated smooth normal 
 					*/
 					// vertex normal
 					const Vec3f &n0 = N[triIndex * 3];
@@ -512,7 +507,7 @@ TriangleMesh* loadPolyMeshFromFile(const char *file, const Matrix44f &o2w)
 }
 
 /* In code, we will differentiate lights from geometry by creating a special Light class. 
-    Note that lights are unaffected by scale.
+Note that lights are unaffected by scale.
 */
 class Light
 {
@@ -532,7 +527,7 @@ public:
 };
 
 /* Distant lights are unaffected by translation
-    to change or control the light direction, we will change the light-to-world transformation matrix
+to change or control the light direction, we will change the light-to-world transformation matrix
 */
 class DistantLight : public Light
 {
@@ -552,8 +547,8 @@ public:
 };
 
 /* Point lights are also unaffected by rotation 
-    We will assume that the point light source is originally created at the origin of the world coordinate system.
-    To modify its position in 3D space, we will use the light-to-world transformation matrix.
+We will assume that the point light source is originally created at the origin of the world coordinate system.
+To modify its position in 3D space, we will use the light-to-world transformation matrix.
 */
 class PointLight : public Light
 {
@@ -575,7 +570,7 @@ public:
 			lightDir.x /= distance, lightDir.y /= distance, lightDir.z /= distance;
 			// avoid division by 0
 			/* We can use the square of this vector length to attenuate the light 
-					intensity according to the inverse square law
+			intensity according to the inverse square law
 			*/
 			// apply square falloff
 			lightIntensity = color * intensity / (4 * M_PI * r2);
@@ -617,9 +612,9 @@ bool trace(
 }
 
 /* If the object that the primary ray hit is a mirror like surface, then we 
-    compute the reflection direction using the incident view direction 
-    (the primary ray direction) and the normal of the surface at the intersection point.
-    R = I−2(N⋅I)N
+compute the reflection direction using the incident view direction 
+(the primary ray direction) and the normal of the surface at the intersection point.
+R = I−2(N⋅I)N
 */
 Vec3f reflect(const Vec3f &I, const Vec3f &N)
 {
@@ -652,9 +647,7 @@ Vec3f refract(const Vec3f &I, const Vec3f &N, const float &ior)
 	return k < 0 ? 0 : eta * I + (eta * cosi - sqrtf(k)) * n; 
 }
 
-// [comment]
 // Evaluate Fresnel equation (ration of reflected light for a given incident direction and surface normal)
-// [/comment]
 void fresnel(const Vec3f &I, const Vec3f &N, const float &ior, float &kr) 
 { 
 	float cosi = clamp(-1, 1, I.dotProduct(N));
@@ -664,9 +657,9 @@ void fresnel(const Vec3f &I, const Vec3f &N, const float &ior, float &kr)
 			std::swap(etai, etat); 
 		} 
 	/* There is another way of computing or finding out when the incident light is totally reflected 
-			rather than being refracted. You need to compute the sine of the angle of refraction. If sinθ2 
-			is greater than 1, then we have a case of total internal reflection. Note that this value can 
-			easily be computed using Snell's law: 
+	rather than being refracted. You need to compute the sine of the angle of refraction. If sinθ2 
+	is greater than 1, then we have a case of total internal reflection. Note that this value can 
+	easily be computed using Snell's law: 
 	*/
 	float sint = etai / etat * sqrtf(std::max(0.f, 1 - cosi * cosi)); 
 	// Total internal reflection
@@ -692,10 +685,10 @@ inline float modulo(const float &f)
 }
 
 /* First you can store all the lights in a list and pass this list to the castRay() function 
-    which is where shading is done. We then iterate over all the lights and add their contribution 
-    to the shaded point illumination. the light contribution is attenuated by the cosine of the 
-    angle between P's normal and the light direction. This term is different for each light and thus 
-    need to computed for each light. Similarly a shadow ray needs to be cast for each light as well
+which is where shading is done. We then iterate over all the lights and add their contribution 
+to the shaded point illumination. the light contribution is attenuated by the cosine of the 
+angle between P's normal and the light direction. This term is different for each light and thus 
+need to computed for each light. Similarly a shadow ray needs to be cast for each light as well
 */
 Vec3f castRay(
 	const Vec3f &orig, const Vec3f &dir,
@@ -710,23 +703,17 @@ Vec3f castRay(
 
     if (trace(orig, dir, objects, isect)) 
 			{
-        // [comment]
         // Evaluate surface properties (P, N, texture coordinates, etc.)
-        // [/comment]
         Vec3f hitPoint = orig + dir * isect.tNear;
         Vec3f hitNormal;
         Vec2f hitTexCoordinates;
         isect.hitObject->getSurfaceProperties(hitPoint, dir, isect.index, isect.uv, hitNormal, hitTexCoordinates);
         switch (isect.hitObject->type) 
 					{
-            // [comment]
             // Simulate diffuse object
-            // [/comment]
             case kDiffuse:
             	{
-                // [comment]
                 // Light loop (loop over all lights in the scene and accumulate their contribution)
-                // [/comment]
                 for (uint32_t i = 0; i < lights.size(); ++i) 
 									{
                     Vec3f lightDir, lightIntensity;
@@ -766,18 +753,14 @@ Vec3f castRay(
                 	}
                 break;
             	}
-            // [comment]
             // Simulate reflection only
-            // [/comment]
             case kReflection:
             	{
                 Vec3f R = reflect(dir, hitNormal);
                 R.normalize();
                 break;
             	}
-            // [comment]
             // Simulate transparent object (reflection/transmission/fresnel)
-            // [/comment]
             case kReflectionAndRefraction:
             	{
                 Vec3f refractionColor = 0, reflectionColor = 0;
@@ -804,9 +787,7 @@ Vec3f castRay(
             	}
             case kPhong:
             	{
-                // [comment]
                 // Light loop (loop over all lights in the scene and accumulate their contribution)
-                // [/comment]
                 Vec3f diffuse = 0, specular = 0;
                 for (uint32_t i = 0; i < lights.size(); ++i) 
 									{
@@ -843,11 +824,9 @@ Vec3f castRay(
   return hitColor;
 }
 
-// [comment]
 // The main render function. This where we iterate over all pixels in the image, generate
 // primary rays and cast these rays into the scene. The content of the framebuffer is
 // saved to a file.
-// [/comment]
 void render(
 	const Options &options,
 	const std::vector<std::unique_ptr<Object>> &objects,
@@ -919,11 +898,9 @@ void render(
   ofs.close();
 }
 
-// [comment]
 // In the main function of the program, we create the scene (create objects and lights)
 // as well as set the options for the render (image widht and height, maximum recursion
 // depth, field-of-view, etc.). We then call the render function().
-// [/comment]
 int main(int argc, char **argv)
 {
 	// loading gemetry
@@ -934,13 +911,19 @@ int main(int argc, char **argv)
 
 	/* Scene building options:
 
-			fov: Feild of view changes how much of the scene is visible 
-			max depth: Sets a limit to how many rays we "chase" to find an objects contribution 
-			bias:
-			camera to world:
+		options->fov: Feild of view changes how much of the scene is visible 
+		options->maxDepth: Sets a limit to how many rays we "chase" to find an objects contribution 
+		options->bias: Sets shadow bias 
+		options->camera to world: Set the camera to a position in the scene
+		options->backgroundColor: Set background colour when no intersection occurs 
 
-			object->type:
-			object->ior:
+		object->type: Set the material type ( Diffuse, Reflection, Reflection and Refracion, Phong)
+		object->albedo: Set the the ratio of reflected light over the amount of incident light
+		object->ior: Set the index of reflexion 
+
+		object->kd: Set phong model diffuse weight
+		object->ks: Set phong model specular weight
+		object->n: phong specular exponent
 	*/
 
 #ifdef EXAMPLE_1
@@ -1061,6 +1044,7 @@ int main(int argc, char **argv)
 	options.fov = 18;
 	options.width = 1920;
 	options.height = 1080;
+	options.backgroundColor = Vec3f(0.5, 0.3, 0.2);
 	options.cameraToWorld = Matrix44f(0.931056, 0, 0.364877, 0, 0.177666, 0.873446, -0.45335, 0, -0.3187, 0.48692, 0.813227, 0, -41.229214, 81.862351, 112.456908, 1);
 	
 	TriangleMesh *mesh1 = loadPolyMeshFromFile("./teapot.geo", Matrix44f(1.624241, 0, 2.522269, 0, 0, 3, 0, 0, -2.522269, 0, 1.624241, 0, 0, 0, 0, 1));
