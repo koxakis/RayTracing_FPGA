@@ -651,7 +651,7 @@ int main(int argc, char **argv)
     xform[2][2] = 1;
     TriangleMesh *mesh = loadPolyMeshFromFile("./plane.geo", xform);
     if (mesh != nullptr) {
-        mesh->smoothShading = false;
+        mesh->smoothShading = true;
         objects.push_back(std::unique_ptr<Object>(mesh));
     }
     

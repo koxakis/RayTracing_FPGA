@@ -4,5 +4,15 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"files.associations": {
+			"*.cu": "cpp",
+			"*.spice": "spice",
+			"*.xdc": "ucf",
+			"deque": "cpp",
+			"string": "cpp",
+			"vector": "cpp",
+			"cmath": "cpp"
+		}
+	}
 }

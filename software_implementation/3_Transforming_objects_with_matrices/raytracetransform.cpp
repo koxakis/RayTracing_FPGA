@@ -60,8 +60,8 @@ float deg2rad(const float &deg)
 // Struct to contain scene options 
 struct Options
 {
-    uint32_t width = 7680;
-    uint32_t height = 4320;
+    uint32_t width = 1280;
+    uint32_t height = 720;
     // set field of view 
     /* Below the scene is set with the attributes such as scale, image aspec ratio set in such a way
 		that the rendered image resembles the pinhole camera model 
