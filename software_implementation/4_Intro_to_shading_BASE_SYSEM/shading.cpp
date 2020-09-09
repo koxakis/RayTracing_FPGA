@@ -286,6 +286,253 @@ bool rayTriangleIntersect(
     return (t > 0) ? true : false;
 }
 
+// Reads scene options from a file
+void readSceneOptionDataFile (const char *file, Options *options, Matrix44f *l2w)
+{
+	std::ifstream ifs;
+	try 
+		{
+			// Open the file or throw exeption
+			ifs.open(file);
+			if (ifs.fail()) throw;
+
+			// Open stream to file
+			std::stringstream ss;
+			ss << ifs.rdbuf();
+
+			// Read width 
+			uint32_t width;
+			ss >> width;
+			if ( width != uint32_t(-1))
+				{
+					options->width = width;
+				}
+			
+			// Read height
+			uint32_t height;
+			ss >> height;
+			if ( height != uint32_t(-1))
+				{
+					options->height = height;
+				}
+			
+			// Read FOV
+			float fov;
+			ss >> fov;
+			if ( fov != float(-1) )
+				{
+					options->fov = fov;
+				}
+			
+			// Read background Colour
+			float temp_vec[3];
+			for (uint32_t i=0; i < 3; i++)
+				{
+					ss >> temp_vec[i];
+				}
+			if ( temp_vec[0] != float(-1))
+				{
+					options->backgroundColor.x = temp_vec[0];
+					options->backgroundColor.y = temp_vec[1];
+					options->backgroundColor.z = temp_vec[2];
+				}
+
+			// Read camera to world
+			float temp_mat[16];
+			for (uint32_t i=0; i < 16; i++)
+				{
+					ss >> temp_mat[i];
+				}
+			if ( temp_mat[0] != float(-1))
+				{
+					for (uint32_t i=0; i < 4; i++)
+						{
+							for (uint32_t j=0; j < 4; j++)
+								{
+									options->cameraToWorld.x[i][j] = temp_mat[(i*4)+j];
+								}
+						}
+				}
+			
+			// Read bias
+			float bias;
+			ss >> bias;
+			if ( bias != float(-1))
+				{
+					options->bias = bias;
+				}
+			
+			// Read max depth
+			uint32_t maxDepth;
+			ss >> maxDepth;
+			if ( maxDepth != float(-1))
+				{
+					options->maxDepth = maxDepth;
+				}
+
+			// Read light to world 
+			float temp_mat2[16];
+			for (uint32_t i=0; i < 16; i++)
+				{
+					ss >> temp_mat2[i];
+				}
+			if ( temp_mat2[0] != float(-1))
+				{
+					for (uint32_t i=0; i < 4; i++)
+						{
+							for (uint32_t j=0; j < 4; j++)
+								{
+									l2w->x[i][j] = temp_mat2[(i*4)+j];
+								}
+						}
+				}
+			// Read light type
+			uint32_t lighttype;
+			ss >> lighttype;
+			
+		}
+	catch (...) 
+		{
+			ifs.close();
+		}
+	// Close the stream
+	ifs.close();
+}
+
+// Read object 2 world from ood file 
+void readObjectOptionDataFile(const char *file, Matrix44f *o2w)
+{
+	std::ifstream ifs;
+	try 
+		{
+			// Open the file or throw exeption
+			ifs.open(file);
+			if (ifs.fail()) throw;	
+
+			// Open stream to file
+			std::stringstream ss;
+			ss << ifs.rdbuf();			
+			
+			float temp_mat2[16];
+			for (uint32_t i=0; i < 16; i++)
+				{
+					ss >> temp_mat2[i];
+				}
+			if ( temp_mat2[0] != float(-1))
+				{
+					for (uint32_t i=0; i < 4; i++)
+						{
+							for (uint32_t j=0; j < 4; j++)
+								{
+									o2w->x[i][j] = temp_mat2[(i*4)+j];
+								}
+						}
+				}
+
+		}
+	catch (...) 
+		{
+			ifs.close();
+		}
+	// Close the stream
+	ifs.close();
+}
+
+// Reads object options from file 
+void readObjectOptionDataFile(const char *file, Object *mesh)
+{
+	std::ifstream ifs;
+	try 
+		{
+			// Open the file or throw exeption
+			ifs.open(file);
+			if (ifs.fail()) throw;
+
+			// Open stream to file
+			std::stringstream ss;
+			ss << ifs.rdbuf();
+
+			float temp;
+			for (uint32_t i=0; i < 16; i++)
+				{
+					ss >> temp;
+				}
+
+			// Read type
+			uint32_t type;
+			ss >> type;
+			switch (type)
+				{
+					case 0:
+						mesh->type = kDiffuse;
+						break;
+					case 1:
+						mesh->type = kReflection;
+						break;
+					case 2:
+						mesh->type = kReflectionAndRefraction;
+						break;
+					case 3:
+						mesh->type = kPhong;
+						break;
+					default:
+						break;
+				}			
+
+			// Read Index of refraction
+			float ior;
+			ss >> ior;
+			if ( ior != float(-1) )
+				{
+					mesh->ior = ior;
+				}
+			
+			// Read albedo
+			float albedo[3];
+			for (uint32_t i=0; i < 3; i++)
+				{
+					ss >> albedo[i];
+				}
+			if ( albedo[0] != float(-1))
+				{
+					mesh->albedo.x = albedo[0];
+					mesh->albedo.y = albedo[1];
+					mesh->albedo.z = albedo[2];
+				}
+
+			// Read kd 
+			float kd;
+			ss >> kd;
+			if ( kd != float(-1))
+				{
+					mesh->Kd = kd;
+				}
+
+			// Read ks
+			float ks;
+			ss >> ks;
+			if ( ks != float(-1))
+				{
+					mesh->Ks = ks;
+				}	
+
+			// Read n
+			float n;
+			ss >> n;
+			if ( n != float(-1))
+				{
+					mesh->n = n;
+				}			
+
+		}
+	catch (...) 
+		{
+			ifs.close();
+		}
+	// Close the stream
+	ifs.close();	
+}
+
 /* This class reads the geometry file that describes the scene. All the data such as 
 	number of faces, the face and vertex arrays, the point, normal and st coordinates arrays
 	are passed to the triangle mesh constractor.
@@ -453,13 +700,19 @@ TriangleMesh* loadPolyMeshFromFile(const char *file, const Matrix44f &o2w)
 	std::ifstream ifs;
 	try 
 		{
+			// Open the file or throw exeption
 			ifs.open(file);
 			if (ifs.fail()) throw;
+
+			// Open stream to file
 			std::stringstream ss;
 			ss << ifs.rdbuf();
+
+			// Read number of faces 
 			uint32_t numFaces;
 			ss >> numFaces;
 			std::unique_ptr<uint32_t []> faceIndex(new uint32_t[numFaces]);
+
 			uint32_t vertsIndexArraySize = 0;
 			// reading face index array
 			for (uint32_t i = 0; i < numFaces; ++i) 
@@ -468,6 +721,7 @@ TriangleMesh* loadPolyMeshFromFile(const char *file, const Matrix44f &o2w)
 					vertsIndexArraySize += faceIndex[i];
 				}
 			std::unique_ptr<uint32_t []> vertsIndex(new uint32_t[vertsIndexArraySize]);
+
 			uint32_t vertsArraySize = 0;
 			// reading vertex index array
 			for (uint32_t i = 0; i < vertsIndexArraySize; ++i) 
@@ -476,18 +730,21 @@ TriangleMesh* loadPolyMeshFromFile(const char *file, const Matrix44f &o2w)
 					if (vertsIndex[i] > vertsArraySize) vertsArraySize = vertsIndex[i];
 				}
 			vertsArraySize += 1;
+
 			// reading vertices
 			std::unique_ptr<Vec3f []> verts(new Vec3f[vertsArraySize]);
 			for (uint32_t i = 0; i < vertsArraySize; ++i) 
 				{
 					ss >> verts[i].x >> verts[i].y >> verts[i].z;
 				}
+
 			// reading normals
 			std::unique_ptr<Vec3f []> normals(new Vec3f[vertsIndexArraySize]);
 			for (uint32_t i = 0; i < vertsIndexArraySize; ++i) 
 				{
 					ss >> normals[i].x >> normals[i].y >> normals[i].z;
 				}
+
 			// reading st coordinates
 			std::unique_ptr<Vec2f []> st(new Vec2f[vertsIndexArraySize]);
 			for (uint32_t i = 0; i < vertsIndexArraySize; ++i) 
@@ -501,7 +758,7 @@ TriangleMesh* loadPolyMeshFromFile(const char *file, const Matrix44f &o2w)
 		{
 			ifs.close();
 		}
-		ifs.close();
+	ifs.close();
 	
 	return nullptr;
 }
@@ -903,28 +1160,82 @@ void render(
 // depth, field-of-view, etc.). We then call the render function().
 int main(int argc, char **argv)
 {
-	// loading gemetry
+	// loading geometry
 	std::vector<std::unique_ptr<Object>> objects;
 	// lights
 	std::vector<std::unique_ptr<Light>> lights;
 	Options options;
 
 	/* Scene building options:
+		options->width:	Set resolution width
+		options->height:	Set resolution height
 
 		options->fov: Feild of view changes how much of the scene is visible 
-		options->maxDepth: Sets a limit to how many rays we "chase" to find an objects contribution 
-		options->bias: Sets shadow bias 
-		options->camera to world: Set the camera to a position in the scene
 		options->backgroundColor: Set background colour when no intersection occurs 
+		options->camera to world: Set the camera to a position in the scene
+		options->bias: Sets shadow bias 
+		options->maxDepth: Sets a limit to how many rays we "chase" to find an objects contribution 
+
+		object->name: Set an object name 
 
 		object->type: Set the material type ( Diffuse, Reflection, Reflection and Refracion, Phong)
-		object->albedo: Set the the ratio of reflected light over the amount of incident light
 		object->ior: Set the index of reflexion 
+		object->albedo: Set the the ratio of reflected light over the amount of incident light
 
 		object->kd: Set phong model diffuse weight
 		object->ks: Set phong model specular weight
 		object->n: phong specular exponent
+
 	*/
+
+	// CLI arguments input 
+	/* Read how many input files are present 
+	The order must be .sob .geo .ood .geo .ood ... ( how ever many pairs of .geo .ood )
+	There must be always one scene options data file .sod
+	And 2 files per object
+		A geometry file .geo
+		An object option data file .ood
+
+		1) Read the scene options and set the struct accordingly 
+			if a valid value exists assign it 
+			else keep default  
+		2
+		)
+	*/
+
+	// Check number of CLI arguments
+	if ( argc < 2 )
+		{
+			std::cout << "Wrong number of arguments\n Must at least have a scene option data file" << std::endl;
+			return 1;
+		}
+	// Load lighting and scene options
+	Matrix44f l2w;
+	readSceneOptionDataFile(argv[1], &options, &l2w);
+	lights.push_back(std::unique_ptr<Light>(new DistantLight(l2w, 1, 1)));
+
+	Matrix44f object2world;
+	readObjectOptionDataFile(argv[3],&object2world);
+
+	TriangleMesh *mesh1 = loadPolyMeshFromFile(argv[2], object2world);
+	if (mesh1 != nullptr) 
+		{
+			readObjectOptionDataFile(argv[3],mesh1);
+			objects.push_back(std::unique_ptr<Object>(mesh1));
+		}
+
+
+/* 	Matrix44f xform;
+	xform[0][0] = 1;
+	xform[1][1] = 1;
+	xform[2][2] = 1;
+	TriangleMesh *mesh2 = loadPolyMeshFromFile("./plane.geo", xform);
+	if (mesh2 != nullptr) 
+		{
+			mesh2->smoothShading = true;
+			objects.push_back(std::unique_ptr<Object>(mesh2));
+		} */
+
 
 #ifdef EXAMPLE_1
 	// glass and pen example
@@ -1041,34 +1352,6 @@ int main(int argc, char **argv)
 	lights.push_back(std::unique_ptr<Light>(new DistantLight(l2w, 1, 1)));
 #endif
 #ifdef EXAMPLE_5
-	options.fov = 18;
-	options.width = 1920;
-	options.height = 1080;
-	options.backgroundColor = Vec3f(0.5, 0.3, 0.2);
-	options.cameraToWorld = Matrix44f(0.931056, 0, 0.364877, 0, 0.177666, 0.873446, -0.45335, 0, -0.3187, 0.48692, 0.813227, 0, -41.229214, 81.862351, 112.456908, 1);
-	
-	TriangleMesh *mesh1 = loadPolyMeshFromFile("./teapot.geo", Matrix44f(1.624241, 0, 2.522269, 0, 0, 3, 0, 0, -2.522269, 0, 1.624241, 0, 0, 0, 0, 1));
-	if (mesh1 != nullptr) 
-		{
-			mesh1->smoothShading = true;
-			mesh1->type = kPhong;
-			mesh1->albedo = 0.18;
-			objects.push_back(std::unique_ptr<Object>(mesh1));
-		}
-
-	Matrix44f xform;
-	xform[0][0] = 1;
-	xform[1][1] = 1;
-	xform[2][2] = 1;
-	TriangleMesh *mesh2 = loadPolyMeshFromFile("./plane.geo", xform);
-	if (mesh2 != nullptr) 
-		{
-			mesh2->smoothShading = true;
-			objects.push_back(std::unique_ptr<Object>(mesh2));
-		}
-
-  Matrix44f l2w(11.146836, -5.781569, -0.0605886, 0, -1.902827, -3.543982, -11.895445, 0, 5.459804, 10.568624, -4.02205, 0, 0, 0, 0, 1);    
-	lights.push_back(std::unique_ptr<Light>(new DistantLight(l2w, 1, 1)));
 #endif
 #ifdef EXAMPLE_6
 	// aliasing example
