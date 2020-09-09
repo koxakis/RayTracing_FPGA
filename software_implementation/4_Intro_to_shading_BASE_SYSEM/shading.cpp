@@ -1215,13 +1215,18 @@ int main(int argc, char **argv)
 	lights.push_back(std::unique_ptr<Light>(new DistantLight(l2w, 1, 1)));
 
 	Matrix44f object2world;
-	readObjectOptionDataFile(argv[3],&object2world);
 
-	TriangleMesh *mesh1 = loadPolyMeshFromFile(argv[2], object2world);
-	if (mesh1 != nullptr) 
+	uint32_t numofobjects = atoi(argv[2]);
+	for (uint32_t i=0; i < numofobjects; i++)
 		{
-			readObjectOptionDataFile(argv[3],mesh1);
-			objects.push_back(std::unique_ptr<Object>(mesh1));
+			readObjectOptionDataFile(argv[i+4],&object2world);
+
+			TriangleMesh *mesh1 = loadPolyMeshFromFile(argv[i+3], object2world);
+			if (mesh1 != nullptr) 
+				{
+					readObjectOptionDataFile(argv[i+4],mesh1);
+					objects.push_back(std::unique_ptr<Object>(mesh1));
+				}
 		}
 
 
