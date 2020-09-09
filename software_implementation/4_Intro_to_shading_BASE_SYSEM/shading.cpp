@@ -1190,7 +1190,9 @@ int main(int argc, char **argv)
 
 	// CLI arguments input 
 	/* Read how many input files are present 
-	The order must be .sob .geo .ood .geo .ood ... ( how ever many pairs of .geo .ood )
+
+	The order must be .sob #of_objects .geo .ood .geo .ood ... ( how ever many pairs of .geo .ood )
+
 	There must be always one scene options data file .sod
 	And 2 files per object
 		A geometry file .geo
@@ -1215,31 +1217,42 @@ int main(int argc, char **argv)
 	lights.push_back(std::unique_ptr<Light>(new DistantLight(l2w, 1, 1)));
 
 	Matrix44f object2world;
+	// Load object geometries and options for multiple objects 
 
+	// Read the number of objects 
 	uint32_t numofobjects = atoi(argv[2]);
+
+	uint32_t indexfactorgeo = 3;
+	uint32_t indexfactorood = 4;
+	// Iterate argv array for each objects geometry and options file
 	for (uint32_t i=0; i < numofobjects; i++)
 		{
-			readObjectOptionDataFile(argv[i+4],&object2world);
-
-			TriangleMesh *mesh1 = loadPolyMeshFromFile(argv[i+3], object2world);
+			// Use overloaded function to read the object to world array first
+			readObjectOptionDataFile(argv[i+indexfactorood],&object2world);
+			
+			// Load object geometry from file
+			TriangleMesh *mesh1 = loadPolyMeshFromFile(argv[i+indexfactorgeo], object2world);
 			if (mesh1 != nullptr) 
-				{
-					readObjectOptionDataFile(argv[i+4],mesh1);
+				{	
+					// Load the rest of the options
+					readObjectOptionDataFile(argv[i+indexfactorood],mesh1);
 					objects.push_back(std::unique_ptr<Object>(mesh1));
 				}
+			indexfactorgeo++;
+			indexfactorood++;
 		}
 
 
-/* 	Matrix44f xform;
+/* Matrix44f xform;
 	xform[0][0] = 1;
 	xform[1][1] = 1;
 	xform[2][2] = 1;
-	TriangleMesh *mesh2 = loadPolyMeshFromFile("./plane.geo", xform);
+	TriangleMesh *mesh2 = loadPolyMeshFromFile("./plane.geo", Matrix44f::kIdentity);
 	if (mesh2 != nullptr) 
 		{
 			mesh2->smoothShading = true;
 			objects.push_back(std::unique_ptr<Object>(mesh2));
-		} */
+		}  */
 
 
 #ifdef EXAMPLE_1
