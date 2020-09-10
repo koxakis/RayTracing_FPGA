@@ -1,0 +1,8 @@
+1920											width
+1080											height
+90												FOV
+0.235294 0.67451 0.843137	kDefaultBackgroundColor
+Camera 2 world no default 
+0.0001										Bias
+4													Max Depth
+Light 2 world no default

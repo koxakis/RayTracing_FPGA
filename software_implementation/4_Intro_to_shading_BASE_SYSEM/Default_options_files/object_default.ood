@@ -1,0 +1,7 @@
+Object 2 world no default // Read from first readObjectOptionDataFile function 
+kDiffuse				Type 			// (0-kDiffuse, 1-kReflection, 2-kReflectionAndRefraction, 3-kPhong)
+1								IOR				// Index of refraction (also sometimes referred to as ior)
+0.18 0.18 0.18	Albedo		// albedo = reflect light / incident light
+0.8							Kd 				// phong model diffuse weight
+0.2							Ks 				// phong model specular weight, control the size of matte lighting spot
+10							n					// phong specular exponent, control the size of specular spot
