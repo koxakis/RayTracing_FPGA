@@ -54,10 +54,19 @@ int main(int argc, char const *argv[])
 	}
 
 	// Read input and golden output
-	fread((void *)tocheck, sizeof(unsigned char), (size_t)(HEIGHT*WIDTH), fin);
-	fread((void *)golden, sizeof(unsigned char), (size_t)(HEIGHT*WIDTH), fgld);
-
-	// Input and golden files no longer needed
+	uint32_t checkreturn;
+	checkreturn = fread((void *)tocheck, sizeof(unsigned char), (size_t)(HEIGHT*WIDTH), fin);
+	if ( checkreturn == 0 )
+		{
+			perror("fread in\n");
+			exit(EXIT_FAILURE);
+		}
+	checkreturn = fread((void *)golden, sizeof(unsigned char), (size_t)(HEIGHT*WIDTH), fgld);
+	if ( checkreturn == 0 )
+		{
+			perror("fread gold\n");
+			exit(EXIT_FAILURE);
+		}	// Input and golden files no longer needed
 	fclose(fin);
 	fclose(fgld);
 
