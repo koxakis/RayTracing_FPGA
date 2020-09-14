@@ -1154,9 +1154,19 @@ int main(int argc, char **argv)
 		An object option data file .ood
 
 		1) Read the scene options and set the struct accordingly 
-			if a valid value exists assign it 
-			else keep default  
-		2)
+			if a valid value exists assign it else the file needs to contain the default values
+
+		2) Read the number of objects in the scene and assign index factors to read CLI arguments 
+			in pairs
+
+		3) Use an overloaded function to first read the object to the world matrix 
+
+		4) Load the geometry of the object and place it to the world with the o2w matrix
+
+		5) Load the rest of the object attributes in order to assign them to the object class
+			This also needs to have all the default options filled in
+
+		6) Increment factors and repeat for every object
 	*/
 
 	// Check number of CLI arguments
@@ -1178,6 +1188,7 @@ int main(int argc, char **argv)
 
 	uint32_t indexfactorgeo = 3;
 	uint32_t indexfactorood = 4;
+	
 	// Iterate argv array for each objects geometry and options file
 	for (uint32_t i=0; i < numofobjects; i++)
 		{

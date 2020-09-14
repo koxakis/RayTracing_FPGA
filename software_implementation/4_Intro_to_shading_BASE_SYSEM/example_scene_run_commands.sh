@@ -8,7 +8,7 @@ echo -e "Scene 2:  Whole plane\n"
 
 #Scene 3:  4 Glasses refraction
 echo -e "Scene 3:  4 Glasses refraction\n"
-./shading Glasses_scene/scene.sod 2 Glasses_scene/glasses.geo Glasses_scene/glasses.ood Glasses_scene/backdrop1.geo Glasses_scene/backdrop.ood
+./shading Glasses_scene/scene.sod 2 Glasses_scene/glasses.geo Glasses_scene/glasses.ood Glasses_scene/backdrop1.geo Glasses_scene/backdrop1.ood
 
 #Scene 4:  Horizontal Plane
 echo -e "Scene 4:  Horizontal Plane\n"
