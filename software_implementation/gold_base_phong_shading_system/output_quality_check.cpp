@@ -66,7 +66,9 @@ int main(int argc, char const *argv[])
 		{
 			perror("fread gold\n");
 			exit(EXIT_FAILURE);
-		}	// Input and golden files no longer needed
+		}	
+		
+	// Input and golden files no longer needed
 	fclose(fin);
 	fclose(fgld);
 

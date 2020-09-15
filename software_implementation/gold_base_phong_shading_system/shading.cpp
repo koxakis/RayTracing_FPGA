@@ -109,6 +109,17 @@ struct Options
 	uint32_t maxDepth = 4;
 };
 
+typedef struct lightdata_struct
+{
+	Matrix44f light2world;
+	Vec3f colour;
+	float intensity;
+	uint8_t lighttype;
+
+}lightdata_structT;
+
+lightdata_structT *lightData = NULL;
+
 enum MaterialType { kDiffuse, kReflection, kReflectionAndRefraction, kPhong };
 
 class Object
@@ -286,7 +297,7 @@ bool rayTriangleIntersect(
 }
 
 // Reads scene options from a file
-void readSceneOptionDataFile (const char *file, Options *options, Matrix44f *l2w)
+void readSceneOptionDataFile (const char *file, Options *options, uint32_t *numoflight)
 {
 	std::ifstream ifs;
 	try 
@@ -348,20 +359,58 @@ void readSceneOptionDataFile (const char *file, Options *options, Matrix44f *l2w
 			ss >> maxDepth;
 			options->maxDepth = maxDepth;
 
-			// Read light to world 
+			// Read light data 
+
+			// Read the number of lights to the world
+			uint32_t temp_lights;
+			ss >> temp_lights;
+			*numoflight = temp_lights;
+
+			// Allocate memory for light data 
+			lightData = (lightdata_structT*) malloc(temp_lights * sizeof(lightdata_structT));
+			if ( lightData == NULL )
+				{
+					perror("Light data allocation");
+					exit(EXIT_FAILURE);
+				}
+
 			float light2world[16];
-			for (uint32_t i=0; i < 16; i++)
+			uint32_t templighttype;
+			for (uint32_t k = 0; k < temp_lights; k++)
 				{
-					ss >> light2world[i];
-				}
-			for (uint32_t i=0; i < 4; i++)
-				{
-					for (uint32_t j=0; j < 4; j++)
+					// Read light type
+					ss >> templighttype;
+					lightData[k].lighttype = templighttype;
+					
+					// Read light colour
+					float lightcolour[3];
+					for (uint32_t i=0; i < 3; i++)
 						{
-							l2w->x[i][j] = light2world[(i*4)+j];
+							ss >> lightcolour[i];
 						}
-				}
-			
+					lightData->colour.x = lightcolour[0];
+					lightData->colour.y = lightcolour[1];
+					lightData->colour.z = lightcolour[2];
+
+					// Read light intensity
+					float colourintensity;
+					ss >> colourintensity;
+					lightData->intensity = colourintensity;
+
+					// Read light to world data from file
+					for (uint32_t i=0; i < 16; i++)
+						{
+							ss >> light2world[i];
+						}
+					// Pass light to world data to struct
+					for (uint32_t i=0; i < 4; i++)
+						{
+							for (uint32_t j=0; j < 4; j++)
+								{
+									lightData[k].light2world.x[i][j] = light2world[(i*4)+j];
+								}
+						}	
+				}		
 		}
 	catch (...) 
 		{
@@ -1120,26 +1169,30 @@ int main(int argc, char **argv)
 	Options options;
 
 	/* Scene building options:
-		options->width:	Set resolution width
-		options->height:	Set resolution height
 
-		options->fov: Feild of view changes how much of the scene is visible 
-		options->backgroundColor: Set background colour when no intersection occurs 
-		options->camera to world: Set the camera to a position in the scene
-		options->bias: Sets shadow bias 
-		options->maxDepth: Sets a limit to how many rays we "chase" to find an objects contribution 
-		light to world
-
-		object to world 
-		//object->name: Set an object name 
-
-		object->type: Set the material type ( Diffuse, Reflection, Reflection and Refracion, Phong)
-		object->ior: Set the index of reflexion 
-		object->albedo: Set the the ratio of reflected light over the amount of incident light
-
-		object->kd: Set phong model diffuse weight
-		object->ks: Set phong model specular weight
-		object->n: phong specular exponent
+		1920											width										// options->width:	Set resolution width
+		1080											height									// options->height:	Set resolution height
+		90												FOV											// options->fov: Feild of view changes how much of the scene is visible 
+		0.235294 0.67451 0.843137	kDefaultBackgroundColor	// options->backgroundColor: Set background colour when no intersection occurs 
+		Camera 2 world no default 												// options->camera to world: Set the camera to a position in the scene
+		0.0001										Bias										// options->bias: Sets shadow bias 
+		4													Max Depth								// options->maxDepth: Sets a limit to how many rays we "chase" to find an objects contribution
+		1													number of lights				// Number of lights in the scene
+		0													type of light 					// lightdata_struct->lighttype Type of light 0 distant 1 point
+		1 1 1											light colour 						// lightdata_struct->colour Select the light colour either int or Vec3f
+		1													light intensity					// lightdata_struct->intensity Select the light intensity 1 for distant light 500 for point light
+		Light 2 world no default													// lightdata_struct->light2world Light to world coordinates 
+		if more lights add more
+	*/ 
+	/* Object building options
+		
+		Object 2 world no default // Read from first readObjectOptionDataFile function 
+		kDiffuse				Type 			// object->type: Set the material type(0-kDiffuse, 1-kReflection, 2-kReflectionAndRefraction, 3-kPhong)
+		1								IOR				// object->ior: Index of refraction (also sometimes referred to as ior)
+		0.18 0.18 0.18	Albedo		// object->albedo: albedo = reflect light / incident light
+		0.8							Kd 				// object->kd: phong model diffuse weight
+		0.2							Ks 				// object->ks: phong model specular weight, control the size of matte lighting spot
+		10							n					// object->n: phong specular exponent, control the size of specular spot
 
 	*/
 
@@ -1176,10 +1229,26 @@ int main(int argc, char **argv)
 			return 1;
 		}
 	// Load lighting and scene options
-	Matrix44f l2w;
-	readSceneOptionDataFile(argv[1], &options, &l2w);
-	lights.push_back(std::unique_ptr<Light>(new DistantLight(l2w, 1, 1)));
+	uint32_t numoflights;
 
+	// Read scene data from file
+	readSceneOptionDataFile(argv[1], &options, &numoflights);
+	
+	// Iterate the light sources and push the appropriate light type
+	for (uint32_t i = 0; i < numoflights; i++)
+		{
+			// If the light source is distand light push the l2w array to a new Distand light unique ptr
+			if ( lightData[i].lighttype == 0)
+				{
+					lights.push_back(std::unique_ptr<Light>(new DistantLight(lightData[i].light2world, lightData[i].colour, lightData[i].intensity )));
+				}
+			// If the light source is point light push the l2w array to a new Distand light unique ptr along with the 
+			else if (lightData[i].lighttype == 1)
+				{
+					lights.push_back(std::unique_ptr<Light>(new PointLight(lightData[i].light2world,  lightData[i].colour, lightData[i].intensity )));				
+				}		
+		}
+	
 	Matrix44f object2world;
 	// Load object geometries and options for multiple objects 
 
