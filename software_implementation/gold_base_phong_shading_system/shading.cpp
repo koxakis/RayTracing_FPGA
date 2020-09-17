@@ -54,7 +54,7 @@
   Pattern 3:  Stripled 
   Pattern 4:  Grey checkerboard
 */
-#define PATTERN_4
+#define PATTERN_1
 
 static const float kInfinity = std::numeric_limits<float>::max();
 static const float kEpsilon = 1e-8;
@@ -111,10 +111,10 @@ struct Options
 
 typedef struct lightdata_struct
 {
-	Matrix44f light2world;
+	uint32_t lighttype;
 	Vec3f colour;
 	float intensity;
-	uint8_t lighttype;
+	Matrix44f light2world;
 
 }lightdata_structT;
 
@@ -261,7 +261,7 @@ bool rayTriangleIntersect(
 	// if the triangle is front-facing the determinant is positive otherwise it is negative
 	// P*E1 in the equation 
 	// x * v.x + y * v.y + z * v.z
-    float det = v0v1.dotProduct(pvec);
+  float det = v0v1.dotProduct(pvec);
 
 #ifdef CULLING
     // if the determinant is negative the triangle is backfacing
@@ -273,27 +273,27 @@ bool rayTriangleIntersect(
 #endif
 
 	// compute once and multiply to find u,v and t
-    // 1/P*E1 in the equation 
-    float invDet = 1 / det;
+	// 1/P*E1 in the equation 
+	float invDet = 1 / det;
 
-    // translate to the unit triangle 
-    Vec3f tvec = orig - v0;
-    // compute u from (T dotproduct P) * 1/P*E1
-    u = tvec.dotProduct(pvec) * invDet;
-    // we reject the triangle if u is either lower than 0 or greater than 1
-    if (u < 0 || u > 1) return false;
+	// translate to the unit triangle 
+	Vec3f tvec = orig - v0;
+	// compute u from (T dotproduct P) * 1/P*E1
+	u = tvec.dotProduct(pvec) * invDet;
+	// we reject the triangle if u is either lower than 0 or greater than 1
+	if (u < 0 || u > 1) return false;
 
-    // Q in the equation 
-    Vec3f qvec = tvec.crossProduct(v0v1);
+	// Q in the equation 
+	Vec3f qvec = tvec.crossProduct(v0v1);
 	// compute v from (D dotproduct Q) * 1/P*E1 
-    v = dir.dotProduct(qvec) * invDet;
-    // we reject the triangle if v is either lower than 0 or greater than 1
-    if (v < 0 || u + v > 1) return false;
+	v = dir.dotProduct(qvec) * invDet;
+	// we reject the triangle if v is either lower than 0 or greater than 1
+	if (v < 0 || u + v > 1) return false;
 
-    // compute t from (E2 dotproduct Q) * 1/P*E1 
-    t = v0v2.dotProduct(qvec) * invDet;
-    
-    return (t > 0) ? true : false;
+	// compute t from (E2 dotproduct Q) * 1/P*E1 
+	t = v0v2.dotProduct(qvec) * invDet;
+	
+	return (t > 0) ? true : false;
 }
 
 // Reads scene options from a file
@@ -790,7 +790,7 @@ to change or control the light direction, we will change the light-to-world tran
 */
 class DistantLight : public Light
 {
-    Vec3f dir;
+  Vec3f dir;
 public:
 	DistantLight(const Matrix44f &l2w, const Vec3f &c = 1, const float &i = 1) : Light(l2w, c, i)
 		{
@@ -847,10 +847,10 @@ struct IsectInfo
 };
 
 bool trace(
-    const Vec3f &orig, const Vec3f &dir,
-    const std::vector<std::unique_ptr<Object>> &objects,
-    IsectInfo &isect,
-    RayType rayType = kPrimaryRay)
+	const Vec3f &orig, const Vec3f &dir,
+	const std::vector<std::unique_ptr<Object>> &objects,
+	IsectInfo &isect,
+	RayType rayType = kPrimaryRay)
 {
 	isect.hitObject = nullptr;
 	for (uint32_t k = 0; k < objects.size(); ++k) 
@@ -1168,6 +1168,19 @@ int main(int argc, char **argv)
 	std::vector<std::unique_ptr<Light>> lights;
 	Options options;
 
+	/* Geometry file data
+		The first number defines the number of faces making up the mesh. 
+
+		The second and third line is just a series of integers representing the face index and the vertex index arrays. 
+
+		The next line contains the vertex position data. 
+
+		The next lines contains the normal data 
+
+		The last line contains the texture coordinates data
+
+	*/
+
 	/* Scene building options:
 
 		1920											width										// options->width:	Set resolution width
@@ -1183,7 +1196,9 @@ int main(int argc, char **argv)
 		1													light intensity					// lightdata_struct->intensity Select the light intensity 1 for distant light 500 for point light
 		Light 2 world no default													// lightdata_struct->light2world Light to world coordinates 
 		if more lights add more
+
 	*/ 
+
 	/* Object building options
 		
 		Object 2 world no default // Read from first readObjectOptionDataFile function 

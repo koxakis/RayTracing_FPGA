@@ -41,17 +41,19 @@ int main(int argc, char const *argv[])
 
 	// Open Gold file pointer
 	fgld = fopen(argv[1], "r");
-	if (fgld == NULL) {
-		perror("fopen");
-		exit(EXIT_FAILURE);
-	}
+	if (fgld == NULL) 
+		{
+			perror("fopen");
+			exit(EXIT_FAILURE);
+		}
 
 	// Open input to check file pointer
 	fin = fopen(argv[2], "r");
-	if (fin == NULL) {
-		perror("fopen");
-		exit(EXIT_FAILURE);
-	}
+	if (fin == NULL) 
+		{
+			perror("fopen");
+			exit(EXIT_FAILURE);
+		}
 
 	// Read input and golden output
 	uint32_t checkreturn;
