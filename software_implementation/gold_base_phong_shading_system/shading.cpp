@@ -1,15 +1,3 @@
-//[header]
-// A simple program to demonstrate some basic shading techniques
-//[/header]
-//[compile]
-// Download the raytracetransform.cpp, geometry.h and teapot.geo file to a folder.
-// Open a shell/terminal, and run the following command where the files are saved:
-//
-// c++ -o shading shading.cpp -std=c++11 -O3
-//
-// Run with: ./shading. Open the file ./out.png in Photoshop or any program
-// reading PPM files.
-//[/compile]
 //[ignore]
 // Copyright (C) 2012  www.scratchapixel.com
 //
@@ -53,8 +41,9 @@
   Pattern 2:  Diagonal checkerboard
   Pattern 3:  Stripled 
   Pattern 4:  Grey checkerboard
+	Pattern 5:	Solid Grey Colour
 */
-#define PATTERN_1
+#define PATTERN_5
 
 static const float kInfinity = std::numeric_limits<float>::max();
 static const float kEpsilon = 1e-8;
@@ -150,98 +139,7 @@ class Object
 	float n = 10;   
 };
 
-// Compute the roots of a quadratic equation
-bool solveQuadratic(const float &a, const float &b, const float &c, float &x0, float &x1)
-{
-	float discr = b * b - 4 * a * c;
-	if (discr < 0) 
-		{
-			return false;
-		}
-	else if (discr == 0) 
-		{
-			x0 = x1 = - 0.5 * b / a;
-		}
-	else 
-		{
-			float q = (b > 0) ?
-				-0.5 * (b + sqrt(discr)) :
-				-0.5 * (b - sqrt(discr));
-			x0 = q / a;
-			x1 = c / q;
-		}
-
-	return true;
-}
-
-// Sphere class. A sphere type object
-class Sphere : public Object
-{
-public:
-	Sphere(const Matrix44f &o2w, const float &r) : Object(o2w), radius(r), radius2(r *r)
-		{
-			o2w.multVecMatrix(Vec3f(0), center);
-			this->name = "sphere";
-		}
-
-	// Ray-sphere intersection test
-	bool intersect(
-			const Vec3f &orig,
-			const Vec3f &dir,
-			float &tNear,
-			uint32_t &triIndex, // not used for sphere
-			Vec2f &uv) const    // not used for sphere
-		{
-			float t0, t1; // solutions for t if the ray intersects
-			// analytic solution
-			Vec3f L = orig - center;
-			float a = dir.dotProduct(dir);
-			float b = 2 * dir.dotProduct(L);
-			float c = L.dotProduct(L) - radius2;
-			if (!solveQuadratic(a, b, c, t0, t1)) return false;
-
-			if (t0 > t1)
-				{
-					std::swap(t0, t1);
-				}
-
-			if (t0 < 0) 
-				{
-					t0 = t1; // if t0 is negative, let's use t1 instead
-					if (t0 < 0)
-						{
-							return false; // both t0 and t1 are negative
-						}
-				}
-
-			tNear = t0;
-
-			return true;
-		}
-	// Set surface data such as normal and texture coordinates at a given point on the surface
-	void getSurfaceProperties(
-			const Vec3f &hitPoint,
-			const Vec3f &viewDirection,
-			const uint32_t &triIndex,
-			const Vec2f &uv,
-			Vec3f &hitNormal,
-			Vec2f &hitTextureCoordinates) const
-		{
-			hitNormal = hitPoint - center;
-			hitNormal.normalize();
-			/*In this particular case, the normal is simular to a point on a unit sphere
-				centred around the origin. We can thus use the normal coordinates to compute
-				the spherical coordinates of Phit.
-				atan2 returns a value in the range [-pi, pi] and we need to remap it to range [0, 1]
-				acosf returns a value in the range [0, pi] and we also need to remap it to the range [0, 1]
-			*/
-			hitTextureCoordinates.x = (1 + atan2(hitNormal.z, hitNormal.x) / M_PI) * 0.5;
-			hitTextureCoordinates.y = acosf(hitNormal.y) / M_PI;
-		}
-	float radius, radius2;
-	Vec3f center;
-};
-
+// Perform the MT Ray triangle intersecion and return u, v coordinates if intersection occurs 
 bool rayTriangleIntersect(
 	const Vec3f &orig, const Vec3f &dir,
 	const Vec3f &v0, const Vec3f &v1, const Vec3f &v2,
@@ -263,6 +161,8 @@ bool rayTriangleIntersect(
 	// x * v.x + y * v.y + z * v.z
   float det = v0v1.dotProduct(pvec);
 
+	// Deactivate CULLING in order to render back facing triangles as well
+	// Useful for secondary rays can be neglected for primary rays 
 #ifdef CULLING
     // if the determinant is negative the triangle is backfacing
     // if the determinant is close to 0, the ray misses the triangle
@@ -388,14 +288,14 @@ void readSceneOptionDataFile (const char *file, Options *options, uint32_t *numo
 						{
 							ss >> lightcolour[i];
 						}
-					lightData->colour.x = lightcolour[0];
-					lightData->colour.y = lightcolour[1];
-					lightData->colour.z = lightcolour[2];
+					lightData[k].colour.x = lightcolour[0];
+					lightData[k].colour.y = lightcolour[1];
+					lightData[k].colour.z = lightcolour[2];
 
 					// Read light intensity
 					float colourintensity;
 					ss >> colourintensity;
-					lightData->intensity = colourintensity;
+					lightData[k].intensity = colourintensity;
 
 					// Read light to world data from file
 					for (uint32_t i=0; i < 16; i++)
@@ -628,6 +528,7 @@ public:
 		{
 			uint32_t j = 0;
 			bool isect = false;
+			// Loop each object's triangles
 			for (uint32_t i = 0; i < numTris; ++i) 
 				{
 					const Vec3f &v0 = P[trisIndex[j]];
@@ -659,6 +560,7 @@ public:
 			Vec3f &hitNormal,
 			Vec2f &hitTextureCoordinates) const
     {
+			// If smooth shading is on use vertex normals for smoother shading 
 			if (smoothShading) 
 				{
 					/* Combine the point barycentric coordinate and the triangle vertex normals 
@@ -838,6 +740,7 @@ public:
 
 enum RayType { kPrimaryRay, kShadowRay };
 
+// Intersected object info
 struct IsectInfo
 {
 	const Object *hitObject = nullptr;
@@ -846,6 +749,7 @@ struct IsectInfo
 	uint32_t index = 0;
 };
 
+// Trace a ray and find the nearest intersection point 
 bool trace(
 	const Vec3f &orig, const Vec3f &dir,
 	const std::vector<std::unique_ptr<Object>> &objects,
@@ -853,11 +757,15 @@ bool trace(
 	RayType rayType = kPrimaryRay)
 {
 	isect.hitObject = nullptr;
+
+	// Iterate the list of objects and check intersection 
 	for (uint32_t k = 0; k < objects.size(); ++k) 
 		{
 			float tNear = kInfinity;
 			uint32_t index = 0;
 			Vec2f uv;
+
+			// For each object iterate it's list of triangles and check the intersecion point's distance  
 			if (objects[k]->intersect(orig, dir, tNear, index, uv) && tNear < isect.tNear)
 				{
 					if (rayType == kShadowRay && objects[k]->type == kReflectionAndRefraction) continue;
@@ -880,9 +788,7 @@ Vec3f reflect(const Vec3f &I, const Vec3f &N)
 	return I - 2 * I.dotProduct(N) * N;
 }
 
-// [comment]
 // Compute refraction direction
-// [/comment]
 Vec3f refract(const Vec3f &I, const Vec3f &N, const float &ior) 
 { 
 	float cosi = clamp(-1, 1, I.dotProduct(N));
@@ -906,7 +812,7 @@ Vec3f refract(const Vec3f &I, const Vec3f &N, const float &ior)
 	return k < 0 ? 0 : eta * I + (eta * cosi - sqrtf(k)) * n; 
 }
 
-// Evaluate Fresnel equation (ration of reflected light for a given incident direction and surface normal)
+// Evaluate Fresnel equation (relation of reflected light for a given incident direction and surface normal)
 void fresnel(const Vec3f &I, const Vec3f &N, const float &ior, float &kr) 
 { 
 	float cosi = clamp(-1, 1, I.dotProduct(N));
@@ -956,130 +862,148 @@ Vec3f castRay(
 	const Options &options,
 	const uint32_t & depth = 0)
 {
+	// If maximum depth has been reached then return the background colour
 	if (depth > options.maxDepth) return options.backgroundColor;
 	Vec3f hitColor = 0;
+
+	// Intersected object info
 	IsectInfo isect;
 
-    if (trace(orig, dir, objects, isect)) 
-			{
-        // Evaluate surface properties (P, N, texture coordinates, etc.)
-        Vec3f hitPoint = orig + dir * isect.tNear;
-        Vec3f hitNormal;
-        Vec2f hitTexCoordinates;
-        isect.hitObject->getSurfaceProperties(hitPoint, dir, isect.index, isect.uv, hitNormal, hitTexCoordinates);
-        switch (isect.hitObject->type) 
-					{
-            // Simulate diffuse object
-            case kDiffuse:
-            	{
-                // Light loop (loop over all lights in the scene and accumulate their contribution)
-                for (uint32_t i = 0; i < lights.size(); ++i) 
-									{
-                    Vec3f lightDir, lightIntensity;
-                    IsectInfo isectShad;
-                    lights[i]->illuminate(hitPoint, lightDir, lightIntensity, isectShad.tNear);
-                    /* we just call the trace function again (line 16) and set the variable vis to false if the trace function 
-                    returns true (the intersection point is in shadow, thus the point is not illuminated by the directional 
-                    light source) and true otherwise (the intersection point is not in shadow, thus the point is illuminated 
-                    by the light source)
-                    */
-                    bool vis = !trace(hitPoint + hitNormal * options.bias, -lightDir, objects, isectShad, kShadowRay);
-                    // compute the pattern
+	// Check if the ray intersects an object proceed with shading calculations
+	if (trace(orig, dir, objects, isect)) 
+		{
+			// Evaluate surface properties (P, N, texture coordinates, etc.)
+			Vec3f hitPoint = orig + dir * isect.tNear;
+			Vec3f hitNormal;
+			Vec2f hitTexCoordinates;
+
+			// Get properties of the object 
+			isect.hitObject->getSurfaceProperties(hitPoint, dir, isect.index, isect.uv, hitNormal, hitTexCoordinates);
+
+			// Depending on the object type use different shading method
+			switch (isect.hitObject->type) 
+				{
+					// Simulate diffuse object
+					case kDiffuse:
+						{
+							// Light loop (loop over all lights in the scene and accumulate their contribution)
+							for (uint32_t i = 0; i < lights.size(); ++i) 
+								{
+									Vec3f lightDir, lightIntensity;
+									IsectInfo isectShad;
+
+									// Evaluate the light contribution according to it's type
+									lights[i]->illuminate(hitPoint, lightDir, lightIntensity, isectShad.tNear);
+									/* we just call the trace function again and set the variable vis to false if the trace function 
+									returns true (the intersection point is in shadow, thus the point is not illuminated by the directional 
+									light source) and true otherwise (the intersection point is not in shadow, thus the point is illuminated 
+									by the light source)
+									*/
+									bool vis = !trace(hitPoint + hitNormal * options.bias, -lightDir, objects, isectShad, kShadowRay);
+									// compute the pattern
 #ifdef PATTERN_1
-                    float scaleS = 20, scaleT = 20;
-                    float pattern = (cos(hitTexCoordinates.y * 2 * M_PI * scaleT) * sin(hitTexCoordinates.x * 2 * M_PI * scaleS) + 1) * 0.5; // isect.hitObject->albedo
+									float scaleS = 20, scaleT = 20;
+									float pattern = (cos(hitTexCoordinates.y * 2 * M_PI * scaleT) * sin(hitTexCoordinates.x * 2 * M_PI * scaleS) + 1) * 0.5; // isect.hitObject->albedo
 #endif
 #ifdef PATTERN_2
-                    float scaleS = 20, scaleT = 20;
-                    float angle = deg2rad(45);
-                    float s = hitTexCoordinates.x * cos(angle) - hitTexCoordinates.y * sin(angle);
-                    float t = hitTexCoordinates.y * cos(angle) + hitTexCoordinates.x * sin(angle);
-                    float pattern = (modulo(s * scaleS) < 0.5) ^ (modulo(t * scaleT) < 0.5);
+									float scaleS = 20, scaleT = 20;
+									float angle = deg2rad(45);
+									float s = hitTexCoordinates.x * cos(angle) - hitTexCoordinates.y * sin(angle);
+									float t = hitTexCoordinates.y * cos(angle) + hitTexCoordinates.x * sin(angle);
+									float pattern = (modulo(s * scaleS) < 0.5) ^ (modulo(t * scaleT) < 0.5);
 #endif
 #ifdef PATTERN_3
-                    float scaleS = 20;
-                    float angle = deg2rad(45);
-                    float s = hitTexCoordinates.x * cos(angle) - hitTexCoordinates.y * sin(angle);
-                    float pattern = (modulo(s * scaleS) < 0.5);
+									float scaleS = 20;
+									float angle = deg2rad(45);
+									float s = hitTexCoordinates.x * cos(angle) - hitTexCoordinates.y * sin(angle);
+									float pattern = (modulo(s * scaleS) < 0.5);
 #endif
 #ifdef PATTERN_4
-                    const int M = 10;
-                    float checker = (fmod(hitTexCoordinates.x * M, 1.0) > 0.5) ^ (fmod(hitTexCoordinates.y * M, 1.0) < 0.5);
-                    float pattern = 0.3 * (1 - checker) + 0.7 * checker;                    
+									const int M = 10;
+									float checker = (fmod(hitTexCoordinates.x * M, 1.0) > 0.5) ^ (fmod(hitTexCoordinates.y * M, 1.0) < 0.5);
+									float pattern = 0.3 * (1 - checker) + 0.7 * checker;                    
 #endif
-                    // If the point is in shadow, the point is black. If vis is set to true, then the color of the point is left unchanged
-                    hitColor += vis * pattern * lightIntensity * std::max(0.f, hitNormal.dotProduct(-lightDir));
-                	}
-                break;
-            	}
-            // Simulate reflection only
-            case kReflection:
-            	{
-                Vec3f R = reflect(dir, hitNormal);
-                R.normalize();
-                break;
-            	}
-            // Simulate transparent object (reflection/transmission/fresnel)
-            case kReflectionAndRefraction:
-            	{
-                Vec3f refractionColor = 0, reflectionColor = 0;
-                // compute fresnel
-                float kr;
-                fresnel(dir, hitNormal, isect.hitObject->ior, kr);
-                bool outside = dir.dotProduct(hitNormal) < 0;
-                Vec3f bias = options.bias * hitNormal;
-                // compute refraction if it is not a case of total internal reflection
-                if (kr < 1) 
-									{
-                    Vec3f refractionDirection = refract(dir, hitNormal, isect.hitObject->ior).normalize();
-                    Vec3f refractionRayOrig = outside ? hitPoint - bias : hitPoint + bias;
-                    refractionColor = castRay(refractionRayOrig, refractionDirection, objects, lights, options, depth + 1);
-                	}
-            
-                Vec3f reflectionDirection = reflect(dir, hitNormal).normalize();
-                Vec3f reflectionRayOrig = outside ? hitPoint + bias : hitPoint - bias;
-                reflectionColor = castRay(reflectionRayOrig, reflectionDirection, objects, lights, options, depth + 1);
-                
-                // mix the two
-                hitColor += reflectionColor * kr + refractionColor * (1 - kr);
-                break;
-            	}
-            case kPhong:
-            	{
-                // Light loop (loop over all lights in the scene and accumulate their contribution)
-                Vec3f diffuse = 0, specular = 0;
-                for (uint32_t i = 0; i < lights.size(); ++i) 
-									{
-                    Vec3f lightDir, lightIntensity;
-                    IsectInfo isectShad;
-                    lights[i]->illuminate(hitPoint, lightDir, lightIntensity, isectShad.tNear);
-                    /* we just call the trace function again (line 16) and set the variable vis to false if the trace function 
-										returns true (the intersection point is in shadow, thus the point is not illuminated by the directional 
-										light source) and true otherwise (the intersection point is not in shadow, thus the point is illuminated 
-										by the light source)
-                    */
-                    bool vis = !trace(hitPoint + hitNormal * options.bias, -lightDir, objects, isectShad, kShadowRay);
-                    
-                    // compute the diffuse component
-                    diffuse += vis * isect.hitObject->albedo * lightIntensity * std::max(0.f, hitNormal.dotProduct(-lightDir));
-                    
-                    // compute the specular component
-                    // what would be the ideal reflection direction for this light ray
-                    Vec3f R = reflect(lightDir, hitNormal);
-                    specular += vis * lightIntensity * std::pow(std::max(0.f, R.dotProduct(-dir)), isect.hitObject->n);
-                	}
-                hitColor = diffuse * isect.hitObject->Kd + specular * isect.hitObject->Ks;
-                //std::cerr << hitColor << std::endl;
-                break;
-            	}
-            default:
-            	break;
-        	}
-    	}
-  	else 
-			{
-				hitColor = options.backgroundColor;
-    	}
+#ifdef PATTERN_5
+									float pattern = 0.9;
+#endif
+									// If the point is in shadow, the point is black. If vis is set to true, then the color of the point is left unchanged
+									hitColor += vis * pattern * lightIntensity * std::max(0.f, hitNormal.dotProduct(-lightDir));
+								}
+							break;
+						}
+					// Simulate reflection only
+					case kReflection:
+						{
+							// Use the ray direction to find the hit normal
+							Vec3f R = reflect(dir, hitNormal);
+							R.normalize();
+							break;
+						}
+					// Simulate transparent object (reflection/transmission/fresnel)
+					case kReflectionAndRefraction:
+						{
+							Vec3f refractionColor = 0, reflectionColor = 0;
+							// compute fresnel
+							float kr;
+
+							fresnel(dir, hitNormal, isect.hitObject->ior, kr);
+
+							bool outside = dir.dotProduct(hitNormal) < 0;
+							Vec3f bias = options.bias * hitNormal;
+							// compute refraction if it is not a case of total internal reflection
+							if (kr < 1) 
+								{
+									// Culculate refraction direction
+									Vec3f refractionDirection = refract(dir, hitNormal, isect.hitObject->ior).normalize();
+									// Subtrack or add bias depending if the ray is outside or not
+									Vec3f refractionRayOrig = outside ? hitPoint - bias : hitPoint + bias;
+									refractionColor = castRay(refractionRayOrig, refractionDirection, objects, lights, options, depth + 1);
+								}
+					
+							Vec3f reflectionDirection = reflect(dir, hitNormal).normalize();
+							Vec3f reflectionRayOrig = outside ? hitPoint + bias : hitPoint - bias;
+							reflectionColor = castRay(reflectionRayOrig, reflectionDirection, objects, lights, options, depth + 1);
+							
+							// mix the two
+							hitColor += reflectionColor * kr + refractionColor * (1 - kr);
+							break;
+						}
+					case kPhong:
+						{
+							Vec3f diffuse = 0, specular = 0;
+							// Light loop (loop over all lights in the scene and accumulate their contribution)
+							for (uint32_t i = 0; i < lights.size(); ++i) 
+								{
+									Vec3f lightDir, lightIntensity;
+									IsectInfo isectShad;
+									lights[i]->illuminate(hitPoint, lightDir, lightIntensity, isectShad.tNear);
+									/* we just call the trace function again and set the variable vis to false if the trace function 
+									returns true (the intersection point is in shadow, thus the point is not illuminated by the directional 
+									light source) and true otherwise (the intersection point is not in shadow, thus the point is illuminated 
+									by the light source)
+									*/
+									bool vis = !trace(hitPoint + hitNormal * options.bias, -lightDir, objects, isectShad, kShadowRay);
+									
+									// compute the diffuse component
+									diffuse += vis * isect.hitObject->albedo * lightIntensity * std::max(0.f, hitNormal.dotProduct(-lightDir));
+									
+									// compute the specular component
+									// what would be the ideal reflection direction for this light ray
+									Vec3f R = reflect(lightDir, hitNormal);
+									specular += vis * lightIntensity * std::pow(std::max(0.f, R.dotProduct(-dir)), isect.hitObject->n);
+								}
+							hitColor = diffuse * isect.hitObject->Kd + specular * isect.hitObject->Ks;
+							//std::cerr << hitColor << std::endl;
+							break;
+						}
+					default:
+						break;
+				}
+		}
+	else 
+		{
+			hitColor = options.backgroundColor;
+		}
   return hitColor;
 }
 
@@ -1091,8 +1015,10 @@ void render(
 	const std::vector<std::unique_ptr<Object>> &objects,
 	const std::vector<std::unique_ptr<Light>> &lights)
 {
+	// Allocate memory for the frame buffer
 	std::unique_ptr<Vec3f []> framebuffer(new Vec3f[options.width * options.height]);
 	Vec3f *pix = framebuffer.get();
+
 	/* image scale 
 	define the field of view of the camera in terms of the angle α, and multiply the screen pixel 
 	coordinates with the result of the tangent of this angle divided by two ( go from degres to rad )
@@ -1100,9 +1026,12 @@ void render(
 	*/  
 	float scale = tan(deg2rad(options.fov * 0.5));
 	float imageAspectRatio = options.width / (float)options.height;
+
+	// Culculate the world origin according to the camera to world matrix
 	Vec3f orig;
 	options.cameraToWorld.multVecMatrix(Vec3f(0), orig);
 
+	// Start timer 
 	auto timeStart = std::chrono::high_resolution_clock::now();
 
 	for (uint32_t j = 0; j < options.height; ++j) 
@@ -1125,6 +1054,7 @@ void render(
 					float x = (2 * (i + 0.5) / (float)options.width - 1) * imageAspectRatio * scale;
 					float y = (1 - 2 * (j + 0.5) / (float)options.height) * scale;
 					Vec3f dir;
+					// Multiply the pixel coordinates with the camera to world matrix to generate the rays from the desired point in space
 					options.cameraToWorld.multDirMatrix(Vec3f(x, y, -1), dir);
 					// Normalization can be redused 
 					// write the direction as a unit vector
@@ -1134,11 +1064,14 @@ void render(
 						x *= factor, y *= factor, z *= factor; }
 					*/
 					dir.normalize();
+					// Take the arguments Ray origin, direction, object list, light list and scene option
 					*(pix++) = castRay(orig, dir, objects, lights, options);
 				}
+			// Print the percentage of completion based on height 
 			fprintf(stderr, "\r%3d%c", uint32_t(j / (float)options.height * 100), '%');
 		}
 
+	// Stop timer and messure time
 	auto timeEnd = std::chrono::high_resolution_clock::now();
 	auto passedTime = std::chrono::duration<double, std::milli>(timeEnd - timeStart).count();
 	fprintf(stderr, "\rDone: %.2f (sec)\n", passedTime / 1000);
@@ -1248,20 +1181,20 @@ int main(int argc, char **argv)
 
 	// Read scene data from file
 	readSceneOptionDataFile(argv[1], &options, &numoflights);
-	
 	// Iterate the light sources and push the appropriate light type
 	for (uint32_t i = 0; i < numoflights; i++)
 		{
 			// If the light source is distand light push the l2w array to a new Distand light unique ptr
-			if ( lightData[i].lighttype == 0)
+			if ( lightData[i].lighttype == (uint32_t)0)
 				{
 					lights.push_back(std::unique_ptr<Light>(new DistantLight(lightData[i].light2world, lightData[i].colour, lightData[i].intensity )));
 				}
 			// If the light source is point light push the l2w array to a new Distand light unique ptr along with the 
-			else if (lightData[i].lighttype == 1)
+			else if (lightData[i].lighttype == (uint32_t)1)
 				{
-					lights.push_back(std::unique_ptr<Light>(new PointLight(lightData[i].light2world,  lightData[i].colour, lightData[i].intensity )));				
-				}		
+					//std::cout << "LIGHT TYPE " << lightData[i].lighttype << "\nLIGHT 2 WORLD \n" << lightData[i].light2world << "\n LIGHT COLOUR " << lightData[i].colour << "\n INTENSITY " << lightData[i].intensity << std::endl;
+					lights.push_back(std::unique_ptr<Light>(new PointLight( lightData[i].light2world, lightData[i].colour, lightData[i].intensity )));
+				}		 
 		}
 	
 	Matrix44f object2world;

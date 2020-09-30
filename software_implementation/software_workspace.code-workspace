@@ -2,6 +2,9 @@
 	"folders": [
 		{
 			"path": "."
+		},
+		{
+			"path": "../../../../../../../home/nikolas/Documents/light_test"
 		}
 	],
 	"settings": {

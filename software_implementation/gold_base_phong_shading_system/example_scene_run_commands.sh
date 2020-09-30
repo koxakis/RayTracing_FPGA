@@ -14,6 +14,10 @@ echo -e "Scene 3:  4 Glasses refraction\n"
 ./shading Glasses_scene/scene.sod 2 Glasses_scene/glasses.geo Glasses_scene/glasses.ood Glasses_scene/backdrop1.geo Glasses_scene/backdrop1.ood
 ./check_out Glasses_scene/gold.ppm out.ppm
 
+#Scene 4:  4 Glasses refraction Point light
+./shading Glasses_point_scene/scene.sod 2 Glasses_point_scene/glasses.geo Glasses_point_scene/glasses.ood Glasses_point_scene/backdrop1.geo Glasses_point_scene/backdrop1.ood
+#BUILD GOLD SAMPLES	
+
 #Scene 4:  Horizontal Plane
 echo -e "Scene 4:  Horizontal Plane\n"
 ./shading Simple_plane2_scene/scene.sod 1 Simple_plane2_scene/plane.geo Simple_plane2_scene/plane.ood
@@ -24,5 +28,5 @@ echo -e "Scene 5:  Utah Teapod\n"
 ./shading Utah_teapot_scene/teapot.sod 2 Utah_teapot_scene/teapot.geo Utah_teapot_scene/teapot.ood Utah_teapot_scene/plane.geo Utah_teapot_scene/plane.ood
 ./check_out Utah_teapot_scene/gold.ppm out.ppm
 
-#Scene 6:	Balls
-#TBA
+#Scene 6:	Ball
+./shading All_materials_scene/scene.sod 5 All_materials_scene/backdrop1.geo All_materials_scene/backdrop1.ood All_materials_scene/backdrop1.geo All_materials_scene/backdrop2.ood All_materials_scene/backdrop1.geo All_materials_scene/backdrop3.ood All_materials_scene/glasses.geo All_materials_scene/glasses.ood All_materials_scene/cylinder.geo All_materials_scene/cylinder.ood
