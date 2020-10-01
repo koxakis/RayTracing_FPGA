@@ -19,6 +19,8 @@ mv gold.ppm Glasses_scene/gold.ppm
 #Scene 4:  4 Glasses refraction Point light
 echo -e "Scene 4:  4 Glasses refraction Point light\n"
 ./shading Glasses_point_scene/scene.sod 2 Glasses_point_scene/glasses.geo Glasses_point_scene/glasses.ood Glasses_point_scene/backdrop1.geo Glasses_point_scene/backdrop1.ood
+mv out.ppm gold.ppm
+mv gold.ppm Glasses_point_scene/gold.ppm
 
 #Scene 5:  Horizontal Plane
 echo -e "Scene 5:  Horizontal Plane\n"
@@ -32,5 +34,8 @@ echo -e "Scene 6:  Utah Teapod\n"
 mv out.ppm gold.ppm
 mv gold.ppm Utah_teapot_scene/gold.ppm
 
-#Scene 7:	Utah Teapod Point lights 
-#TBA
+#Scene 7: 
+echo -e "Scene 7:  All MaterialS \n" 
+./shading All_materials_scene/scene.sod 5 All_materials_scene/backdrop1.geo All_materials_scene/backdrop1.ood All_materials_scene/backdrop1.geo All_materials_scene/backdrop2.ood All_materials_scene/backdrop1.geo All_materials_scene/backdrop3.ood All_materials_scene/glasses.geo All_materials_scene/glasses.ood All_materials_scene/cylinder.geo All_materials_scene/cylinder.ood
+mv out.ppm gold.ppm
+mv gold.ppm All_materials_scene/gold.ppm
