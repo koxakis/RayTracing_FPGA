@@ -36,6 +36,6 @@ mv gold.ppm Utah_teapot_scene/gold.ppm
 
 #Scene 7: 
 echo -e "Scene 7:  All MaterialS \n" 
-./shading All_materials_scene/scene.sod 5 All_materials_scene/backdrop1.geo All_materials_scene/backdrop1.ood All_materials_scene/backdrop1.geo All_materials_scene/backdrop2.ood All_materials_scene/backdrop1.geo All_materials_scene/backdrop3.ood All_materials_scene/glasses.geo All_materials_scene/glasses.ood All_materials_scene/cylinder.geo All_materials_scene/cylinder.ood
+./shading All_materials_scene/scene.sod 7 All_materials_scene/backdrop1.geo All_materials_scene/backdrop1.ood All_materials_scene/backdrop1.geo All_materials_scene/backdrop2.ood All_materials_scene/backdrop1.geo All_materials_scene/backdrop3.ood All_materials_scene/glasses.geo All_materials_scene/glasses.ood All_materials_scene/cylinder.geo All_materials_scene/cylinder.ood All_materials_scene/teapot.geo All_materials_scene/teapot1.ood All_materials_scene/teapot.geo All_materials_scene/teapot2.ood
 mv out.ppm gold.ppm
 mv gold.ppm All_materials_scene/gold.ppm

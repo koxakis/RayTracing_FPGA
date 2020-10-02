@@ -31,5 +31,5 @@ echo -e "Scene 6:  Utah Teapod\n"
 
 #Scene 7:	All MaterialS 
 echo -e "Scene 7:  All MaterialS \n"
-./shading All_materials_scene/scene.sod 5 All_materials_scene/backdrop1.geo All_materials_scene/backdrop1.ood All_materials_scene/backdrop1.geo All_materials_scene/backdrop2.ood All_materials_scene/backdrop1.geo All_materials_scene/backdrop3.ood All_materials_scene/glasses.geo All_materials_scene/glasses.ood All_materials_scene/cylinder.geo All_materials_scene/cylinder.ood
+./shading All_materials_scene/scene.sod 7 All_materials_scene/backdrop1.geo All_materials_scene/backdrop1.ood All_materials_scene/backdrop1.geo All_materials_scene/backdrop2.ood All_materials_scene/backdrop1.geo All_materials_scene/backdrop3.ood All_materials_scene/glasses.geo All_materials_scene/glasses.ood All_materials_scene/cylinder.geo All_materials_scene/cylinder.ood All_materials_scene/teapot.geo All_materials_scene/teapot1.ood All_materials_scene/teapot.geo All_materials_scene/teapot2.ood
 ./check_out All_materials_scene/gold.ppm out.ppm

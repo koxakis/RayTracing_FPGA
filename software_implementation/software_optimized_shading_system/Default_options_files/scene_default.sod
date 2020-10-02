@@ -1,0 +1,13 @@
+1920											width										// Image width
+1080											height									// Image height
+90												FOV											// Image FOV
+0.235294 0.67451 0.843137	kDefaultBackgroundColor	// Default background colour
+Camera 2 world no default 												// Camera to world
+0.0001										Bias										// Shadow Bias
+4													Max Depth								// Max depth for reflect refract interactions
+1													number of lights				// Number of lights in the scene
+0													type of light 					// Type of light 0 distant 1 point
+1 1 1											light colour 						// Select the light colour either int or Vec3f
+1													light intensity					// Select the light intensity 1 for distant light 500 for point light
+Light 2 world no default													// Light to world coordinates 
+if more lights add pair 
