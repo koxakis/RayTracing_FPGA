@@ -1,0 +1,33 @@
+INFO: [HLS 200-10] Running '/run/media/nikolas/Linux_Data/Programs/Xilinx/Vivado/2020.1/bin/unwrapped/lnx64.o/vivado_hls'
+INFO: [HLS 200-10] For user 'nikolas' on host 'hal9000' (Linux_x86_64 version 5.8.13-arch1-1) on Tue Oct 06 20:04:39 EEST 2020
+INFO: [HLS 200-10] On os "Arch Linux"
+INFO: [HLS 200-10] In directory '/run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/ray_triangle_intersection_HLS'
+Sourcing Tcl script '/run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/ray_triangle_intersection_HLS/RayTriangleIntersection/BaseSolution/cosim.tcl'
+INFO: [HLS 200-10] Opening project '/run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/ray_triangle_intersection_HLS/RayTriangleIntersection'.
+INFO: [HLS 200-10] Opening solution '/run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/ray_triangle_intersection_HLS/RayTriangleIntersection/BaseSolution'.
+INFO: [SYN 201-201] Setting up clock 'default' with a period of 10ns.
+INFO: [HLS 200-10] Setting target device to 'xc7z020-clg484-1'
+INFO: [COSIM 212-47] Using XSIM for RTL simulation.
+INFO: [COSIM 212-14] Instrumenting C test bench ...
+   Build using "/run/media/nikolas/Linux_Data/Programs/Xilinx/Vivado/2020.1/tps/lnx64/gcc-6.2.0/bin/g++"
+   Compiling apatb_rayTriangleIntersect.cpp
+   Compiling rayTriangleIntersection.cpp_pre.cpp.tb.cpp
+   Compiling shading.cpp_pre.cpp.tb.cpp
+   Generating cosim.tv.exe
+INFO: [COSIM 212-302] Starting C TB testing ... 
+terminate called without an active exception
+ERROR: [COSIM 212-360] Aborting co-simulation: C TB simulation failed.
+ERROR: [COSIM 212-320] C TB testing failed, stop generating test vectors. Please check C TB or re-run cosim.
+ERROR: [COSIM 212-5] *** C/RTL co-simulation file generation failed. ***
+ERROR: [COSIM 212-4] *** C/RTL co-simulation finished: FAIL ***
+command 'ap_source' returned error code
+    while executing
+"source /run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/ray_triangle_intersection_HLS/RayTriangleIntersection/BaseSolut..."
+    invoked from within
+"hls::main /run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/ray_triangle_intersection_HLS/RayTriangleIntersection/BaseSo..."
+    ("uplevel" body line 1)
+    invoked from within
+"uplevel 1 hls::main {*}$args"
+    (procedure "hls_proc" line 5)
+    invoked from within
+"hls_proc $argv"
