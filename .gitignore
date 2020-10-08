@@ -1,6 +1,11 @@
 # Images
 *.ppm
 
+# HLS Files
+hardware_implementation/ray_triangle_intersection_HLS/RayTriangleIntersection/BaseSolution/.autopilot
+hardware_implementation/ray_triangle_intersection_HLS/RayTriangleIntersection/BaseSolution/.debug
+hardware_implementation/ray_triangle_intersection_HLS/RayTriangleIntersection/BaseSolution/.tcls
+hardware_implementation/ray_triangle_intersection_HLS/RayTriangleIntersection/BaseSolution/sim
 # Executables
 shading
 check_out
