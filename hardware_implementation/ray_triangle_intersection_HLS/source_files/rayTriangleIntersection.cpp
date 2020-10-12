@@ -1,11 +1,26 @@
 #include "geometry.h"
 
-// Perform the MT Ray triangle intersecion and return u, v coordinates if intersection occurs 
-bool rayTriangleIntersect(
-	const Vec3f &orig, const Vec3f &dir,
+// Perform the MT Ray triangle intersecion and return u, v coordinates if intersection occurs
+bool rayTI(
+	const Vec3f &dir, const Vec3f &orig,
 	const Vec3f &v0, const Vec3f &v1, const Vec3f &v2,
 	float &t, float &u, float &v)
 {
+// Result ports
+#pragma HLS INTERFACE s_axilite port=return bundle=ret_bundle
+#pragma HLS INTERFACE m_axi depth=32 port=v offset=slave bundle=res_bundle
+#pragma HLS INTERFACE m_axi depth=32 port=u offset=slave bundle=res_bundle
+#pragma HLS INTERFACE m_axi depth=32 port=t offset=slave bundle=res_bundle
+
+// Triangle ports
+#pragma HLS INTERFACE m_axi depth=128 port=v2 offset=slave bundle=triangle_bundle
+#pragma HLS INTERFACE m_axi depth=128 port=v1 offset=slave bundle=triangle_bundle
+#pragma HLS INTERFACE m_axi depth=128 port=v0 offset=slave bundle=triangle_bundle
+
+// Ray ports
+#pragma HLS INTERFACE m_axi depth=128 port=orig offset=slave bundle=ray_bundle
+#pragma HLS INTERFACE m_axi depth=128 port=dir offset=slave bundle=ray_bundle
+
 	static const float kEpsilon = 1e-8;
 	// find if the ray intersects the triangle 
 

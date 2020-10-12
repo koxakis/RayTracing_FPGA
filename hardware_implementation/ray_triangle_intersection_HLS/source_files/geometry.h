@@ -79,6 +79,7 @@ public:
     Vec3() : x(T(0)), y(T(0)), z(T(0)) {}
     Vec3(T xx) : x(xx), y(xx), z(xx) {}
     Vec3(T xx, T yy, T zz) : x(xx), y(yy), z(zz) {}
+    float pading;
     
     // const operators
     Vec3 operator + (const Vec3 &v) const

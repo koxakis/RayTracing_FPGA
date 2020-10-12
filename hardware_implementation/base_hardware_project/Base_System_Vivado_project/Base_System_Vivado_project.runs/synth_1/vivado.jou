@@ -1,0 +1,12 @@
+#-----------------------------------------------------------
+# Vivado v2020.1 (64-bit)
+# SW Build 2902540 on Wed May 27 19:54:35 MDT 2020
+# IP Build 2902112 on Wed May 27 22:43:36 MDT 2020
+# Start of session at: Mon Oct 12 12:28:23 2020
+# Process ID: 13175
+# Current directory: /run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/base_hardware_project/Base_System_Vivado_project/Base_System_Vivado_project.runs/synth_1
+# Command line: vivado -log Base_Block_Diagram_wrapper.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source Base_Block_Diagram_wrapper.tcl
+# Log file: /run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/base_hardware_project/Base_System_Vivado_project/Base_System_Vivado_project.runs/synth_1/Base_Block_Diagram_wrapper.vds
+# Journal file: /run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/base_hardware_project/Base_System_Vivado_project/Base_System_Vivado_project.runs/synth_1/vivado.jou
+#-----------------------------------------------------------
+source Base_Block_Diagram_wrapper.tcl -notrace

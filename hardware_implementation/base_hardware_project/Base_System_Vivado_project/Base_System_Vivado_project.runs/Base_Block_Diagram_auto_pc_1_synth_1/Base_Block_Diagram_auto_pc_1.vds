@@ -1,0 +1,17 @@
+#-----------------------------------------------------------
+# Vivado v2020.1 (64-bit)
+# SW Build 2902540 on Wed May 27 19:54:35 MDT 2020
+# IP Build 2902112 on Wed May 27 22:43:36 MDT 2020
+# Start of session at: Mon Oct 12 12:27:26 2020
+# Process ID: 12645
+# Current directory: /run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/base_hardware_project/Base_System_Vivado_project/Base_System_Vivado_project.runs/Base_Block_Diagram_auto_pc_1_synth_1
+# Command line: vivado -log Base_Block_Diagram_auto_pc_1.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source Base_Block_Diagram_auto_pc_1.tcl
+# Log file: /run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/base_hardware_project/Base_System_Vivado_project/Base_System_Vivado_project.runs/Base_Block_Diagram_auto_pc_1_synth_1/Base_Block_Diagram_auto_pc_1.vds
+# Journal file: /run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/base_hardware_project/Base_System_Vivado_project/Base_System_Vivado_project.runs/Base_Block_Diagram_auto_pc_1_synth_1/vivado.jou
+#-----------------------------------------------------------
+source Base_Block_Diagram_auto_pc_1.tcl -notrace
+INFO: [IP_Flow 19-234] Refreshing IP repositories
+INFO: [IP_Flow 19-1700] Loaded user IP repository '/run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/ray_triangle_intersection_HLS/RayTriangleIntersection/BaseSolution/impl'.
+INFO: [IP_Flow 19-2313] Loaded Vivado IP repository '/run/media/nikolas/Linux_Data/Programs/Xilinx/Vivado/2020.1/data/ip'.
+INFO: [IP_Flow 19-4838] Using cached IP synthesis design for IP Base_Block_Diagram_auto_pc_1, cache-ID = 0ceb0e0e6cdf5ff7.
+INFO: [Common 17-206] Exiting Vivado at Mon Oct 12 12:27:57 2020...

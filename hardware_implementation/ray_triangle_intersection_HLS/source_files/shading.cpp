@@ -381,7 +381,7 @@ void readObjectOptionDataFile(const char *file, Object *mesh)
 	ifs.close();	
 }
 // Perform the MT Ray triangle intersecion and return u, v coordinates if intersection occurs 
-bool rayTriangleIntersect(
+bool rayTI(
 	const Vec3f &orig, const Vec3f &dir,
 	const Vec3f &v0, const Vec3f &v1, const Vec3f &v2,
 	float &t, float &u, float &v);
@@ -488,7 +488,7 @@ public:
 					/* a ray may intersect more than one triangle from the mesh therefore we also 
 					need to keep track of the nearest intersection distance as we iterate over the triangles.            
 					*/
-					if (rayTriangleIntersect(orig, dir, v0, v1, v2, t, u, v) && t < tNear) 
+					if (rayTI(orig, dir, v0, v1, v2, t, u, v) && t < tNear)
 						{
 							tNear = t;
 							uv.x = u;

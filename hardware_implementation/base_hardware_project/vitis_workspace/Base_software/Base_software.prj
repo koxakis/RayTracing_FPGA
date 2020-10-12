@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="ASCII"?>
+<sdkproject:SdkProject xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:sdkproject="http://www.xilinx.com/sdkproject" name="Base_software" location="/run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/base_hardware_project/vitis_workspace/Base_software" platform="/run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/base_hardware_project/vitis_workspace/Base_Block_Diagram_wrapper/export/Base_Block_Diagram_wrapper/Base_Block_Diagram_wrapper.xpfm" platformUID="xilinx:zed::0.0(custom)" systemProject="Base_software_system" sysConfig="Base_Block_Diagram_wrapper" runtime="cpp" cpu="domain_ps7_cortexa9_0" cpuInstance="ps7_cortexa9_0" os="standalone" mssSignature="8c09d938bed3751ea86292bee15ee90d">
+  <configuration name="Debug" id="xilinx.gnu.armv7.exe.debug.498339637">
+    <configBuildOptions xsi:type="sdkproject:SdkOptions"/>
+    <lastBuildOptions xsi:type="sdkproject:SdkOptions"/>
+  </configuration>
+  <configuration name="Release" id="xilinx.gnu.armv7.exe.release.885750078" dirty="true">
+    <configBuildOptions xsi:type="sdkproject:SdkOptions"/>
+  </configuration>
+  <template appTemplateName="hello_world"/>
+</sdkproject:SdkProject>

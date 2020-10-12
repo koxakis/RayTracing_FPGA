@@ -1,17 +1,31 @@
 # Images
 *.ppm
 
+# Vivado
+.jou
+.str
+.log
+
 # HLS Files
-hardware_implementation/ray_triangle_intersection_HLS/RayTriangleIntersection/BaseSolution/.autopilot
-hardware_implementation/ray_triangle_intersection_HLS/RayTriangleIntersection/BaseSolution/.debug
-hardware_implementation/ray_triangle_intersection_HLS/RayTriangleIntersection/BaseSolution/.tcls
-hardware_implementation/ray_triangle_intersection_HLS/RayTriangleIntersection/BaseSolution/sim
+hardware_implementation/ray_triangle_intersection_HLS/RayTriangleIntersection/BaseSolution/.autopilot/
+hardware_implementation/ray_triangle_intersection_HLS/RayTriangleIntersection/BaseSolution/.debug/
+hardware_implementation/ray_triangle_intersection_HLS/RayTriangleIntersection/BaseSolution/.tcls/
+hardware_implementation/ray_triangle_intersection_HLS/RayTriangleIntersection/BaseSolution/sim/
+hardware_implementation/ray_triangle_intersection_HLS/RayTriangleIntersection/.apc/
+
+# Vivado Files
+hardware_implementation/Base_System_Vivado_project/Base_System_Vivado_project.cache/
+hardware_implementation/Base_System_Vivado_project/Base_System_Vivado_project.runs/
+
+# Vitis Files
+hardware_implementation/vitis_workspace/.metadata/
+
 # Executables
 shading
 check_out
 # Prerequisites
 *.d
-
+*.log
 # Compiled Object files
 *.slo
 *.lo

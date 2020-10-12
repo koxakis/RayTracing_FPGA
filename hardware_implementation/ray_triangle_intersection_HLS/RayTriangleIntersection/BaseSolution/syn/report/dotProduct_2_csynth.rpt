@@ -1,0 +1,191 @@
+
+
+================================================================
+== Vivado HLS Report for 'dotProduct_2'
+================================================================
+* Date:           Mon Oct 12 12:09:08 2020
+
+* Version:        2020.1 (Build 2897737 on Wed May 27 20:21:37 MDT 2020)
+* Project:        RayTriangleIntersection
+* Solution:       BaseSolution
+* Product family: zynq
+* Target device:  xc7z020-clg484-1
+
+
+================================================================
+== Performance Estimates
+================================================================
++ Timing: 
+    * Summary: 
+    +--------+----------+----------+------------+
+    |  Clock |  Target  | Estimated| Uncertainty|
+    +--------+----------+----------+------------+
+    |ap_clk  | 10.00 ns | 8.750 ns |   1.25 ns  |
+    +--------+----------+----------+------------+
+
++ Latency: 
+    * Summary: 
+    +---------+---------+----------+----------+-----+-----+---------+
+    |  Latency (cycles) |  Latency (absolute) |  Interval | Pipeline|
+    |   min   |   max   |    min   |    max   | min | max |   Type  |
+    +---------+---------+----------+----------+-----+-----+---------+
+    |       22|       22| 0.220 us | 0.220 us |   22|   22|   none  |
+    +---------+---------+----------+----------+-----+-----+---------+
+
+    + Detail: 
+        * Instance: 
+        N/A
+
+        * Loop: 
+        N/A
+
+
+
+================================================================
+== Utilization Estimates
+================================================================
+* Summary: 
++-----------------+---------+-------+--------+-------+-----+
+|       Name      | BRAM_18K| DSP48E|   FF   |  LUT  | URAM|
++-----------------+---------+-------+--------+-------+-----+
+|DSP              |        -|      -|       -|      -|    -|
+|Expression       |        -|      -|       -|      -|    -|
+|FIFO             |        -|      -|       -|      -|    -|
+|Instance         |        -|      8|     491|   1032|    -|
+|Memory           |        -|      -|       -|      -|    -|
+|Multiplexer      |        -|      -|       -|    221|    -|
+|Register         |        -|      -|     247|      -|    -|
++-----------------+---------+-------+--------+-------+-----+
+|Total            |        0|      8|     738|   1253|    0|
++-----------------+---------+-------+--------+-------+-----+
+|Available        |      280|    220|  106400|  53200|    0|
++-----------------+---------+-------+--------+-------+-----+
+|Utilization (%)  |        0|      3|   ~0   |      2|    0|
++-----------------+---------+-------+--------+-------+-----+
+
++ Detail: 
+    * Instance: 
+    +--------------------------+----------------------+---------+-------+-----+-----+-----+
+    |         Instance         |        Module        | BRAM_18K| DSP48E|  FF | LUT | URAM|
+    +--------------------------+----------------------+---------+-------+-----+-----+-----+
+    |rayTI_fadd_32ns_3dEe_U36  |rayTI_fadd_32ns_3dEe  |        0|      2|  205|  390|    0|
+    |rayTI_fmul_32ns_3cud_U37  |rayTI_fmul_32ns_3cud  |        0|      3|  143|  321|    0|
+    |rayTI_fmul_32ns_3cud_U38  |rayTI_fmul_32ns_3cud  |        0|      3|  143|  321|    0|
+    +--------------------------+----------------------+---------+-------+-----+-----+-----+
+    |Total                     |                      |        0|      8|  491| 1032|    0|
+    +--------------------------+----------------------+---------+-------+-----+-----+-----+
+
+    * DSP48E: 
+    N/A
+
+    * Memory: 
+    N/A
+
+    * FIFO: 
+    N/A
+
+    * Expression: 
+    N/A
+
+    * Multiplexer: 
+    +---------------------------+-----+-----------+-----+-----------+
+    |            Name           | LUT | Input Size| Bits| Total Bits|
+    +---------------------------+-----+-----------+-----+-----------+
+    |Vec3_float_x_blk_n_AR      |    9|          2|    1|          2|
+    |Vec3_float_x_blk_n_R       |    9|          2|    1|          2|
+    |ap_NS_fsm                  |  113|         24|    1|         24|
+    |ap_return                  |    9|          2|   32|         64|
+    |grp_fu_112_p0              |   15|          3|   32|         96|
+    |grp_fu_112_p1              |   15|          3|   32|         96|
+    |grp_fu_116_p0              |   15|          3|   32|         96|
+    |grp_fu_116_p1              |   15|          3|   32|         96|
+    |m_axi_Vec3_float_x_ARADDR  |   21|          4|   32|        128|
+    +---------------------------+-----+-----------+-----+-----------+
+    |Total                      |  221|         46|  195|        604|
+    +---------------------------+-----+-----------+-----+-----------+
+
+    * Register: 
+    +----------------------------+----+----+-----+-----------+
+    |            Name            | FF | LUT| Bits| Const Bits|
+    +----------------------------+----+----+-----+-----------+
+    |Vec3_x_addr_8_read_reg_189  |  32|   0|   32|          0|
+    |Vec3_x_addr_9_read_reg_184  |  32|   0|   32|          0|
+    |Vec3_x_addr_read_reg_209    |  32|   0|   32|          0|
+    |ap_CS_fsm                   |  23|   0|   23|          0|
+    |ap_return_preg              |  32|   0|   32|          0|
+    |reg_127                     |  32|   0|   32|          0|
+    |tmp_11_reg_219              |  32|   0|   32|          0|
+    |tmp_s_reg_204               |  32|   0|   32|          0|
+    +----------------------------+----+----+-----+-----------+
+    |Total                       | 247|   0|  247|          0|
+    +----------------------------+----+----+-----+-----------+
+
+
+
+================================================================
+== Interface
+================================================================
+* Summary: 
++-----------------------------+-----+-----+------------+---------------------+--------------+
+|          RTL Ports          | Dir | Bits|  Protocol  |    Source Object    |    C Type    |
++-----------------------------+-----+-----+------------+---------------------+--------------+
+|ap_clk                       |  in |    1| ap_ctrl_hs |     dotProduct.2    | return value |
+|ap_rst                       |  in |    1| ap_ctrl_hs |     dotProduct.2    | return value |
+|ap_start                     |  in |    1| ap_ctrl_hs |     dotProduct.2    | return value |
+|ap_done                      | out |    1| ap_ctrl_hs |     dotProduct.2    | return value |
+|ap_idle                      | out |    1| ap_ctrl_hs |     dotProduct.2    | return value |
+|ap_ready                     | out |    1| ap_ctrl_hs |     dotProduct.2    | return value |
+|ap_return                    | out |   32| ap_ctrl_hs |     dotProduct.2    | return value |
+|m_axi_Vec3_float_x_AWVALID   | out |    1|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_AWREADY   |  in |    1|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_AWADDR    | out |   32|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_AWID      | out |    1|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_AWLEN     | out |   32|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_AWSIZE    | out |    3|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_AWBURST   | out |    2|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_AWLOCK    | out |    2|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_AWCACHE   | out |    4|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_AWPROT    | out |    3|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_AWQOS     | out |    4|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_AWREGION  | out |    4|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_AWUSER    | out |    1|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_WVALID    | out |    1|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_WREADY    |  in |    1|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_WDATA     | out |   32|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_WSTRB     | out |    4|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_WLAST     | out |    1|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_WID       | out |    1|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_WUSER     | out |    1|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_ARVALID   | out |    1|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_ARREADY   |  in |    1|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_ARADDR    | out |   32|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_ARID      | out |    1|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_ARLEN     | out |   32|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_ARSIZE    | out |    3|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_ARBURST   | out |    2|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_ARLOCK    | out |    2|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_ARCACHE   | out |    4|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_ARPROT    | out |    3|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_ARQOS     | out |    4|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_ARREGION  | out |    4|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_ARUSER    | out |    1|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_RVALID    |  in |    1|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_RREADY    | out |    1|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_RDATA     |  in |   32|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_RLAST     |  in |    1|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_RID       |  in |    1|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_RUSER     |  in |    1|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_RRESP     |  in |    2|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_BVALID    |  in |    1|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_BREADY    | out |    1|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_BRESP     |  in |    2|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_BID       |  in |    1|    m_axi   |     Vec3_float_x    |    pointer   |
+|m_axi_Vec3_float_x_BUSER     |  in |    1|    m_axi   |     Vec3_float_x    |    pointer   |
+|Vec3_float_x_offset          |  in |   30|   ap_none  | Vec3_float_x_offset |    scalar    |
+|Vec3_float_y_offset          |  in |   30|   ap_none  | Vec3_float_y_offset |    scalar    |
+|Vec3_float_z_offset          |  in |   30|   ap_none  | Vec3_float_z_offset |    scalar    |
+|v_x_read                     |  in |   32|   ap_none  |       v_x_read      |    scalar    |
+|v_y_read                     |  in |   32|   ap_none  |       v_y_read      |    scalar    |
+|v_z_read                     |  in |   32|   ap_none  |       v_z_read      |    scalar    |
++-----------------------------+-----+-----+------------+---------------------+--------------+
+

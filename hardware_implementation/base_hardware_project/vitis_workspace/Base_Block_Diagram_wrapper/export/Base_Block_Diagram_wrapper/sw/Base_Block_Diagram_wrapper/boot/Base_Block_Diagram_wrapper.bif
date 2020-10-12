@@ -1,0 +1,7 @@
+/*Base_Block_Diagram_wrapper*/
+the_ROM_image:
+{
+  [bootloader]<Base_Block_Diagram_wrapper/boot/fsbl.elf>
+   <bitstream> 
+  <elf,ps7_cortexa9_0>
+}

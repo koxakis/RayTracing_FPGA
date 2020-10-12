@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+  <core name="" type="" target="">
+    <kernel name="rayTI" language="c" vlnv="NKoxenoglou:hls:rayTI:0.7" attributes="" hash="" preferredWorkGroupSizeMultiple="0" workGroupSize="1" debug="false" interrupt="true">
+      <port name="M_AXI_RAY_BUNDLE" mode="master" range="0xFFFFFFFF" dataWidth="32" portType="addressable" base="0x00000000"/>
+      <port name="M_AXI_TRIANGLE_BUNDLE" mode="master" range="0xFFFFFFFF" dataWidth="32" portType="addressable" base="0x00000000"/>
+      <port name="M_AXI_RES_BUNDLE" mode="master" range="0xFFFFFFFF" dataWidth="32" portType="addressable" base="0x00000000"/>
+      <port name="S_AXI_RET_BUNDLE" mode="slave" range="0x1000" dataWidth="32" portType="addressable" base="0x00000000"/>
+      <arg name="dir_pading" addressQualifier="1" id="0" port="M_AXI_RAY_BUNDLE" size="0x4" offset="0x18" hostOffset="0x0" hostSize="0x4" type=""/>
+      <arg name="dir_x" addressQualifier="1" id="1" port="M_AXI_RAY_BUNDLE" size="0x4" offset="0x20" hostOffset="0x0" hostSize="0x4" type=""/>
+      <arg name="dir_y" addressQualifier="1" id="2" port="M_AXI_RAY_BUNDLE" size="0x4" offset="0x28" hostOffset="0x0" hostSize="0x4" type=""/>
+      <arg name="dir_z" addressQualifier="1" id="3" port="M_AXI_RAY_BUNDLE" size="0x4" offset="0x30" hostOffset="0x0" hostSize="0x4" type=""/>
+      <arg name="orig_pading" addressQualifier="1" id="4" port="M_AXI_RAY_BUNDLE" size="0x4" offset="0x38" hostOffset="0x0" hostSize="0x4" type=""/>
+      <arg name="orig_x" addressQualifier="1" id="5" port="M_AXI_RAY_BUNDLE" size="0x4" offset="0x40" hostOffset="0x0" hostSize="0x4" type=""/>
+      <arg name="orig_y" addressQualifier="1" id="6" port="M_AXI_RAY_BUNDLE" size="0x4" offset="0x48" hostOffset="0x0" hostSize="0x4" type=""/>
+      <arg name="orig_z" addressQualifier="1" id="7" port="M_AXI_RAY_BUNDLE" size="0x4" offset="0x50" hostOffset="0x0" hostSize="0x4" type=""/>
+      <arg name="v0_pading" addressQualifier="1" id="8" port="M_AXI_TRIANGLE_BUNDLE" size="0x4" offset="0x58" hostOffset="0x0" hostSize="0x4" type=""/>
+      <arg name="v0_x" addressQualifier="1" id="9" port="M_AXI_TRIANGLE_BUNDLE" size="0x4" offset="0x60" hostOffset="0x0" hostSize="0x4" type=""/>
+      <arg name="v0_y" addressQualifier="1" id="10" port="M_AXI_TRIANGLE_BUNDLE" size="0x4" offset="0x68" hostOffset="0x0" hostSize="0x4" type=""/>
+      <arg name="v0_z" addressQualifier="1" id="11" port="M_AXI_TRIANGLE_BUNDLE" size="0x4" offset="0x70" hostOffset="0x0" hostSize="0x4" type=""/>
+      <arg name="v1_pading" addressQualifier="1" id="12" port="M_AXI_TRIANGLE_BUNDLE" size="0x4" offset="0x78" hostOffset="0x0" hostSize="0x4" type=""/>
+      <arg name="v1_x" addressQualifier="1" id="13" port="M_AXI_TRIANGLE_BUNDLE" size="0x4" offset="0x80" hostOffset="0x0" hostSize="0x4" type=""/>
+      <arg name="v1_y" addressQualifier="1" id="14" port="M_AXI_TRIANGLE_BUNDLE" size="0x4" offset="0x88" hostOffset="0x0" hostSize="0x4" type=""/>
+      <arg name="v1_z" addressQualifier="1" id="15" port="M_AXI_TRIANGLE_BUNDLE" size="0x4" offset="0x90" hostOffset="0x0" hostSize="0x4" type=""/>
+      <arg name="v2_pading" addressQualifier="1" id="16" port="M_AXI_TRIANGLE_BUNDLE" size="0x4" offset="0x98" hostOffset="0x0" hostSize="0x4" type=""/>
+      <arg name="v2_x" addressQualifier="1" id="17" port="M_AXI_TRIANGLE_BUNDLE" size="0x4" offset="0xA0" hostOffset="0x0" hostSize="0x4" type=""/>
+      <arg name="v2_y" addressQualifier="1" id="18" port="M_AXI_TRIANGLE_BUNDLE" size="0x4" offset="0xA8" hostOffset="0x0" hostSize="0x4" type=""/>
+      <arg name="v2_z" addressQualifier="1" id="19" port="M_AXI_TRIANGLE_BUNDLE" size="0x4" offset="0xB0" hostOffset="0x0" hostSize="0x4" type=""/>
+      <arg name="t" addressQualifier="1" id="20" port="M_AXI_RES_BUNDLE" size="0x4" offset="0xB8" hostOffset="0x0" hostSize="0x4" type="float"/>
+      <arg name="u" addressQualifier="1" id="21" port="M_AXI_RES_BUNDLE" size="0x4" offset="0xC0" hostOffset="0x0" hostSize="0x4" type="float"/>
+      <arg name="v" addressQualifier="1" id="22" port="M_AXI_RES_BUNDLE" size="0x4" offset="0xC8" hostOffset="0x0" hostSize="0x4" type="float"/>
+      <compileWorkGroupSize x="1" y="1" z="1"/>
+    </kernel>
+  </core>
+</project>
