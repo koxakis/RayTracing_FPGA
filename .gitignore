@@ -2,9 +2,9 @@
 *.ppm
 
 # Vivado
-.jou
-.str
-.log
+*.jou
+*.str
+*.log
 
 # HLS Files
 hardware_implementation/ray_triangle_intersection_HLS/RayTriangleIntersection/BaseSolution/.autopilot/

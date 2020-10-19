@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="ASCII"?>
-<systemproject:SystemProject xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:sdsproject="http://www.xilinx.com/sdsproject" xmlns:systemproject="http://www.xilinx.com/systemproject" name="Base_software_system" platform="/run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/base_hardware_project/vitis_workspace/Base_Block_Diagram_wrapper/export/Base_Block_Diagram_wrapper/Base_Block_Diagram_wrapper.xpfm" platformUID="xilinx:zed::0.0(custom)" sysConfig="Base_Block_Diagram_wrapper" runtime="cpp" rootFSLocation="" linuxImage="" sysroot="">
-  <configuration name="Debug" id="com.xilinx.sdx.system.managedbuilder.debugConfiguration.1657991722">
-    <configBuildOptions xsi:type="sdsproject:Option"/>
-  </configuration>
-  <configuration name="Release" id="com.xilinx.sdx.system.managedbuilder.releaseConfiguration.902243378">
-    <configBuildOptions xsi:type="sdsproject:Option"/>
-  </configuration>
-</systemproject:SystemProject>
