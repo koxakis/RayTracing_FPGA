@@ -24,5 +24,13 @@ check_out:	check_out.o
 check_out.o:	output_quality_check.cpp
 	$(CC) $< $(DEPS) $(LIBS) -c -o $@ 
 
+build: input_file_formater
+
+input_file_formater:	input_file_formater.o
+	$(CC)	$^ $(DEPS) $(LIBS) -o $@
+
+input_file_formater.o: input_file_formater.cpp
+	$(CC)	$< $(DEPS) $(LIBS) -c -o $@
+
 clean:
-	rm -rf $(APP) check_out *.o
+	rm -rf $(APP) check_out input_file_formater *.o

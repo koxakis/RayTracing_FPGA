@@ -73,6 +73,10 @@
 			"cinttypes": "cpp",
 			"typeinfo": "cpp",
 			"valarray": "cpp"
-		}
+		},
+		"cSpell.words": [
+			"Textrure",
+			"occured"
+		]
 	}
 }

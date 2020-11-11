@@ -18,11 +18,12 @@ hardware_implementation/Base_System_Vivado_project/Base_System_Vivado_project.ca
 hardware_implementation/Base_System_Vivado_project/Base_System_Vivado_project.runs/
 
 # Vitis Files
-hardware_implementation/vitis_workspace/.metadata/
-
+hardware_implementation/vitis_workspace/
+hardware_implementation/base_hardware_project/vitis_workspace/
 # Executables
 shading
 check_out
+input_file_formater
 # Prerequisites
 *.d
 *.log
