@@ -37,54 +37,44 @@
 			<location>/run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/ray_triangle_intersection_HLS/RayTriangleIntersection/.apc/.tb</location>
 		</link>
 		<link>
-			<name>BaseSolution/constraints</name>
+			<name>base_hls_run/constraints</name>
 			<type>2</type>
-			<location>/run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/ray_triangle_intersection_HLS/RayTriangleIntersection/BaseSolution/.tcls</location>
+			<location>/run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/ray_triangle_intersection_HLS/RayTriangleIntersection/base_hls_run/.tcls</location>
 		</link>
 		<link>
 			<name>source/geometry.h</name>
 			<type>1</type>
-			<location>/run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/ray_triangle_intersection_HLS/source_files/geometry.h</location>
+			<location>/run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/ray_triangle_intersection_HLS/hls_source_files/geometry.h</location>
 		</link>
 		<link>
 			<name>source/rayTriangleIntersection.cpp</name>
 			<type>1</type>
-			<location>/run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/ray_triangle_intersection_HLS/source_files/rayTriangleIntersection.cpp</location>
+			<location>/run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/ray_triangle_intersection_HLS/hls_source_files/rayTriangleIntersection.cpp</location>
 		</link>
 		<link>
-			<name>testbench/plane.geo</name>
-			<type>1</type>
-			<location>/run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/ray_triangle_intersection_HLS/source_files/Simple_plane_scene/plane.geo</location>
-		</link>
-		<link>
-			<name>testbench/plane.ood</name>
-			<type>1</type>
-			<location>/run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/ray_triangle_intersection_HLS/source_files/Simple_plane_scene/plane.ood</location>
-		</link>
-		<link>
-			<name>testbench/scene_plane1.sod</name>
-			<type>1</type>
-			<location>/run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/ray_triangle_intersection_HLS/source_files/Simple_plane_scene/scene_plane1.sod</location>
+			<name>testbench/Simple_plane_scene</name>
+			<type>2</type>
+			<location>/run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/test_scenes/Simple_plane_scene</location>
 		</link>
 		<link>
 			<name>testbench/shading.cpp</name>
 			<type>1</type>
-			<location>/run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/ray_triangle_intersection_HLS/source_files/shading.cpp</location>
+			<location>/run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/ray_triangle_intersection_HLS/hls_source_files/shading.cpp</location>
 		</link>
 		<link>
-			<name>BaseSolution/constraints/.xml.directive</name>
+			<name>base_hls_run/constraints/.xml.directive</name>
 			<type>1</type>
-			<location>/run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/ray_triangle_intersection_HLS/RayTriangleIntersection/BaseSolution/BaseSolution.directive</location>
+			<location>/run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/ray_triangle_intersection_HLS/RayTriangleIntersection/base_hls_run/base_hls_run.directive</location>
 		</link>
 		<link>
-			<name>BaseSolution/constraints/directives.tcl</name>
+			<name>base_hls_run/constraints/directives.tcl</name>
 			<type>1</type>
-			<location>/run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/ray_triangle_intersection_HLS/RayTriangleIntersection/BaseSolution/directives.tcl</location>
+			<location>/run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/ray_triangle_intersection_HLS/RayTriangleIntersection/base_hls_run/directives.tcl</location>
 		</link>
 		<link>
-			<name>BaseSolution/constraints/script.tcl</name>
+			<name>base_hls_run/constraints/script.tcl</name>
 			<type>1</type>
-			<location>/run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/ray_triangle_intersection_HLS/RayTriangleIntersection/BaseSolution/script.tcl</location>
+			<location>/run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/ray_triangle_intersection_HLS/RayTriangleIntersection/base_hls_run/script.tcl</location>
 		</link>
 	</linkedResources>
 </projectDescription>

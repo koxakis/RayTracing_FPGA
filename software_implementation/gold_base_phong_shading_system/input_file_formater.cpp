@@ -5,6 +5,10 @@
 #include <cstdio>
 #include <cstdlib>
 #include <sstream>
+#include <memory>
+#include <vector>
+#include <cstring>
+#include <iostream>
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -12,11 +16,38 @@
 
 using namespace std;
 
+void getNewFileName (char filedirname[], char *file)
+{
+	const char *token = strtok(file, "/");
+	uint32_t i=0;
+
+	strcpy(filedirname,"../../test_scenes/");
+	while (token != NULL)
+		{
+			if (i == 3)
+				{
+					strcat(filedirname, token);
+					strcat(filedirname, "/hw_byte_files/");
+				}
+			if (i == 4)
+				{
+					strcat(filedirname, token);
+				}
+			token = strtok(NULL, "/");
+			i++;
+		}
+	}
+
 // Parse .sod scene data from file and write in bytes  
-int parseSceneOptionFile (const char *file)
+int parseSceneOptionFile (char *file)
 {
 	ifstream ifs;
 	ofstream fout;
+
+	char filedirname[133];
+
+	getNewFileName(filedirname, file);
+	cout << filedirname << "\n";
 
 	try
 		{
@@ -25,7 +56,7 @@ int parseSceneOptionFile (const char *file)
 			if (ifs.fail()) throw;
 
 			// Open the file for output
-			fout.open("sceneP1.sod", ios::binary | ios::out);
+			fout.open(filedirname, ios::binary | ios::out);
 			if (fout.fail()) throw;
 
 			// Open stream to file
@@ -139,11 +170,14 @@ int parseSceneOptionFile (const char *file)
 	return 0;
 }
 
-int parseGeometryFile (const char *file)
+int parseGeometryFile (char *file)
 {
 	ifstream ifs;
 	ofstream fout;
+	char filedirname[133];
 
+	getNewFileName(filedirname, file);
+	cout << filedirname << "\n";
 	try
 		{
 			// Open the file or throw exeption
@@ -151,7 +185,7 @@ int parseGeometryFile (const char *file)
 			if (ifs.fail()) throw;
 
 			// Open the file for output
-			fout.open("plane.geo", ios::binary | ios::out);
+			fout.open(filedirname, ios::binary | ios::out);
 			if (fout.fail()) throw;
 
 			// Open stream to file
@@ -237,11 +271,14 @@ int parseGeometryFile (const char *file)
 
 }
 
-int parseObjectOptionFile (const char *file)
+int parseObjectOptionFile (char *file)
 {
 	ifstream ifs;
 	ofstream fout;
+	char filedirname[133];
 
+	getNewFileName(filedirname, file);
+	cout << filedirname << "\n";
 	try
 		{
 			// Open the file or throw exeption
@@ -249,7 +286,7 @@ int parseObjectOptionFile (const char *file)
 			if (ifs.fail()) throw;
 
 			// Open the file for output
-			fout.open("plane.ood", ios::binary | ios::out);
+			fout.open(filedirname, ios::binary | ios::out);
 			if (fout.fail()) throw;
 
 			// Open stream to file
@@ -332,7 +369,7 @@ int main(int argc, char **argv)
 			return -1;
 		}
 
-	// Parse .sod scene data from file and write in bytes 	
+	// Parse .sod scene data from file and write in bytes 
 	fun_check = parseSceneOptionFile( argv[1]);
 	if (fun_check == -1)
 		{

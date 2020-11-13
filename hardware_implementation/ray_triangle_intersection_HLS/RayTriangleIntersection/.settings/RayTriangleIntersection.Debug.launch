@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="org.eclipse.cdt.launch.applicationLaunchType">
     <stringAttribute key="org.eclipse.cdt.launch.COREFILE_PATH" value=""/>
-    <stringAttribute key="org.eclipse.cdt.launch.PROGRAM_ARGUMENTS" value="scene_plane1.sod 1 plane.geo plane.ood"/>
+    <stringAttribute key="org.eclipse.cdt.launch.PROGRAM_ARGUMENTS" value="Simple_plane_scene/scene_plane1.sod 1 Simple_plane_scene/plane.geo Simple_plane_scene/plane.ood"/>
     <stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="Debug/a.out"/>
     <stringAttribute key="org.eclipse.cdt.launch.PROJECT_ATTR" value="RayTriangleIntersection"/>
     <booleanAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_AUTO_ATTR" value="false"/>
-    <stringAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_ID_ATTR" value="cdt.managedbuild.config.gnu.exe.debug.1086548462"/>
+    <stringAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_ID_ATTR" value="cdt.managedbuild.config.gnu.exe.debug.92974652"/>
     <stringAttribute key="org.eclipse.cdt.launch.WORKING_DIRECTORY" value="/run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/ray_triangle_intersection_HLS/RayTriangleIntersection"/>
     <booleanAttribute key="org.eclipse.cdt.launch.use_terminal" value="true"/>
     <stringAttribute key="org.eclipse.debug.core.source_locator_id" value="org.eclipse.cdt.debug.core.sourceLocator"/>

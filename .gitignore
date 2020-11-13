@@ -12,6 +12,7 @@ hardware_implementation/ray_triangle_intersection_HLS/RayTriangleIntersection/Ba
 hardware_implementation/ray_triangle_intersection_HLS/RayTriangleIntersection/BaseSolution/.tcls/
 hardware_implementation/ray_triangle_intersection_HLS/RayTriangleIntersection/BaseSolution/sim/
 hardware_implementation/ray_triangle_intersection_HLS/RayTriangleIntersection/.apc/
+hardware_implementation/ray_triangle_intersection_HLS/RayTriangleIntersection/base_hls_run/
 
 # Vivado Files
 hardware_implementation/Base_System_Vivado_project/Base_System_Vivado_project.cache/
@@ -20,13 +21,16 @@ hardware_implementation/Base_System_Vivado_project/Base_System_Vivado_project.ru
 # Vitis Files
 hardware_implementation/vitis_workspace/
 hardware_implementation/base_hardware_project/vitis_workspace/
+
 # Executables
 shading
 check_out
 input_file_formater
+
 # Prerequisites
 *.d
 *.log
+
 # Compiled Object files
 *.slo
 *.lo

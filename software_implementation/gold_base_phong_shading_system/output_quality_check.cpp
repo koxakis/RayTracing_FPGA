@@ -38,6 +38,11 @@ int main(int argc, char const *argv[])
 	FILE *fin = NULL;
 	FILE *fgld = NULL;
 
+	if ( argc != 3)
+		{
+			std::cout << "ERROR: Input arguments should be ./check_out GOLD_FILE SAMPLE_FILE \n";
+			return -1;
+		}
 
 	// Open Gold file pointer
 	fgld = fopen(argv[1], "r");

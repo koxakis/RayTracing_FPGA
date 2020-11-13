@@ -12,26 +12,20 @@
   <warningLogs>
     <logs>
       <synLog>
-        <logs message="WARNING: [SYN 201-103] Legalizing function name 'dotProduct.2' to 'dotProduct_2'." projectName="RayTriangleIntersection" solutionName="BaseSolution" date="2020-10-12T12:09:06.097+0300" type="Warning"/>
-        <logs message="WARNING: [SYN 201-103] Legalizing function name 'operator-' to 'operator_sub'." projectName="RayTriangleIntersection" solutionName="BaseSolution" date="2020-10-12T12:09:06.070+0300" type="Warning"/>
-        <logs message="WARNING: [SYN 201-103] Legalizing function name 'crossProduct.1' to 'crossProduct_1'." projectName="RayTriangleIntersection" solutionName="BaseSolution" date="2020-10-12T12:09:06.011+0300" type="Warning"/>
-        <logs message="WARNING: [SYN 201-103] Legalizing function name 'operator-.1' to 'operator_1'." projectName="RayTriangleIntersection" solutionName="BaseSolution" date="2020-10-12T12:09:05.994+0300" type="Warning"/>
-        <logs message="WARNING: [XFORM 203-631] Renaming function 'Vec3&lt;float>::crossProduct.1' to 'crossProduct.1' (source_files/geometry.h:107:7)" projectName="RayTriangleIntersection" solutionName="BaseSolution" date="2020-10-12T12:09:05.975+0300" type="Warning"/>
-        <logs message="WARNING: [XFORM 203-631] Renaming function 'Vec3&lt;float>::dotProduct.2' to 'dotProduct.2' (source_files/geometry.h:95:7)" projectName="RayTriangleIntersection" solutionName="BaseSolution" date="2020-10-12T12:09:05.610+0300" type="Warning"/>
-        <logs message="WARNING: [XFORM 203-631] Renaming function 'Vec3&lt;float>::operator-' to 'operator-' (source_files/geometry.h:87)" projectName="RayTriangleIntersection" solutionName="BaseSolution" date="2020-10-12T12:09:05.600+0300" type="Warning"/>
-        <logs message="WARNING: [XFORM 203-631] Renaming function 'Vec3&lt;float>::operator-.1' to 'operator-.1' (source_files/geometry.h:87:7)" projectName="RayTriangleIntersection" solutionName="BaseSolution" date="2020-10-12T12:09:05.585+0300" type="Warning"/>
-        <logs message="WARNING: [XFORM 203-805] Duplicating function 'Vec3&lt;float>::crossProduct' (source_files/geometry.h:107) to resolve interface conflict according to call graph." projectName="RayTriangleIntersection" solutionName="BaseSolution" date="2020-10-12T12:09:05.180+0300" type="Warning"/>
-        <logs message="WARNING: [XFORM 203-805] Duplicating function 'Vec3&lt;float>::dotProduct' (source_files/geometry.h:95) to resolve interface conflict according to call graph." projectName="RayTriangleIntersection" solutionName="BaseSolution" date="2020-10-12T12:09:05.014+0300" type="Warning"/>
+        <logs message="WARNING: [SYN 201-103] Legalizing function name 'dotProduct.2' to 'dotProduct_2'." projectName="RayTriangleIntersection" solutionName="base_hls_run" date="2020-11-12T22:58:44.821+0200" type="Warning"/>
+        <logs message="WARNING: [SYN 201-103] Legalizing function name 'operator-' to 'operator_sub'." projectName="RayTriangleIntersection" solutionName="base_hls_run" date="2020-11-12T22:58:44.780+0200" type="Warning"/>
+        <logs message="WARNING: [SYN 201-103] Legalizing function name 'crossProduct.1' to 'crossProduct_1'." projectName="RayTriangleIntersection" solutionName="base_hls_run" date="2020-11-12T22:58:44.756+0200" type="Warning"/>
+        <logs message="WARNING: [SYN 201-103] Legalizing function name 'operator-.1' to 'operator_1'." projectName="RayTriangleIntersection" solutionName="base_hls_run" date="2020-11-12T22:58:44.749+0200" type="Warning"/>
+        <logs message="WARNING: [XFORM 203-631] Renaming function 'Vec3&lt;float>::crossProduct.1' to 'crossProduct.1' (hls_source_files/geometry.h:78:7)" projectName="RayTriangleIntersection" solutionName="base_hls_run" date="2020-11-12T22:58:44.744+0200" type="Warning"/>
+        <logs message="WARNING: [XFORM 203-631] Renaming function 'Vec3&lt;float>::dotProduct.2' to 'dotProduct.2' (hls_source_files/geometry.h:66:7)" projectName="RayTriangleIntersection" solutionName="base_hls_run" date="2020-11-12T22:58:44.348+0200" type="Warning"/>
+        <logs message="WARNING: [XFORM 203-631] Renaming function 'Vec3&lt;float>::operator-' to 'operator-' (hls_source_files/geometry.h:58)" projectName="RayTriangleIntersection" solutionName="base_hls_run" date="2020-11-12T22:58:44.336+0200" type="Warning"/>
+        <logs message="WARNING: [XFORM 203-631] Renaming function 'Vec3&lt;float>::operator-.1' to 'operator-.1' (hls_source_files/geometry.h:58:7)" projectName="RayTriangleIntersection" solutionName="base_hls_run" date="2020-11-12T22:58:44.301+0200" type="Warning"/>
+        <logs message="WARNING: [XFORM 203-805] Duplicating function 'Vec3&lt;float>::crossProduct' (hls_source_files/geometry.h:78) to resolve interface conflict according to call graph." projectName="RayTriangleIntersection" solutionName="base_hls_run" date="2020-11-12T22:58:43.884+0200" type="Warning"/>
+        <logs message="WARNING: [XFORM 203-805] Duplicating function 'Vec3&lt;float>::dotProduct' (hls_source_files/geometry.h:66) to resolve interface conflict according to call graph." projectName="RayTriangleIntersection" solutionName="base_hls_run" date="2020-11-12T22:58:43.671+0200" type="Warning"/>
       </synLog>
       <simLog/>
       <mgLog/>
-      <packageLog>
-        <logs message="WARNING: [IP_Flow 19-4832] The IP name 'rayTI_ap_fsub_3_full_dsp_32' you have specified is long. The Windows operating system has path length limitations. It is recommended you use shorter names to reduce the likelihood of issues." projectName="RayTriangleIntersection" solutionName="BaseSolution" date="2020-10-12T12:10:44.451+0300" type="Warning"/>
-        <logs message="WARNING: [IP_Flow 19-4832] The IP name 'rayTI_ap_fmul_2_max_dsp_32' you have specified is long. The Windows operating system has path length limitations. It is recommended you use shorter names to reduce the likelihood of issues." projectName="RayTriangleIntersection" solutionName="BaseSolution" date="2020-10-12T12:10:40.051+0300" type="Warning"/>
-        <logs message="WARNING: [IP_Flow 19-4832] The IP name 'rayTI_ap_fdiv_14_no_dsp_32' you have specified is long. The Windows operating system has path length limitations. It is recommended you use shorter names to reduce the likelihood of issues." projectName="RayTriangleIntersection" solutionName="BaseSolution" date="2020-10-12T12:10:34.326+0300" type="Warning"/>
-        <logs message="WARNING: [IP_Flow 19-4832] The IP name 'rayTI_ap_faddfsub_3_full_dsp_32' you have specified is long. The Windows operating system has path length limitations. It is recommended you use shorter names to reduce the likelihood of issues." projectName="RayTriangleIntersection" solutionName="BaseSolution" date="2020-10-12T12:10:25.077+0300" type="Warning"/>
-        <logs message="WARNING: [IP_Flow 19-4832] The IP name 'rayTI_ap_fadd_3_full_dsp_32' you have specified is long. The Windows operating system has path length limitations. It is recommended you use shorter names to reduce the likelihood of issues.&#xA;create_ip: Time (s): cpu = 00:00:05 ; elapsed = 00:00:05 . Memory (MB): peak = 2153.621 ; gain = 42.867 ; free physical = 6098 ; free virtual = 14822" projectName="RayTriangleIntersection" solutionName="BaseSolution" date="2020-10-12T12:10:20.400+0300" type="Warning"/>
-      </packageLog>
+      <packageLog/>
       <csimLog/>
     </logs>
   </warningLogs>
