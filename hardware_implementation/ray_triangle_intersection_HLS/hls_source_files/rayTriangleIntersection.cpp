@@ -2,7 +2,7 @@
 
 // Perform the MT Ray triangle intersecion and return u, v coordinates if intersection occurs
 bool rayTI(
-	const Vec3f &dir, const Vec3f &orig,
+	const Vec3f &orig , const Vec3f &dir,
 	const Vec3f &v0, const Vec3f &v1, const Vec3f &v2,
 	float &t, float &u, float &v)
 {

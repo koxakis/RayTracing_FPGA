@@ -53,6 +53,8 @@
                                     									
                                     <listOptionValue builtIn="false" value="/run/media/nikolas/Linux_Data/Programs/Xilinx/Vivado/2020.1/include/etc"/>
                                     									
+                                    <listOptionValue builtIn="false" value="/run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/ray_triangle_intersection_HLS"/>
+                                    									
                                     <listOptionValue builtIn="false" value="/run/media/nikolas/Linux_Data/Programs/Xilinx/Vivado/2020.1/lnx64/tools/auto_cc/include"/>
                                     									
                                     <listOptionValue builtIn="false" value="/run/media/nikolas/Linux_Data/Programs/Xilinx/Vivado/2020.1/include/ap_sysc"/>
@@ -86,6 +88,8 @@
                                 <option id="gnu.c.compiler.option.include.paths.1407564354" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
                                     									
                                     <listOptionValue builtIn="false" value="/run/media/nikolas/Linux_Data/Programs/Xilinx/Vivado/2020.1/include/etc"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="/run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/ray_triangle_intersection_HLS"/>
                                     									
                                     <listOptionValue builtIn="false" value="/run/media/nikolas/Linux_Data/Programs/Xilinx/Vivado/2020.1/lnx64/tools/auto_cc/include"/>
                                     									
@@ -283,6 +287,8 @@
                                     									
                                     <listOptionValue builtIn="false" value="/run/media/nikolas/Linux_Data/Programs/Xilinx/Vivado/2020.1/include/etc"/>
                                     									
+                                    <listOptionValue builtIn="false" value="/run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/ray_triangle_intersection_HLS"/>
+                                    									
                                     <listOptionValue builtIn="false" value="/run/media/nikolas/Linux_Data/Programs/Xilinx/Vivado/2020.1/lnx64/tools/auto_cc/include"/>
                                     									
                                     <listOptionValue builtIn="false" value="/run/media/nikolas/Linux_Data/Programs/Xilinx/Vivado/2020.1/include/ap_sysc"/>
@@ -306,6 +312,8 @@
                                 <option id="gnu.c.compiler.option.include.paths.1488541126" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
                                     									
                                     <listOptionValue builtIn="false" value="/run/media/nikolas/Linux_Data/Programs/Xilinx/Vivado/2020.1/include/etc"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="/run/media/nikolas/Linux_Data/Git_Repos/RayTracing_FPGA/hardware_implementation/ray_triangle_intersection_HLS"/>
                                     									
                                     <listOptionValue builtIn="false" value="/run/media/nikolas/Linux_Data/Programs/Xilinx/Vivado/2020.1/lnx64/tools/auto_cc/include"/>
                                     									
