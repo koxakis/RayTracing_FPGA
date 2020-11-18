@@ -6,13 +6,7 @@
       <simLog/>
       <mgLog/>
       <packageLog/>
-      <csimLog>
-        <logs message="ERROR: [SIM 211-100] 'csim_design' failed: compilation error(s)." projectName="RayTriangleIntersection" solutionName="base_hls_run" date="2020-11-18T10:13:54.425+0200"/>
-        <logs message="ERROR: [SIM 211-100] 'csim_design' failed: compilation error(s)." projectName="RayTriangleIntersection" solutionName="base_hls_run" date="2020-11-18T10:13:11.472+0200"/>
-        <logs message="ERROR: [SIM 211-100] 'csim_design' failed: compilation error(s)." projectName="RayTriangleIntersection" solutionName="base_hls_run" date="2020-11-18T10:09:24.192+0200"/>
-        <logs message="ERROR: [SIM 211-100] 'csim_design' failed: compilation error(s)." projectName="RayTriangleIntersection" solutionName="base_hls_run" date="2020-11-18T10:03:32.661+0200"/>
-        <logs message="ERROR: [SIM 211-100] 'csim_design' failed: compilation error(s)." projectName="RayTriangleIntersection" solutionName="base_hls_run" date="2020-11-17T22:21:45.957+0200"/>
-      </csimLog>
+      <csimLog/>
     </logs>
   </errorLogs>
   <warningLogs>
@@ -20,7 +14,12 @@
       <synLog/>
       <simLog/>
       <mgLog/>
-      <packageLog/>
+      <packageLog>
+        <logs message="WARNING: [IP_Flow 19-4832] The IP name 'rayTI_ap_fsub_3_full_dsp_32' you have specified is long. The Windows operating system has path length limitations. It is recommended you use shorter names to reduce the likelihood of issues." projectName="RayTriangleIntersection" solutionName="base_hls_run" date="2020-11-18T18:55:57.888+0200" type="Warning"/>
+        <logs message="WARNING: [IP_Flow 19-4832] The IP name 'rayTI_ap_fmul_2_max_dsp_32' you have specified is long. The Windows operating system has path length limitations. It is recommended you use shorter names to reduce the likelihood of issues." projectName="RayTriangleIntersection" solutionName="base_hls_run" date="2020-11-18T18:55:54.722+0200" type="Warning"/>
+        <logs message="WARNING: [IP_Flow 19-4832] The IP name 'rayTI_ap_fdiv_14_no_dsp_32' you have specified is long. The Windows operating system has path length limitations. It is recommended you use shorter names to reduce the likelihood of issues." projectName="RayTriangleIntersection" solutionName="base_hls_run" date="2020-11-18T18:55:50.773+0200" type="Warning"/>
+        <logs message="WARNING: [IP_Flow 19-4832] The IP name 'rayTI_ap_faddfsub_3_full_dsp_32' you have specified is long. The Windows operating system has path length limitations. It is recommended you use shorter names to reduce the likelihood of issues." projectName="RayTriangleIntersection" solutionName="base_hls_run" date="2020-11-18T18:55:43.559+0200" type="Warning"/>
+      </packageLog>
       <csimLog/>
     </logs>
   </warningLogs>
