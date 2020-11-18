@@ -393,9 +393,12 @@ void readObjectOptionDataFile(const char *file, Object *mesh)
 }
 // Perform the MT Ray triangle intersecion and return u, v coordinates if intersection occurs 
 bool rayTI(
-	const Vec3f &orig, const Vec3f &dir,
-	const Vec3f &v0, const Vec3f &v1, const Vec3f &v2,
-	float &t, float &u, float &v);
+		const float &orig_x, const float &orig_y, const float &orig_z,
+		const float &dir_x, const float &dir_y, const float &dir_z,
+		const float &v0_x, const float &v0_y, const float &v0_z,
+		const float &v1_x, const float &v1_y, const float &v1_z,
+		const float &v2_x, const float &v2_y, const float &v2_z,
+		float &t, float &u, float &v);
 /* This class reads the geometry file that describes the scene. All the data such as 
 	number of faces, the face and vertex arrays, the point, normal and st coordinates arrays
 	are passed to the triangle mesh constractor.
@@ -489,17 +492,22 @@ public:
 		{
 			uint32_t j = 0;
 			bool isect = false;
+			bool temp_ret;
 			// Loop each object's triangles
 			for (uint32_t i = 0; i < numTris; ++i) 
 				{
 					const Vec3f &v0 = P[trisIndex[j]];
 					const Vec3f &v1 = P[trisIndex[j + 1]];
 					const Vec3f &v2 = P[trisIndex[j + 2]];
-					float t = kInfinity, u, v;
+					float t = kInfinity;
+					float u;
+					float v;
 					/* a ray may intersect more than one triangle from the mesh therefore we also 
 					need to keep track of the nearest intersection distance as we iterate over the triangles.            
 					*/
-					if (rayTI(orig, dir, v0, v1, v2, t, u, v) && t < tNear)
+					temp_ret = rayTI(orig.x, orig.y, orig.z, dir.x, dir.y, dir.z, v0.x, v0.y, v0.z, v1.x, v1.y, v1.z, v2.x, v2.y, v2.z, t, u, v);
+					
+					if ((temp_ret) && t < tNear)
 						{
 							tNear = t;
 							uv.x = u;

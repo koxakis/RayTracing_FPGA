@@ -27,6 +27,8 @@
 	Pattern 5:	Solid Grey Colour
 */
 #define PATTERN_5
+//#define DEBUG
+//#define DEBUG_GEO
 
 static const float kInfinity = std::numeric_limits<float>::max();
 static const float kEpsilon = 1e-8;
@@ -196,30 +198,42 @@ void readSceneOptionDataFile (const char *file, Options *options, uint32_t *numo
 			// Read width 
 			uint32_t width;
 			ss >> width;
+#ifdef DEBUG
 			std::cout << "DEBUG: Width: " << width << "\n";
+#endif
 			options->width = width;
 			
 			// Read height
 			uint32_t height;
 			ss >> height;
+#ifdef DEBUG
 			std::cout << "DEBUG: Height: " << height << "\n";
+#endif
 			options->height = height;
 			
 			// Read FOV
 			float fov;
 			ss >> fov;
+#ifdef DEBUG
 			std::cout << "DEBUG: FOV: " << fov << "\n";
+#endif
 			options->fov = fov;
 			
 			// Read background Colour
 			float backgroundcolour[3];
+#ifdef DEBUG
 			std::cout << "DEBUG: Background Colour: ";
+#endif
 			for (uint32_t i=0; i < 3; i++)
 				{
 					ss >> backgroundcolour[i];
+#ifdef DEBUG
 					std::cout << backgroundcolour[i] << " "; 
+#endif
 				}
+#ifdef DEBUG
 			std::cout << "\n";
+#endif
 			options->backgroundColor.x = backgroundcolour[0];
 			options->backgroundColor.y = backgroundcolour[1];
 			options->backgroundColor.z = backgroundcolour[2];
@@ -234,7 +248,9 @@ void readSceneOptionDataFile (const char *file, Options *options, uint32_t *numo
 				{
 					for (uint32_t j=0; j < 4; j++)
 						{
+#ifdef DEBUG
 							std::cout << "DEBUG: camera to world matrix [" << i << "][" << j << "] " << camera2world[(i*4)+j] << "\n";
+#endif
 							options->cameraToWorld.x[i][j] = camera2world[(i*4)+j];
 						}
 				}
@@ -242,13 +258,17 @@ void readSceneOptionDataFile (const char *file, Options *options, uint32_t *numo
 			// Read bias
 			float bias;
 			ss >> bias;
+#ifdef DEBUG
 			std::cout << "DEBUG: Bias: " << bias << "\n";
+#endif
 			options->bias = bias;
 			
 			// Read max depth
 			uint32_t maxDepth;
 			ss >> maxDepth;
+#ifdef DEBUG
 			std::cout << "DEBUG: Max Depth: " << maxDepth << "\n";
+#endif
 			options->maxDepth = maxDepth;
 
 			// Read light data 
@@ -256,7 +276,9 @@ void readSceneOptionDataFile (const char *file, Options *options, uint32_t *numo
 			// Read the number of lights to the world
 			uint32_t temp_lights;
 			ss >> temp_lights;
+#ifdef DEBUG
 			std::cout << "DEBUG: Number of Light Sources: " << temp_lights << "\n";
+#endif
 			*numoflight = temp_lights;
 
 			// Allocate memory for light data 
@@ -273,18 +295,26 @@ void readSceneOptionDataFile (const char *file, Options *options, uint32_t *numo
 				{
 					// Read light type
 					ss >> templighttype;
+#ifdef DEBUG
 					std::cout << "DEBUG: Light Source " << k << "->Light type " << templighttype << "\n";
+#endif
 					lightData[k].lighttype = templighttype;
 					
 					// Read light colour
 					float lightcolour[3];
+#ifdef DEBUG
 					std::cout << "DEBUG: Light Source " << k << "->Light Colour ";
+#endif
 					for (uint32_t i=0; i < 3; i++)
 						{
 							ss >> lightcolour[i];
+#ifdef DEBUG
 							std::cout << lightcolour[i] << " ";
+#endif
 						}
+#ifdef DEBUG
 					std::cout << "\n";
+#endif
 					lightData[k].colour.x = lightcolour[0];
 					lightData[k].colour.y = lightcolour[1];
 					lightData[k].colour.z = lightcolour[2];
@@ -292,7 +322,9 @@ void readSceneOptionDataFile (const char *file, Options *options, uint32_t *numo
 					// Read light intensity
 					float colourintensity;
 					ss >> colourintensity;
+#ifdef DEBUG
 					std::cout << "DEBUG: Light Source " << k << "->Light intensity " << colourintensity << "\n";
+#endif
 					lightData[k].intensity = colourintensity;
 
 					// Read light to world data from file
@@ -300,13 +332,17 @@ void readSceneOptionDataFile (const char *file, Options *options, uint32_t *numo
 						{
 							ss >> light2world[i];
 						}
+#ifdef DEBUG
 					std::cout << "DEBUG: Light Source " << k << "->Light to world " << light2world << "\n";
+#endif
 					// Pass light to world data to struct
 					for (uint32_t i=0; i < 4; i++)
 						{
 							for (uint32_t j=0; j < 4; j++)
 								{
+#ifdef DEBUG
 									std::cout << "DEBUG: Light Source " << k << "->Light to world [" << i << "][" << j << "] " << light2world[(i*4)+j] << "\n";
+#endif
 									lightData[k].light2world.x[i][j] = light2world[(i*4)+j];
 								}
 						}	
@@ -337,7 +373,9 @@ void readObjectOptionDataFile(const char *file, Matrix44f *o2w)
 			ss << ifs.rdbuf();			
 			
 			float object2world[16];
+#ifdef DEBUG
 			std::cout << "DEBUG: Object to world " << object2world << "\n";
+#endif
 			for (uint32_t i=0; i < 16; i++)
 				{
 					ss >> object2world[i];
@@ -346,7 +384,9 @@ void readObjectOptionDataFile(const char *file, Matrix44f *o2w)
 				{
 					for (uint32_t j=0; j < 4; j++)
 						{
+#ifdef DEBUG
 							std::cout << "DEBUG: object to world matrix [" << i << "][" << j << "] " << object2world[(i*4)+j] << "\n";
+#endif
 							o2w->x[i][j] = object2world[(i*4)+j];
 						}
 				}
@@ -384,7 +424,9 @@ void readObjectOptionDataFile(const char *file, Object *mesh)
 			// Read type
 			uint32_t type;
 			ss >> type;
+#ifdef DEBUG
 			std::cout << "DEBUG: Object type " << type << "\n";
+#endif
 			switch (type)
 				{
 					case 0:
@@ -406,18 +448,26 @@ void readObjectOptionDataFile(const char *file, Object *mesh)
 			// Read Index of refraction
 			float ior;
 			ss >> ior;
+#ifdef DEBUG
 			std::cout << "DEBUG: Object Index of Reflection " << ior << "\n";
+#endif
 			mesh->ior = ior;
 			
 			// Read albedo
 			float albedo[3];
+#ifdef DEBUG
 			std::cout << "DEBUG: Object albedo ";
+#endif
 			for (uint32_t i=0; i < 3; i++)
 				{
 					ss >> albedo[i];
+#ifdef DEBUG
 					std::cout << albedo[i] << " ";
+#endif
 				}
+#ifdef DEBUG
 			std::cout << "\n";
+#endif
 			mesh->albedo.x = albedo[0];
 			mesh->albedo.y = albedo[1];
 			mesh->albedo.z = albedo[2];
@@ -426,19 +476,25 @@ void readObjectOptionDataFile(const char *file, Object *mesh)
 			// Read kd 
 			float kd;
 			ss >> kd;
+#ifdef DEBUG
 			std::cout << "DEBUG: Object Phong shading kd factor " << kd << "\n";
+#endif
 			mesh->Kd = kd;
 
 			// Read ks
 			float ks;
 			ss >> ks;
+#ifdef DEBUG
 			std::cout << "DEBUG: Object Phong shading ks factor " << ks << "\n";
+#endif
 			mesh->Ks = ks;
 
 			// Read n
 			float n;
 			ss >> n;
+#ifdef DEBUG
 			std::cout << "DEBUG: Object Phong shading n factor " << n << "\n";
+#endif
 			mesh->n = n;	
 		}
 	catch (const std::exception& e) 
@@ -544,6 +600,7 @@ public:
 		{
 			uint32_t j = 0;
 			bool isect = false;
+			bool temp_ret;
 			// Loop each object's triangles
 			for (uint32_t i = 0; i < numTris; ++i) 
 				{
@@ -554,8 +611,19 @@ public:
 					/* a ray may intersect more than one triangle from the mesh therefore we also 
 					need to keep track of the nearest intersection distance as we iterate over the triangles.            
 					*/
-					if (rayTriangleIntersect(orig, dir, v0, v1, v2, t, u, v) && t < tNear) 
+					temp_ret = rayTriangleIntersect(orig, dir, v0, v1, v2, t, u, v);
+					if ( temp_ret && t < tNear) 
 						{
+						/*std::cout << "DEBUG: result " << t << " " << u << " " << v << " " << "\n"; 
+							std::cout << "\nDEBUG: " << t << " " << tNear << "\n";
+							std::cout << "\nDEBUG: input data \n";
+							std::cout << orig.x << " " << orig.y << " " << orig.z << " ";
+							std::cout << dir.x << " " << dir.y  << " " << dir.z << " ";
+							std::cout << v0.x << " " << v0.y << " " << v0.z << " ";
+							std::cout << v1.x << " " << v1.y << " " << v1.z << " ";
+							std::cout << v2.x << " " << v2.y << " " << v2.z << " ";
+							std::cout << "\nDEBUG: result " << t << " " << u << " " << v << " " << "\n"; 
+						*/
 							tNear = t;
 							uv.x = u;
 							uv.y = v;
@@ -631,7 +699,9 @@ TriangleMesh* loadPolyMeshFromFile(const char *file, const Matrix44f &o2w)
 			// Read number of faces 
 			uint32_t numFaces;
 			ss >> numFaces;
+#ifdef DEBUG_GEO
 			std::cout << "DEBUG: Number of Faces: " << numFaces << "\n";
+#endif
 			std::unique_ptr<uint32_t []> faceIndex(new uint32_t[numFaces]);
 
 			uint32_t vertsIndexArraySize = 0;
@@ -639,29 +709,39 @@ TriangleMesh* loadPolyMeshFromFile(const char *file, const Matrix44f &o2w)
 			for (uint32_t i = 0; i < numFaces; ++i) 
 				{
 					ss >> faceIndex[i];
+#ifdef DEBUG_GEO
 					std::cout << "DEBUG: Face index [ " << i << "]: " << faceIndex[i] << "\n";
+#endif
 					vertsIndexArraySize += faceIndex[i];
 				}
 			std::unique_ptr<uint32_t []> vertsIndex(new uint32_t[vertsIndexArraySize]);
+#ifdef DEBUG_GEO
 			std::cout << "DEBUG: Vertex Index Array Size: " << vertsIndexArraySize << "\n";
+#endif
 
 			uint32_t vertsArraySize = 0;
 			// reading vertex index array
 			for (uint32_t i = 0; i < vertsIndexArraySize; ++i) 
 				{
 					ss >> vertsIndex[i];
+#ifdef DEBUG_GEO
 					std::cout << "DEBUG: Vertex index [ " << i << "]: " << vertsIndex[i] << "\n";
+#endif
 					if (vertsIndex[i] > vertsArraySize) vertsArraySize = vertsIndex[i];
 				}
 			vertsArraySize += 1;
+#ifdef DEBUG_GEO
 			std::cout << "DEBUG: Vertex Array Size: " << vertsArraySize << "\n";
+#endif
 
 			// reading vertices
 			std::unique_ptr<Vec3f []> verts(new Vec3f[vertsArraySize]);
 			for (uint32_t i = 0; i < vertsArraySize; ++i) 
 				{
 					ss >> verts[i].x >> verts[i].y >> verts[i].z;
+#ifdef DEBUG_GEO
 					std::cout << "DEBUG: Vertex [ " << i << "]: " << verts[i].x << " " << verts[i].y << " " << verts[i].z << "\n";	
+#endif
 				}
 
 			// reading normals
@@ -669,7 +749,9 @@ TriangleMesh* loadPolyMeshFromFile(const char *file, const Matrix44f &o2w)
 			for (uint32_t i = 0; i < vertsIndexArraySize; ++i) 
 				{
 					ss >> normals[i].x >> normals[i].y >> normals[i].z;
+#ifdef DEBUG_GEO
 					std::cout << "DEBUG: Normal [ " << i << "]: " << normals[i].x << " " << normals[i].y << " " << normals[i].z << "\n";
+#endif
 				}
 
 			// reading st coordinates
@@ -677,7 +759,9 @@ TriangleMesh* loadPolyMeshFromFile(const char *file, const Matrix44f &o2w)
 			for (uint32_t i = 0; i < vertsIndexArraySize; ++i) 
 				{
 					ss >> st[i].x >> st[i].y;
+#ifdef DEBUG_GEO
 					std::cout << "DEBUG: Textrure Coordinates [ " << i << "]: " << st[i].x << " " << st[i].y << "\n";	
+#endif
 				}
 			
 			return new TriangleMesh(o2w, numFaces, faceIndex, vertsIndex, verts, normals, st);

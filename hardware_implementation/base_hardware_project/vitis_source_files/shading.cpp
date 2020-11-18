@@ -621,7 +621,8 @@ public:
 	// Test if the ray interesests this triangle mesh
 	bool intersect(const Vec3f &orig, const Vec3f &dir, float &tNear, uint32_t &triIndex, Vec2f &uv) const
 		{
-			uint32_t temp_t, temp_u, temp_v, temp_return;
+			uint32_t temp_t, temp_u, temp_v; 
+			bool temp_return;
 			uint32_t j = 0;
 			bool isect = false;
 			// Loop each object's triangles
@@ -635,25 +636,25 @@ public:
 					*/
 					// Set I/O pointers 
 					// Set Ray origin
-					XRayti_Set_orig_x(&RaytiInstancePTR, u32(orig.x));
-					XRayti_Set_orig_y(&RaytiInstancePTR, u32(orig.y));
-					XRayti_Set_orig_z(&RaytiInstancePTR, u32(orig.z));
+					XRayti_Set_orig_x(&RaytiInstancePTR, (u32)(&orig.x));
+					XRayti_Set_orig_y(&RaytiInstancePTR, (u32)(&orig.y));
+					XRayti_Set_orig_z(&RaytiInstancePTR, (u32)(&orig.z));
 					// Set Ray direction
-					XRayti_Set_dir_x(&RaytiInstancePTR, u32(dir.x));
-					XRayti_Set_dir_y(&RaytiInstancePTR, u32(dir.y));
-					XRayti_Set_dir_z(&RaytiInstancePTR, u32(dir.z));
+					XRayti_Set_dir_x(&RaytiInstancePTR, (u32)(&dir.x));
+					XRayti_Set_dir_y(&RaytiInstancePTR, (u32)(&dir.y));
+					XRayti_Set_dir_z(&RaytiInstancePTR, (u32)(&dir.z));
 					// Set triangle V0 
-					XRayti_Set_v0_x(&RaytiInstancePTR, u32(v0.x));
-					XRayti_Set_v0_y(&RaytiInstancePTR, u32(v0.y));
-					XRayti_Set_v0_z(&RaytiInstancePTR, u32(v0.z));
+					XRayti_Set_v0_x(&RaytiInstancePTR, (u32)(&v0.x));
+					XRayti_Set_v0_y(&RaytiInstancePTR, (u32)(&v0.y));
+					XRayti_Set_v0_z(&RaytiInstancePTR, (u32)(&v0.z));
 					// Set triangle V1
-					XRayti_Set_v1_x(&RaytiInstancePTR, u32(v1.x));
-					XRayti_Set_v1_y(&RaytiInstancePTR, u32(v1.y));
-					XRayti_Set_v1_z(&RaytiInstancePTR, u32(v1.z));
+					XRayti_Set_v1_x(&RaytiInstancePTR, (u32)(&v1.x));
+					XRayti_Set_v1_y(&RaytiInstancePTR, (u32)(&v1.y));
+					XRayti_Set_v1_z(&RaytiInstancePTR, (u32)(&v1.z));
 					// Set triangle V2
-					XRayti_Set_v2_x(&RaytiInstancePTR, u32(v2.x));
-					XRayti_Set_v2_y(&RaytiInstancePTR, u32(v2.y));
-					XRayti_Set_v2_z(&RaytiInstancePTR, u32(v2.z));
+					XRayti_Set_v2_x(&RaytiInstancePTR, (u32)(&v2.x));
+					XRayti_Set_v2_y(&RaytiInstancePTR, (u32)(&v2.y));
+					XRayti_Set_v2_z(&RaytiInstancePTR, (u32)(&v2.z));
 
 					// Check if the peripheral is ready
 					if (!XRayti_IsReady(&RaytiInstancePTR))
@@ -674,16 +675,17 @@ public:
 					// Set v intersection coordinate
 					temp_v = XRayti_Get_v(&RaytiInstancePTR);
 					// Set return 
-					temp_return = XRayti_Get_return(&RaytiInstancePTR);
+					temp_return = (bool)XRayti_Get_return(&RaytiInstancePTR);
 
 					if ( (temp_return) && temp_t < tNear)
 						{
+							std::cout << "\nDEBUG: " << temp_t << " " << tNear << " " << temp_return <<"\n";
 							std::cout << orig.x << " " << orig.y << " " << orig.z << " ";
 							std::cout << dir.x << " " << dir.y  << " " << dir.z << " ";
 							std::cout << v0.x << " " << v0.y << " " << v0.z << " ";
 							std::cout << v1.x << " " << v1.y << " " << v1.z << " ";
 							std::cout << v2.x << " " << v2.y << " " << v2.z << " ";
-							std::cout << "\nres" << temp_t << " " << temp_u << " " << temp_v << " " << temp_return << "\n";
+							std::cout << "\nDEBUG: result " << temp_t << " " << temp_u << " " << temp_v << " " << temp_return << "\n";
 							tNear = temp_t;
 							uv.x = temp_u;
 							uv.y = temp_v;

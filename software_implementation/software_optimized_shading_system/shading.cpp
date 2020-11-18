@@ -1,19 +1,3 @@
-//[ignore]
-// Copyright (C) 2012  www.scratchapixel.com
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//[/ignore]
 
 #include <cstdio>
 #include <cstdlib>
@@ -138,35 +122,54 @@ class Object
 	// phong specular exponent, control the size of specular spot
 	float n = 10;   
 };
-
 // Perform the MT Ray triangle intersecion and return u, v coordinates if intersection occurs 
 bool rayTriangleIntersect(
-	const Vec3f &orig, const Vec3f &dir,
-	const Vec3f &v0, const Vec3f &v1, const Vec3f &v2,
+	const float orig_x, 
+	const float orig_y, 
+	const float orig_z, 
+	const float dir_x,
+	const float dir_y,
+	const float dir_z,
+	const float v0_x,
+	const float v0_y,
+	const float v0_z, 
+	const float v1_x,
+	const float v1_y,
+	const float v1_z,
+	const float v2_x,
+	const float v2_y,
+	const float v2_z,
 	float &t, float &u, float &v)
 {
 	// find if the ray intersects the triangle 
-	Vec3f local_orig = orig;
-	Vec3f local_dir = dir;
-	Vec3f local_v0 = v0;
-	Vec3f local_v1 = v1;
-	Vec3f local_v2 = v2;
 	float local_t;
 	float local_u;
-	float local_v; 
+	float local_v;
 	// find the triangles normal
 	// E1 in equation
-	Vec3f v0v1 = local_v1 - local_v0;
+	//Vec3f v0v1 = v1 - v0;
+	float v0v1_x = v1_x - v0_x;
+	float v0v1_y = v1_y - v0_y;
+	float v0v1_z = v1_z - v0_z;
 	// E2 in equation
-	Vec3f v0v2 = local_v2 - local_v0;
+	//Vec3f v0v2 = v2 - v0;
+	float v0v2_x = v2_x - v0_x;
+	float v0v2_y = v2_y - v0_y;
+	float v0v2_z = v2_z - v0_z;
 	// P in the equation
-	// y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x
-	Vec3f pvec = local_dir.crossProduct(v0v2);
+	// y * v.z - z * v.y, 
+	// z * v.x - x * v.z, 
+	// x * v.y - y * v.x
+	//Vec3f pvec = dir.crossProduct(v0v2);
+	float pvec_x = (dir_y * v0v2_z) - (dir_z * v0v2_y);
+	float pvec_y = (dir_z * v0v2_x) - (dir_x * v0v2_z);
+	float pvec_z = (dir_x * v0v2_y) - (dir_y * v0v2_x);
 	// the user might want to cull (discard) back-facing triangles
 	// if the triangle is front-facing the determinant is positive otherwise it is negative
 	// P*E1 in the equation 
 	// x * v.x + y * v.y + z * v.z
-  float det = v0v1.dotProduct(pvec);
+  //float det = v0v1.dotProduct(pvec);
+	float det = (v0v1_x * pvec_x) + (v0v1_y * pvec_y) + (v0v1_z * pvec_z);
 
 	// Deactivate CULLING in order to render back facing triangles as well
 	// Useful for secondary rays can be neglected for primary rays 
@@ -176,7 +179,7 @@ bool rayTriangleIntersect(
     if (det < kEpsilon) return false;
 #else
     // ray and triangle are parallel if det is close to 0
-    if ((det > -kEpsilon) && (det < kEpsilon)  ) return false;
+    if ((det > -kEpsilon) && (det < kEpsilon)) return false;
 #endif
 
 	// compute once and multiply to find u,v and t
@@ -184,20 +187,27 @@ bool rayTriangleIntersect(
 	float invDet = 1 / det;
 
 	// translate to the unit triangle 
-	Vec3f tvec = local_orig - local_v0;
+	float tvec_x = orig_x - v0_x;
+	float tvec_y = orig_y - v0_y;
+	float tvec_z = orig_z - v0_z;
 	// compute u from (T dotproduct P) * 1/P*E1
-	local_u = tvec.dotProduct(pvec) * invDet;
+	local_u = ( (tvec_x * pvec_x) + (tvec_y * pvec_y) + (tvec_z * pvec_z)) * invDet;
+	//u = tvec.dotProduct(pvec) * invDet;
 	// we reject the triangle if u is either lower than 0 or greater than 1
-	if (local_u < 0 || local_u > 1)
+	if (local_u< 0 || local_u > 1) 
 		{
 			u = local_u;
 			return false;
 		}
 
 	// Q in the equation 
-	Vec3f qvec = tvec.crossProduct(v0v1);
+	//Vec3f qvec = tvec.crossProduct(v0v1);
+	float qvec_x = (tvec_y * v0v1_z) - (tvec_z * v0v1_y);
+	float qvec_y = (tvec_z * v0v1_x) - (tvec_x * v0v1_z);
+	float qvec_z = (tvec_x * v0v1_y) - (tvec_y * v0v1_x);
 	// compute v from (D dotproduct Q) * 1/P*E1 
-	local_v = local_dir.dotProduct(qvec) * invDet;
+	//v = dir.dotProduct(qvec) * invDet;
+	local_v = ( (dir_x * qvec_x) + (dir_y * qvec_y) + (dir_z * qvec_z)) * invDet;
 	// we reject the triangle if v is either lower than 0 or greater than 1
 	if (local_v < 0 || local_u + local_v > 1) 
 		{
@@ -205,10 +215,12 @@ bool rayTriangleIntersect(
 			u = local_u;
 			return false;
 		}
-	// compute t from (E2 dotproduct Q) * 1/P*E1 
-	local_t = v0v2.dotProduct(qvec) * invDet;
 
-	if (local_t > 0)
+	// compute t from (E2 dotproduct Q) * 1/P*E1 
+	//t = v0v2.dotProduct(qvec) * invDet;
+	local_t = ( (v0v2_x * qvec_x) + (v0v2_y * qvec_y) + (v0v2_z * qvec_z)) * invDet;
+	
+	if ( local_t > 0)
 		{
 			v = local_v;
 			u = local_u;
@@ -219,11 +231,9 @@ bool rayTriangleIntersect(
 		{
 			v = local_v;
 			u = local_u;
-			t = local_t;		
-			return false;
+			t = local_t;	
+			return false;	
 		}
-	
-	return (local_t > 0) ? true : false;
 }
 
 // Reads scene options from a file
@@ -558,6 +568,7 @@ public:
 		{
 			uint32_t j = 0;
 			bool isect = false;
+			bool temp_ret;
 			// Loop each object's triangles
 			for (uint32_t i = 0; i < numTris; ++i) 
 				{
@@ -568,7 +579,19 @@ public:
 					/* a ray may intersect more than one triangle from the mesh therefore we also 
 					need to keep track of the nearest intersection distance as we iterate over the triangles.            
 					*/
-					if (rayTriangleIntersect(orig, dir, v0, v1, v2, t, u, v) && t < tNear) 
+					/*temp_ret = rayTriangleIntersect(orig.x, orig.y, orig.z,
+																		dir.x, dir.y, dir.z, 
+																		v0.x, v0.y, v0.z, 
+																		v1.x, v1.y, v1.z, 
+																		v2.x, v2.y, v2.z,
+																		t, u, v); */
+					temp_ret = rayTriangleIntersect(orig.x, orig.y, orig.z, 
+																					dir.x, dir.y, dir.z, 
+																					v0.x, v0.y, v0.z, 
+																					v1.x, v1.y, v1.z, 
+																					v2.x, v2.y, v2.z, 
+																					t, u, v);
+					if ( (temp_ret) && t < tNear) 
 						{
 							tNear = t;
 							uv.x = u;

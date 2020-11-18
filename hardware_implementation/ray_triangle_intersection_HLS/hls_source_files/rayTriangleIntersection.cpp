@@ -1,66 +1,145 @@
-#include "geometry.h"
-
 // Perform the MT Ray triangle intersecion and return u, v coordinates if intersection occurs
 bool rayTI(
-	const Vec3f &orig , const Vec3f &dir,
-	const Vec3f &v0, const Vec3f &v1, const Vec3f &v2,
+	const float &orig_x,
+	const float &orig_y,
+	const float &orig_z,
+	const float &dir_x,
+	const float &dir_y,
+	const float &dir_z,
+	const float &v0_x,
+	const float &v0_y,
+	const float &v0_z,
+	const float &v1_x,
+	const float &v1_y,
+	const float &v1_z,
+	const float &v2_x,
+	const float &v2_y,
+	const float &v2_z,
 	float &t, float &u, float &v)
 {
-// Result ports
+// orig ports
+#pragma HLS INTERFACE m_axi depth=32 port=orig_x offset=slave
+#pragma HLS INTERFACE m_axi depth=32 port=orig_y offset=slave
+#pragma HLS INTERFACE m_axi depth=32 port=orig_z offset=slave
+
+// dir ports
+#pragma HLS INTERFACE m_axi depth=32 port=dir_x offset=slave
+#pragma HLS INTERFACE m_axi depth=32 port=dir_y offset=slave
+#pragma HLS INTERFACE m_axi depth=32 port=dir_z offset=slave
+
+// v0 ports
+#pragma HLS INTERFACE m_axi depth=32 port=v0_x offset=slave
+#pragma HLS INTERFACE m_axi depth=32 port=v0_y offset=slave
+#pragma HLS INTERFACE m_axi depth=32 port=v0_z offset=slave
+
+// v1 ports
+#pragma HLS INTERFACE m_axi depth=32 port=v1_x offset=slave
+#pragma HLS INTERFACE m_axi depth=32 port=v1_y offset=slave
+#pragma HLS INTERFACE m_axi depth=32 port=v1_z offset=slave
+
+// v2 ports
+#pragma HLS INTERFACE m_axi depth=32 port=v2_x offset=slave
+#pragma HLS INTERFACE m_axi depth=32 port=v2_y offset=slave
+#pragma HLS INTERFACE m_axi depth=32 port=v2_z offset=slave
+
+// result ports
+#pragma HLS INTERFACE m_axi depth=32 port=t offset=slave
+#pragma HLS INTERFACE m_axi depth=32 port=u offset=slave
+#pragma HLS INTERFACE m_axi depth=32 port=v offset=slave
 #pragma HLS INTERFACE s_axilite port=return bundle=ret_bundle
-#pragma HLS INTERFACE m_axi depth=32 port=v offset=slave bundle=res_bundle
-#pragma HLS INTERFACE m_axi depth=32 port=u offset=slave bundle=res_bundle
-#pragma HLS INTERFACE m_axi depth=32 port=t offset=slave bundle=res_bundle
 
-// Triangle ports
-#pragma HLS INTERFACE m_axi depth=128 port=v2 offset=slave bundle=triangle_bundle
-#pragma HLS INTERFACE m_axi depth=128 port=v1 offset=slave bundle=triangle_bundle
-#pragma HLS INTERFACE m_axi depth=128 port=v0 offset=slave bundle=triangle_bundle
-
-// Ray ports
-#pragma HLS INTERFACE m_axi depth=128 port=orig offset=slave bundle=ray_bundle
-#pragma HLS INTERFACE m_axi depth=128 port=dir offset=slave bundle=ray_bundle
-
-	static const float kEpsilon = 1e-8;
 	// find if the ray intersects the triangle 
-
+	float local_t;
+	float local_u;
+	float local_v;
+	static const float kEpsilon = 1e-8;
 	// find the triangles normal
 	// E1 in equation
-	Vec3f v0v1 = v1 - v0;
+	//Vec3f v0v1 = v1 - v0;
+	float v0v1_x = v1_x - v0_x;
+	float v0v1_y = v1_y - v0_y;
+	float v0v1_z = v1_z - v0_z;
 	// E2 in equation
-	Vec3f v0v2 = v2 - v0;
+	//Vec3f v0v2 = v2 - v0;
+	float v0v2_x = v2_x - v0_x;
+	float v0v2_y = v2_y - v0_y;
+	float v0v2_z = v2_z - v0_z;
 	// P in the equation
-	// y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x
-	Vec3f pvec = dir.crossProduct(v0v2);
+	// y * v.z - z * v.y,
+	// z * v.x - x * v.z,
+	// x * v.y - y * v.x
+	//Vec3f pvec = dir.crossProduct(v0v2);
+	float pvec_x = (dir_y * v0v2_z) - (dir_z * v0v2_y);
+	float pvec_y = (dir_z * v0v2_x) - (dir_x * v0v2_z);
+	float pvec_z = (dir_x * v0v2_y) - (dir_y * v0v2_x);
 	// the user might want to cull (discard) back-facing triangles
 	// if the triangle is front-facing the determinant is positive otherwise it is negative
 	// P*E1 in the equation 
 	// x * v.x + y * v.y + z * v.z
-	float det = v0v1.dotProduct(pvec);
+  //float det = v0v1.dotProduct(pvec);
+	float det = (v0v1_x * pvec_x) + (v0v1_y * pvec_y) + (v0v1_z * pvec_z);
 
-	// ray and triangle are parallel if det is close to 0
-	if ((det > -kEpsilon) && (det < kEpsilon)) return false;
+	// Deactivate CULLING in order to render back facing triangles as well
+	// Useful for secondary rays can be neglected for primary rays
+#ifdef CULLING
+    // if the determinant is negative the triangle is backfacing
+    // if the determinant is close to 0, the ray misses the triangle
+    if (det < kEpsilon) return false;
+#else
+    // ray and triangle are parallel if det is close to 0
+    if ((det > -kEpsilon) && (det < kEpsilon)) return false;
+#endif
 
 	// compute once and multiply to find u,v and t
 	// 1/P*E1 in the equation 
 	float invDet = 1 / det;
 
 	// translate to the unit triangle 
-	Vec3f tvec = orig - v0;
+	float tvec_x = orig_x - v0_x;
+	float tvec_y = orig_y - v0_y;
+	float tvec_z = orig_z - v0_z;
 	// compute u from (T dotproduct P) * 1/P*E1
-	u = tvec.dotProduct(pvec) * invDet;
+	local_u = ( (tvec_x * pvec_x) + (tvec_y * pvec_y) + (tvec_z * pvec_z)) * invDet;
+	//u = tvec.dotProduct(pvec) * invDet;
 	// we reject the triangle if u is either lower than 0 or greater than 1
-	if (u < 0 || u > 1) return false;
+	if (local_u< 0 || local_u > 1)
+		{
+			u = local_u;
+			return false;
+		}
 
 	// Q in the equation 
-	Vec3f qvec = tvec.crossProduct(v0v1);
+	//Vec3f qvec = tvec.crossProduct(v0v1);
+	float qvec_x = (tvec_y * v0v1_z) - (tvec_z * v0v1_y);
+	float qvec_y = (tvec_z * v0v1_x) - (tvec_x * v0v1_z);
+	float qvec_z = (tvec_x * v0v1_y) - (tvec_y * v0v1_x);
 	// compute v from (D dotproduct Q) * 1/P*E1 
-	v = dir.dotProduct(qvec) * invDet;
+	//v = dir.dotProduct(qvec) * invDet;
+	local_v = ( (dir_x * qvec_x) + (dir_y * qvec_y) + (dir_z * qvec_z)) * invDet;
 	// we reject the triangle if v is either lower than 0 or greater than 1
-	if (v < 0 || u + v > 1) return false;
+	if (local_v < 0 || local_u + local_v > 1)
+		{
+			v = local_v;
+			u = local_u;
+			return false;
+		}
 
 	// compute t from (E2 dotproduct Q) * 1/P*E1 
-	t = v0v2.dotProduct(qvec) * invDet;
+	//t = v0v2.dotProduct(qvec) * invDet;
+	local_t = ( (v0v2_x * qvec_x) + (v0v2_y * qvec_y) + (v0v2_z * qvec_z)) * invDet;
 	
-	return (t > 0) ? true : false;
+	if ( local_t > 0)
+		{
+			v = local_v;
+			u = local_u;
+			t = local_t;
+			return true;
+		}
+	else
+		{
+			v = local_v;
+			u = local_u;
+			t = local_t;
+			return false;
+		}
 }

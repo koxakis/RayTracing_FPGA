@@ -8,6 +8,9 @@
 		},
 		{
 			"path": "../test_scenes"
+		},
+		{
+			"path": "../../Motion_Estimation_HLS"
 		}
 	],
 	"settings": {
