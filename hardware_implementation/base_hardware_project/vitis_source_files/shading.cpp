@@ -525,11 +525,7 @@ int readObjectOptionDataFile(const char *file, Object *mesh)
 		}
 	return XST_SUCCESS;
 }
-// Perform the MT Ray triangle intersecion and return u, v coordinates if intersection occurs 
-bool rayTI(
-	const Vec3f &orig, const Vec3f &dir,
-	const Vec3f &v0, const Vec3f &v1, const Vec3f &v2,
-	float &t, float &u, float &v);
+
 /* This class reads the geometry file that describes the scene. All the data such as 
 	number of faces, the face and vertex arrays, the point, normal and st coordinates arrays
 	are passed to the triangle mesh constractor.
@@ -1379,7 +1375,7 @@ int render(
 					return XST_FAILURE;
 				}
 			off+=writtenBytes;
-			//fprintf(stderr, "\r%3lu%c", uint32_t(i / (float)(options.height * options.width) * 100), '%');
+			fprintf(stderr, "\r%3lu%c", uint32_t(i / (float)(options.height * options.width) * 100), '%');
 		}
 	std::cout << "\nDEBUG: RGB wrote " << off << " bytes to the SD card\n";
 	std::cout << "\nWriting to SD card DONE\n\n";
@@ -1478,7 +1474,7 @@ int main(int argc, char **argv)
 
 		6) Increment factors and repeat for every object
 	*/
-  init_platform();
+  //init_platform();
 
 	// Mount the filesystem 
 	result = f_mount(&FS_instance,Path, 0);
@@ -1592,6 +1588,6 @@ int main(int argc, char **argv)
 			std::cout << "\nAn I/O Error has occurred\n";
 			return XST_FAILURE;
 		}
-	cleanup_platform();
+	//cleanup_platform();
 	return XST_SUCCESS;
 }
