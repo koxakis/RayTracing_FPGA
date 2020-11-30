@@ -1,0 +1,8 @@
+Simulation Settings: 
+-std=c++0x
+Clean Build 
+Optimizing Compile
+-Wall -g -std=c++11 -fpermissive -O4
+
+Synthesis Settings:
+-std=c++0x
