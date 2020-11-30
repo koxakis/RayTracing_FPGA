@@ -579,12 +579,6 @@ public:
 					/* a ray may intersect more than one triangle from the mesh therefore we also 
 					need to keep track of the nearest intersection distance as we iterate over the triangles.            
 					*/
-					/*temp_ret = rayTriangleIntersect(orig.x, orig.y, orig.z,
-																		dir.x, dir.y, dir.z, 
-																		v0.x, v0.y, v0.z, 
-																		v1.x, v1.y, v1.z, 
-																		v2.x, v2.y, v2.z,
-																		t, u, v); */
 					temp_ret = rayTriangleIntersect(orig.x, orig.y, orig.z, 
 																					dir.x, dir.y, dir.z, 
 																					v0.x, v0.y, v0.z, 

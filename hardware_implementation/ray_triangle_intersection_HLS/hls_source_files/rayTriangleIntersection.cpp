@@ -18,35 +18,35 @@ bool rayTI(
 	float &t, float &u, float &v)
 {
 // orig ports
-#pragma HLS INTERFACE s_axilite depth=32 port=orig_x bundle=orig_bundle 
-#pragma HLS INTERFACE s_axilite depth=32 port=orig_y bundle=orig_bundle 
-#pragma HLS INTERFACE s_axilite depth=32 port=orig_z bundle=orig_bundle 
+#pragma HLS INTERFACE s_axilite port=orig_x bundle=orig_bundle
+#pragma HLS INTERFACE s_axilite port=orig_y bundle=orig_bundle
+#pragma HLS INTERFACE s_axilite port=orig_z bundle=orig_bundle
 
 // dir ports
-#pragma HLS INTERFACE s_axilite depth=32 port=dir_x bundle=dir_bundle
-#pragma HLS INTERFACE s_axilite depth=32 port=dir_y bundle=dir_bundle
-#pragma HLS INTERFACE s_axilite depth=32 port=dir_z bundle=dir_bundle
+#pragma HLS INTERFACE s_axilite port=dir_x bundle=dir_bundle
+#pragma HLS INTERFACE s_axilite port=dir_y bundle=dir_bundle
+#pragma HLS INTERFACE s_axilite port=dir_z bundle=dir_bundle
 
 // v0 ports
-#pragma HLS INTERFACE s_axilite depth=32 port=v0_x bundle=v0_bundle
-#pragma HLS INTERFACE s_axilite depth=32 port=v0_y bundle=v0_bundle
-#pragma HLS INTERFACE s_axilite depth=32 port=v0_z bundle=v0_bundle
+#pragma HLS INTERFACE s_axilite port=v0_x bundle=v0_bundle
+#pragma HLS INTERFACE s_axilite port=v0_y bundle=v0_bundle
+#pragma HLS INTERFACE s_axilite port=v0_z bundle=v0_bundle
 
 // v1 ports
-#pragma HLS INTERFACE s_axilite depth=32 port=v1_x bundle=v1_bundle
-#pragma HLS INTERFACE s_axilite depth=32 port=v1_y bundle=v1_bundle
-#pragma HLS INTERFACE s_axilite depth=32 port=v1_z bundle=v1_bundle
+#pragma HLS INTERFACE s_axilite port=v1_x bundle=v1_bundle
+#pragma HLS INTERFACE s_axilite port=v1_y bundle=v1_bundle
+#pragma HLS INTERFACE s_axilite port=v1_z bundle=v1_bundle
 
 // v2 ports
-#pragma HLS INTERFACE s_axilite depth=32 port=v2_x bundle=v2_bundle
-#pragma HLS INTERFACE s_axilite depth=32 port=v2_y bundle=v2_bundle
-#pragma HLS INTERFACE s_axilite depth=32 port=v2_z bundle=v2_bundle
+#pragma HLS INTERFACE s_axilite port=v2_x bundle=v2_bundle
+#pragma HLS INTERFACE s_axilite port=v2_y bundle=v2_bundle
+#pragma HLS INTERFACE s_axilite port=v2_z bundle=v2_bundle
 
 // result ports
-#pragma HLS INTERFACE s_axilite depth=32 port=t bundle=res_bundle
-#pragma HLS INTERFACE s_axilite depth=32 port=u bundle=res_bundle
-#pragma HLS INTERFACE s_axilite depth=32 port=v bundle=res_bundle
-#pragma HLS INTERFACE s_axilite port=return bundle=ret_bundle
+#pragma HLS INTERFACE s_axilite port=t bundle=res_bundle
+#pragma HLS INTERFACE s_axilite port=u bundle=res_bundle
+#pragma HLS INTERFACE s_axilite port=v bundle=res_bundle
+#pragma HLS INTERFACE s_axilite bundle=ret_bundle port=return
 
 	// find if the ray intersects the triangle 
 	float local_t;

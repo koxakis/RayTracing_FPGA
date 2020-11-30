@@ -1,4 +1,33 @@
-
+//[header]
+// This program illustrates how the concept of vector and matrix can be implemented
+// in C++. This is a light version of the implementation. It contains the most
+// essential methods to manipulate vectors and matrices. It should be enough
+// for most projects. Vectors and matrices are really the alphabet as we said
+// in the lesson of any graphics application. It's really important you feel
+// confortable with these techniques especially with the concepts of
+// normalizing vectors, computing their length, computing the dot and cross products
+// of two vectors, and the point- and vector-matrix multiplication (and knowing
+// the difference between the two).
+//[/header]
+//[compile]
+// c++ geometry.cpp  -o geometry -std=c++11
+//[/compile]
+//[ignore]
+// Copyright (C) 2012  www.scratchapixel.com
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//[/ignore]
 #include <cstdlib>
 #include <cstdio>
 #include <iostream>
@@ -50,7 +79,6 @@ public:
     Vec3() : x(T(0)), y(T(0)), z(T(0)) {}
     Vec3(T xx) : x(xx), y(xx), z(xx) {}
     Vec3(T xx, T yy, T zz) : x(xx), y(yy), z(zz) {}
-    float pading;
     
     // const operators
     Vec3 operator + (const Vec3 &v) const
@@ -89,8 +117,8 @@ public:
     // when vectors are used in loops: the coordinates can be accessed with the
     // loop index (e.g. v[i]).
     //[/comment]
-    const T& operator [] (unsigned char i) const { return (&x)[i]; }
-    T& operator [] (unsigned char i) { return (&x)[i]; }
+    const T& operator [] (uint8_t i) const { return (&x)[i]; }
+    T& operator [] (uint8_t i) { return (&x)[i]; }
     Vec3& normalize()
     {
         T n = norm();
@@ -161,8 +189,8 @@ public:
         x[3][3] = p;
     }
     
-    const T* operator [] (unsigned char i) const { return x[i]; }
-    T* operator [] (unsigned char i) { return x[i]; }
+    const T* operator [] (uint8_t i) const { return x[i]; }
+    T* operator [] (uint8_t i) { return x[i]; }
 
     // Multiply the current matrix with another matrix (rhs)
     Matrix44 operator * (const Matrix44& v) const
@@ -188,8 +216,8 @@ public:
     static void multiply(const Matrix44<T> &a, const Matrix44& b, Matrix44 &c)
     {
 #if 0
-        for (unsigned char i = 0; i < 4; ++i) {
-            for (unsigned char j = 0; j < 4; ++j) {
+        for (uint8_t i = 0; i < 4; ++i) {
+            for (uint8_t j = 0; j < 4; ++j) {
                 c[i][j] = a[i][0] * b[0][j] + a[i][1] * b[1][j] +
                     a[i][2] * b[2][j] + a[i][3] * b[3][j];
             }
@@ -252,8 +280,8 @@ public:
     {
 #if 0
         Matrix44 t;
-        for (unsigned char i = 0; i < 4; ++i) {
-            for (unsigned char j = 0; j < 4; ++j) {
+        for (uint8_t i = 0; i < 4; ++i) {
+            for (uint8_t j = 0; j < 4; ++j) {
                 t[i][j] = x[j][i];
             }
         }

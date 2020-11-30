@@ -28,6 +28,7 @@
 */
 #define PATTERN_5
 //#define DEBUG
+//#define DEBUG_RENDER
 //#define DEBUG_GEO
 
 static const float kInfinity = std::numeric_limits<float>::max();
@@ -612,18 +613,20 @@ public:
 					need to keep track of the nearest intersection distance as we iterate over the triangles.            
 					*/
 					temp_ret = rayTriangleIntersect(orig, dir, v0, v1, v2, t, u, v);
-					if ( temp_ret && t < tNear) 
+					if ( (temp_ret == true ) && t < tNear) 
 						{
-						/*std::cout << "DEBUG: result " << t << " " << u << " " << v << " " << "\n"; 
-							std::cout << "\nDEBUG: " << t << " " << tNear << "\n";
-							std::cout << "\nDEBUG: input data \n";
+							std::cout << "\n START DEBUG \n";
+							std::cout << "DEBUG: result " << t << " " << u << " " << v << " " << "\n"; 
+							std::cout << "DEBUG: " << t << " " << tNear << "\n";
+							std::cout << "DEBUG: input data \n";
 							std::cout << orig.x << " " << orig.y << " " << orig.z << " ";
 							std::cout << dir.x << " " << dir.y  << " " << dir.z << " ";
 							std::cout << v0.x << " " << v0.y << " " << v0.z << " ";
 							std::cout << v1.x << " " << v1.y << " " << v1.z << " ";
 							std::cout << v2.x << " " << v2.y << " " << v2.z << " ";
-							std::cout << "\nDEBUG: result " << t << " " << u << " " << v << " " << "\n"; 
-						*/
+							std::cout << "DEBUG: result " << t << " " << u << " " << v << " " << "\n";
+							std::cout << "END DEBUG\n";
+						
 							tNear = t;
 							uv.x = u;
 							uv.y = v;
@@ -867,7 +870,7 @@ bool trace(
 	RayType rayType = kPrimaryRay)
 {
 	isect.hitObject = nullptr;
-
+	bool rayIntersectRes;
 	// Iterate the list of objects and check intersection 
 	for (uint32_t k = 0; k < objects.size(); ++k) 
 		{
@@ -876,8 +879,11 @@ bool trace(
 			Vec2f uv;
 
 			// For each object iterate it's list of triangles and check the intersecion point's distance  
-			if (objects[k]->intersect(orig, dir, tNear, index, uv) && tNear < isect.tNear)
+			rayIntersectRes = objects[k]->intersect(orig, dir, tNear, index, uv);
+			//std::cout << "DEBUG: intersection res " << rayIntersectRes << " tnear " << tNear << " orig " << orig << " dir " << dir << " uv " << uv << std::endl;
+			if ( (rayIntersectRes == true) && tNear < isect.tNear)
 				{
+					//std::cout << "DEBUG: intersection res " << rayIntersectRes << " tnear " << tNear << " orig " << orig << " dir " << dir << " uv " << uv << std::endl;
 					if (rayType == kShadowRay && objects[k]->type == kReflectionAndRefraction) continue;
 					isect.hitObject = objects[k].get();
 					isect.tNear = tNear;
@@ -989,7 +995,9 @@ Vec3f castRay(
 
 			// Get properties of the object 
 			isect.hitObject->getSurfaceProperties(hitPoint, dir, isect.index, isect.uv, hitNormal, hitTexCoordinates);
-
+#ifdef DEBUG_RENDER
+					std::cout << "DEBUG: Hit object type is: " << isect.hitObject->type << "\n"; 
+#endif
 			// Depending on the object type use different shading method
 			switch (isect.hitObject->type) 
 				{
@@ -1010,6 +1018,7 @@ Vec3f castRay(
 									by the light source)
 									*/
 									bool vis = !trace(hitPoint + hitNormal * options.bias, -lightDir, objects, isectShad, kShadowRay);
+									//std::cerr << "DEBUG: vis input Vis = " << vis << " , " << hitPoint + hitNormal * options.bias << " , " << -lightDir << std::endl;
 									// compute the pattern
 #ifdef PATTERN_1
 									float scaleS = 20, scaleT = 20;
@@ -1038,6 +1047,9 @@ Vec3f castRay(
 #endif
 									// If the point is in shadow, the point is black. If vis is set to true, then the color of the point is left unchanged
 									hitColor += vis * pattern * lightIntensity * std::max(0.f, hitNormal.dotProduct(-lightDir));
+#ifdef DEBUG_RENDER
+									std::cerr << "DEBUG: Diffuse hit colour: " << hitColor << std::endl;
+#endif
 								}
 							break;
 						}
@@ -1076,6 +1088,9 @@ Vec3f castRay(
 							
 							// mix the two
 							hitColor += reflectionColor * kr + refractionColor * (1 - kr);
+#ifdef DEBUG_RENDER
+							std::cerr << "DEBUG: Reflect and Refract hit colour: "<< hitColor << std::endl;
+#endif
 							break;
 						}
 					case kPhong:
@@ -1103,7 +1118,9 @@ Vec3f castRay(
 									specular += vis * lightIntensity * std::pow(std::max(0.f, R.dotProduct(-dir)), isect.hitObject->n);
 								}
 							hitColor = diffuse * isect.hitObject->Kd + specular * isect.hitObject->Ks;
-							//std::cerr << hitColor << std::endl;
+#ifdef DEBUG_RENDER
+							std::cerr << "DEBUG: Phong hit colour: " << hitColor << std::endl;
+#endif							
 							break;
 						}
 					default:
@@ -1163,6 +1180,7 @@ void render(
 					*/                  
 					float x = (2 * (i + 0.5) / (float)options.width - 1) * imageAspectRatio * scale;
 					float y = (1 - 2 * (j + 0.5) / (float)options.height) * scale;
+					//std::cout << "dir x y " << x << y << std::endl;
 					Vec3f dir;
 					// Multiply the pixel coordinates with the camera to world matrix to generate the rays from the desired point in space
 					options.cameraToWorld.multDirMatrix(Vec3f(x, y, -1), dir);
@@ -1175,6 +1193,7 @@ void render(
 					*/
 					dir.normalize();
 					// Take the arguments Ray origin, direction, object list, light list and scene option
+					//std::cout << "dir " << dir << " orig " << orig << " x y " << x << " " << y << " j i " << j << " " << i << std::endl;
 					*(pix++) = castRay(orig, dir, objects, lights, options);
 				}
 			// Print the percentage of completion based on height 
