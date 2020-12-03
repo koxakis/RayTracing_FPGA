@@ -996,7 +996,7 @@ Vec3f castRay(
 			// Get properties of the object 
 			isect.hitObject->getSurfaceProperties(hitPoint, dir, isect.index, isect.uv, hitNormal, hitTexCoordinates);
 #ifdef DEBUG_RENDER
-					std::cout << "DEBUG: Hit object type is: " << isect.hitObject->type << "\n"; 
+			std::cout << "DEBUG: Hit object type is: " << isect.hitObject->type << "\n"; 
 #endif
 			// Depending on the object type use different shading method
 			switch (isect.hitObject->type) 

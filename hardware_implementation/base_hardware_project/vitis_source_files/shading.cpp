@@ -47,7 +47,9 @@ XRaytriangleintersect_Config *RaytiConfig;
 	Pattern 5:	Solid Grey Colour
 */
 #define PATTERN_5
-
+#define DEBUG
+//#define DEBUG_RENDER
+//#define DEBUG_GEO
 
 static const float kInfinity = std::numeric_limits<float>::max();
 static const float kEpsilon = 1e-8;
@@ -173,7 +175,9 @@ int readSceneOptionDataFile (const char *file, Options *options, uint32_t *numof
 			perror("\rERROR: Reading width failed\n\r");
 			return XST_FAILURE;
 		}
-	std::cerr << "\rDEBUG: Width: " << width << "\n\r";
+#ifdef DEBUG
+	std::cerr << "\rDEBUG: Width: " << width << "\n";
+#endif	
 	options->width = width;
 	
 	// Read height
@@ -184,7 +188,9 @@ int readSceneOptionDataFile (const char *file, Options *options, uint32_t *numof
 			perror("\rERROR: Reading height failed\n\r");
 			return XST_FAILURE;
 		}
-	std::cerr << "\rDEBUG: Height: " << height << "\n\r";
+#ifdef DEBUG
+	std::cerr << "DEBUG: Height: " << height << "\n";
+#endif	
 	options->height = height;
 	
 	// Read FOV
@@ -195,12 +201,16 @@ int readSceneOptionDataFile (const char *file, Options *options, uint32_t *numof
 			perror("\rERROR: Reading fov failed\n\r");
 			return XST_FAILURE;
 		}
-	std::cerr << "\rDEBUG: FOV: " << fov << "\n\r";
+#ifdef DEBUG
+	std::cerr << "\rDEBUG: FOV: " << fov << "\n";
+#endif	
 	options->fov = fov;
 	
 	// Read background Colour
 	float backgroundcolour[3];
-	std::cerr << "\rDEBUG: Background Colour: ";
+#ifdef DEBUG
+	std::cerr << "\rDEBUG: Background Colour: " ;
+#endif
 	for (uint32_t i=0; i < 3; i++)
 		{
 			fun_ret = f_read(&sceneOptionDataFile, &backgroundcolour[i], sizeof(float), &readBytes);
@@ -209,9 +219,13 @@ int readSceneOptionDataFile (const char *file, Options *options, uint32_t *numof
 					perror("\rERROR: Reading background colour failed\n\r");
 					return XST_FAILURE;
 				}
+#ifdef DEBUG
 			std::cerr << backgroundcolour[i] << " "; 
+#endif		
 		}
-	std::cerr << "\n\r";
+#ifdef DEBUG
+	std::cerr << "\r\n";
+#endif	
 	options->backgroundColor.x = backgroundcolour[0];
 	options->backgroundColor.y = backgroundcolour[1];
 	options->backgroundColor.z = backgroundcolour[2];
@@ -228,12 +242,17 @@ int readSceneOptionDataFile (const char *file, Options *options, uint32_t *numof
 				}
 
 		}
+#ifdef DEBUG
 	std::cerr << "\rDEBUG: Camera to World: " << camera2world << "\n\r";
+#endif
+
 	for (uint32_t i=0; i < 4; i++)
 		{
 			for (uint32_t j=0; j < 4; j++)
 				{
+#ifdef DEBUG
 					std::cerr << "\rDEBUG: camera to world matrix [" << i << "][" << j << "] " << camera2world[(i*4)+j] << "\n\r";
+#endif
 					options->cameraToWorld.x[i][j] = camera2world[(i*4)+j];
 				}
 		}
@@ -246,7 +265,9 @@ int readSceneOptionDataFile (const char *file, Options *options, uint32_t *numof
 			perror("\rERROR: Reading bias failed\n\r");
 			return XST_FAILURE;
 		}
+#ifdef DEBUG
 	std::cerr << "\rDEBUG: Bias: " << bias << "\n\r";
+#endif
 	options->bias = bias;
 	
 	// Read max depth
@@ -257,7 +278,9 @@ int readSceneOptionDataFile (const char *file, Options *options, uint32_t *numof
 			perror("\rERROR: Reading max depth\n\r");
 			return XST_FAILURE;
 		}
+#ifdef DEBUG
 	std::cerr << "\rDEBUG: Max Depth: " << maxDepth << "\n\r";
+#endif
 	options->maxDepth = maxDepth;
 
 	// Read light data 
@@ -270,7 +293,9 @@ int readSceneOptionDataFile (const char *file, Options *options, uint32_t *numof
 			perror("\rERROR: Reading light count failed\n\r");
 			return XST_FAILURE;
 		}	
+#ifdef DEBUG
 	std::cerr << "\rDEBUG: Number of Light Sources: " << temp_lights << "\n\r";
+#endif
 	*numoflight = temp_lights;
 
 	// Allocate memory for light data 
@@ -292,12 +317,16 @@ int readSceneOptionDataFile (const char *file, Options *options, uint32_t *numof
 					perror("\rERROR: Reading light type failed\n\r");
 					return XST_FAILURE;
 				}
+#ifdef DEBUG
 			std::cerr << "\rDEBUG: Light Source " << k << "->Light type " << templighttype << "\n\r";
+#endif
 			lightData[k].lighttype = templighttype;
 			
 			// Read light colour
 			float lightcolour[3];
+#ifdef DEBUG
 			std::cerr << "\rDEBUG: Light Source " << k << "->Light Colour ";
+#endif
 			for (uint32_t i=0; i < 3; i++)
 				{
 					fun_ret = f_read(&sceneOptionDataFile, &lightcolour[i], sizeof(float), &readBytes);
@@ -306,9 +335,13 @@ int readSceneOptionDataFile (const char *file, Options *options, uint32_t *numof
 							perror("\rERROR: Reading light colour failed\n\r");
 							return XST_FAILURE;
 						}
+#ifdef DEBUG
 					std::cerr << lightcolour[i] << " ";
+#endif
 				}
+#ifdef DEBUG
 			std::cerr << "\n\r";
+#endif
 			lightData[k].colour.x = lightcolour[0];
 			lightData[k].colour.y = lightcolour[1];
 			lightData[k].colour.z = lightcolour[2];
@@ -321,7 +354,9 @@ int readSceneOptionDataFile (const char *file, Options *options, uint32_t *numof
 					perror("\rERROR: Reading colour intensity failed\n\r");
 					return XST_FAILURE;
 				}
+#ifdef DEBUG
 			std::cerr << "\rDEBUG: Light Source " << k << "->Light intensity " << colourintensity << "\n\r";
+#endif
 			lightData[k].intensity = colourintensity;
 
 			// Read light to world data from file
@@ -334,13 +369,17 @@ int readSceneOptionDataFile (const char *file, Options *options, uint32_t *numof
 							return XST_FAILURE;
 						}
 				}
+#ifdef DEBUG
 			std::cerr << "\rDEBUG: Light Source " << k << "->Light to world " << light2world << "\n\r";
+#endif
 			// Pass light to world data to struct
 			for (uint32_t i=0; i < 4; i++)
 				{
 					for (uint32_t j=0; j < 4; j++)
 						{
+#ifdef DEBUG
 							std::cerr << "\rDEBUG: Light Source " << k << "->Light to world [" << i << "][" << j << "] " << light2world[(i*4)+j] << "\n\r";
+#endif
 							lightData[k].light2world.x[i][j] = light2world[(i*4)+j];
 						}
 				}	
@@ -383,12 +422,16 @@ int readObjectOptionDataFile(const char *file, Matrix44f *o2w)
 					return XST_FAILURE;
 				}
 		}
+#ifdef DEBUG
 	std::cerr << "\rDEBUG: Object to world " << object2world << "\n\r";
+#endif
 	for (uint32_t i=0; i < 4; i++)
 		{
 			for (uint32_t j=0; j < 4; j++)
 				{
+#ifdef DEBUG
 					std::cerr << "\rDEBUG: object to world matrix [" << i << "][" << j << "] " << object2world[(i*4)+j] << "\n\r";
+#endif
 					o2w->x[i][j] = object2world[(i*4)+j];
 				}
 		}
@@ -435,7 +478,9 @@ int readObjectOptionDataFile(const char *file, Object *mesh)
 			perror("\rERROR: Reading type failed\n\r");
 			return XST_FAILURE;
 		}
+#ifdef DEBUG
 	std::cerr << "\rDEBUG: Object type " << type << "\n\r";
+#endif
 	switch (type)
 		{
 			case 0:
@@ -462,12 +507,16 @@ int readObjectOptionDataFile(const char *file, Object *mesh)
 			perror("\rERROR: Reading ior failed\n\r");
 			return XST_FAILURE;
 		}	
+#ifdef DEBUG
 	std::cerr << "\rDEBUG: Object Index of Reflection " << ior << "\n\r";
+#endif
 	mesh->ior = ior;
 	
 	// Read albedo
 	float albedo[3];
+#ifdef DEBUG
 	std::cerr << "\rDEBUG: Object albedo ";
+#endif
 	for (uint32_t i=0; i < 3; i++)
 		{
 			fun_ret = f_read(&objectDataFile, &albedo[i], sizeof(float), &readBytes);
@@ -476,9 +525,13 @@ int readObjectOptionDataFile(const char *file, Object *mesh)
 					perror("\rERROR: Reading albedo failed\n\r");
 					return XST_FAILURE;
 				}
+#ifdef DEBUG
 			std::cerr << albedo[i] << " ";
+#endif
 		}
+#ifdef DEBUG
 	std::cerr << "\n\r";
+#endif
 	mesh->albedo.x = albedo[0];
 	mesh->albedo.y = albedo[1];
 	mesh->albedo.z = albedo[2];
@@ -492,7 +545,9 @@ int readObjectOptionDataFile(const char *file, Object *mesh)
 			perror("\rERROR: Reading kd failed\n\r");
 			return XST_FAILURE;
 		}	
+#ifdef DEBUG
 	std::cerr << "\rDEBUG: Object Phong shading kd factor " << kd << "\n\r";
+#endif
 	mesh->Kd = kd;
 
 	// Read ks
@@ -503,7 +558,9 @@ int readObjectOptionDataFile(const char *file, Object *mesh)
 			perror("\rERROR: Reading ks failed\n\r");
 			return XST_FAILURE;
 		}		
+#ifdef DEBUG
 	std::cerr << "\rDEBUG: Object Phong shading ks factor " << ks << "\n\r";
+#endif
 	mesh->Ks = ks;
 
 	// Read n
@@ -514,7 +571,9 @@ int readObjectOptionDataFile(const char *file, Object *mesh)
 			perror("\rERROR: Reading n failed\n\r");
 			return XST_FAILURE;
 		}	
+#ifdef DEBUG
 	std::cerr << "\rDEBUG: Object Phong shading n factor " << n << "\n\r";
+#endif
 	mesh->n = n;	
 
 	fun_ret = f_close(&objectDataFile);
@@ -776,7 +835,9 @@ TriangleMesh* loadPolyMeshFromFile(const char *file, const Matrix44f &o2w)
 			perror("\rERROR: Reading number of faces failed\n\r");
 			return nullptr;
 		}
+#ifdef DEBUG
 	std::cerr << "\rDEBUG: Number of Faces: " << numFaces << "\n\r";
+#endif
 	std::unique_ptr<uint32_t []> faceIndex(new uint32_t[numFaces]);
 
 	uint32_t vertsIndexArraySize = 0;
@@ -789,10 +850,14 @@ TriangleMesh* loadPolyMeshFromFile(const char *file, const Matrix44f &o2w)
 					perror("\rERROR: Reading Face index failed\n\r");
 					return nullptr;
 				}
+#ifdef DEBUG
 			std::cerr << "\rDEBUG: Face index [ " << i << "]: " << faceIndex[i] << "\n\r";
+#endif
 			vertsIndexArraySize += faceIndex[i];
 		}
+#ifdef DEBUG
 	std::cerr << "\rDEBUG: Vertex Index Array Size: " << vertsIndexArraySize << "\n\r";
+#endif
 
 	std::unique_ptr<uint32_t []> vertsIndex(new uint32_t[vertsIndexArraySize]);
 
@@ -806,7 +871,9 @@ TriangleMesh* loadPolyMeshFromFile(const char *file, const Matrix44f &o2w)
 					perror("\rERROR: Reading face index failed\n\r");
 					return nullptr;
 				}
+#ifdef DEBUG
 			std::cerr << "\rDEBUG: Vertex index [ " << i << "]: " << vertsIndex[i] << "\n\r";
+#endif
 
 			if (vertsIndex[i] > vertsArraySize) 
 				{
@@ -814,8 +881,9 @@ TriangleMesh* loadPolyMeshFromFile(const char *file, const Matrix44f &o2w)
 				}
 		}
 	vertsArraySize += 1;
-
+#ifdef DEBUG
 	std::cerr << "\rDEBUG: Vertex Array Size: " << vertsArraySize << "\n\r";
+#endif
 	// reading vertices
 	std::unique_ptr<Vec3f []> verts(new Vec3f[vertsArraySize]);
 	for (uint32_t i = 0; i < vertsArraySize; ++i) 
@@ -838,7 +906,9 @@ TriangleMesh* loadPolyMeshFromFile(const char *file, const Matrix44f &o2w)
 					perror("\rERROR: Reading vertices failed\n\r");
 					return nullptr;
 				}
+#ifdef DEBUG
 			std::cerr << "\rDEBUG: Vertex [ " << i << "]: " << verts[i].x << " " << verts[i].y << " " << verts[i].z << "\n\r";	
+#endif
 		}
 
 	// reading normals
@@ -863,7 +933,9 @@ TriangleMesh* loadPolyMeshFromFile(const char *file, const Matrix44f &o2w)
 					perror("\rERROR: Reading normals failed\n\r");
 					return nullptr;
 				}	
+#ifdef DEBUG
 			std::cerr << "\rDEBUG: Normal [ " << i << "]: " << normals[i].x << " " << normals[i].y << " " << normals[i].z << "\n\r";	
+#endif
 		}
 
 	// reading st coordinates
@@ -882,7 +954,9 @@ TriangleMesh* loadPolyMeshFromFile(const char *file, const Matrix44f &o2w)
 					perror("\rERROR: Reading normals failed\n\r");
 					return nullptr;
 				}
+#ifdef DEBUG
 			std::cerr << "\rDEBUG: Textrure Coordinates [ " << i << "]: " << st[i].x << " " << st[i].y << "\n\r";	
+#endif
 		}
 	
 	return new TriangleMesh(o2w, numFaces, faceIndex, vertsIndex, verts, normals, st);
@@ -1101,7 +1175,9 @@ Vec3f castRay(
 
 			// Get properties of the object 
 			isect.hitObject->getSurfaceProperties(hitPoint, dir, isect.index, isect.uv, hitNormal, hitTexCoordinates);
-
+#ifdef DEBUG_RENDER
+			std::cout << "DEBUG: Hit object type is: " << isect.hitObject->type << "\n"; 
+#endif
 			// Depending on the object type use different shading method
 			switch (isect.hitObject->type) 
 				{
@@ -1150,6 +1226,9 @@ Vec3f castRay(
 #endif
 									// If the point is in shadow, the point is black. If vis is set to true, then the color of the point is left unchanged
 									hitColor += vis * pattern * lightIntensity * std::max(0.f, hitNormal.dotProduct(-lightDir));
+#ifdef DEBUG_RENDER
+									std::cerr << "DEBUG: Diffuse hit colour: " << hitColor << std::endl;
+#endif
 								}
 							break;
 						}
@@ -1188,6 +1267,9 @@ Vec3f castRay(
 							
 							// mix the two
 							hitColor += reflectionColor * kr + refractionColor * (1 - kr);
+#ifdef DEBUG_RENDER
+							std::cerr << "DEBUG: Reflect and Refract hit colour: "<< hitColor << std::endl;
+#endif
 							break;
 						}
 					case kPhong:
@@ -1215,7 +1297,9 @@ Vec3f castRay(
 									specular += vis * lightIntensity * std::pow(std::max(0.f, R.dotProduct(-dir)), isect.hitObject->n);
 								}
 							hitColor = diffuse * isect.hitObject->Kd + specular * isect.hitObject->Ks;
-							//std::cerr << hitColor << std::endl;
+#ifdef DEBUG_RENDER
+							std::cerr << "DEBUG: Phong hit colour: " << hitColor << std::endl;
+#endif	
 							break;
 						}
 					default:
@@ -1344,7 +1428,9 @@ int render(
 			perror("\rERROR: Sync to file failed\n\r");
 			return XST_FAILURE;
 		} 
+#ifdef DEBUG
 	std::cerr << "\n\rDEBUG: HEADER Wrote " << off << " bytes to the SD card\n\r" << std::endl;
+#endif
 	writtenBytes = 0;
 	off = 0;
 	// Write the main core of the file ( dump framebuffer )
@@ -1377,9 +1463,16 @@ int render(
 					return XST_FAILURE;
 				}
 			off+=writtenBytes;
+			//std::cerr << "\r";
+			//fprintf(stderr, "\r");
 			//fprintf(stderr, "\r%3lu%c", uint32_t(i / (float)(options.height * options.width) * 100), '%');
 		}
-	std::cerr << "\n\rDEBUG: RGB wrote " << off << " bytes to the SD card\n\r";
+	std::cerr << "\r";
+	fprintf(stderr, "\r");
+#ifdef DEBUG
+	fprintf(stderr,"\rDEBUG: RGB wrote %d bytes to the SD card\r", off);
+#endif
+	//std::cerr << "\n\rDEBUG: RGB wrote " << off << " bytes to the SD card\n\r";
 	std::cerr << "\n\rWriting to SD card DONE\n\r\n\r";
 
 	// Close the file
@@ -1476,7 +1569,11 @@ int main(int argc, char **argv)
 
 		6) Increment factors and repeat for every object
 	*/
-  //init_platform();
+  init_platform();
+
+	// Start Printring 
+	std::cerr << "\r";
+	fprintf(stderr, "\r");
 
 	// Mount the filesystem 
 	result = f_mount(&FS_instance,Path, 0);
@@ -1590,6 +1687,7 @@ int main(int argc, char **argv)
 			std::cerr << "\n\rAn I/O Error has occurred\n\r";
 			return XST_FAILURE;
 		}
-	//cleanup_platform();
+	
+	cleanup_platform();
 	return XST_SUCCESS;
 }
