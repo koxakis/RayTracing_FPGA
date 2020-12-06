@@ -691,25 +691,27 @@ public:
 					*/
 					// Set I/O pointers 
 					// Set Ray origin
-					XRaytriangleintersect_Set_orig_x(&RaytiInstancePTR, (u32)(&orig.x));
-					XRaytriangleintersect_Set_orig_y(&RaytiInstancePTR, (u32)(&orig.y));
-					XRaytriangleintersect_Set_orig_z(&RaytiInstancePTR, (u32)(&orig.z));
+					XRaytriangleintersect_Set_orig(&RaytiInstancePTR, (u64)(&orig));
+					Vec3f orig_ret = (u64)XRaytriangleintersect_Get_orig(&RaytiInstancePTR);
 					// Set Ray direction
-					XRaytriangleintersect_Set_dir_x(&RaytiInstancePTR, (u32)(&dir.x));
-					XRaytriangleintersect_Set_dir_y(&RaytiInstancePTR, (u32)(&dir.y));
-					XRaytriangleintersect_Set_dir_z(&RaytiInstancePTR, (u32)(&dir.z));
+					XRaytriangleintersect_Set_dir(&RaytiInstancePTR, (u64)(&dir));
+					Vec3f dir_ret = (u64)XRaytriangleintersect_Get_dir(&RaytiInstancePTR);
 					// Set triangle V0 
-					XRaytriangleintersect_Set_v0_x(&RaytiInstancePTR, (u32)(&v0.x));
-					XRaytriangleintersect_Set_v0_y(&RaytiInstancePTR, (u32)(&v0.y));
-					XRaytriangleintersect_Set_v0_z(&RaytiInstancePTR, (u32)(&v0.z));
+					XRaytriangleintersect_Set_v0(&RaytiInstancePTR, (u64)(&v0));
+					Vec3f v0_ret = (u64)XRaytriangleintersect_Get_v0(&RaytiInstancePTR);
 					// Set triangle V1
-					XRaytriangleintersect_Set_v1_x(&RaytiInstancePTR, (u32)(&v1.x));
-					XRaytriangleintersect_Set_v1_y(&RaytiInstancePTR, (u32)(&v1.y));
-					XRaytriangleintersect_Set_v1_z(&RaytiInstancePTR, (u32)(&v1.z));
+					XRaytriangleintersect_Set_v1(&RaytiInstancePTR, (u64)(&v1));
+					Vec3f v1_ret = (u64)XRaytriangleintersect_Get_v1(&RaytiInstancePTR);
 					// Set triangle V2
-					XRaytriangleintersect_Set_v2_x(&RaytiInstancePTR, (u32)(&v2.x));
-					XRaytriangleintersect_Set_v2_y(&RaytiInstancePTR, (u32)(&v2.y));
-					XRaytriangleintersect_Set_v2_z(&RaytiInstancePTR, (u32)(&v2.z));
+					XRaytriangleintersect_Set_v2(&RaytiInstancePTR, (u64)(&v2));
+					Vec3f v2_ret = (u64)XRaytriangleintersect_Get_v2(&RaytiInstancePTR);
+
+
+					std::cerr << "\r\n Orig per " << orig_ret << std::endl;
+					std::cerr << "\r\n Dir per " << dir_ret << std::endl;
+					std::cerr << "\r\n v0 per " << v0_ret << std::endl;
+					std::cerr << "\r\n v1 per " << v1_ret << std::endl;
+					std::cerr << "\r\n v2 per " << v2_ret << std::endl;
 
 					// Check if the peripheral is ready
 					if (!XRaytriangleintersect_IsReady(&RaytiInstancePTR))
@@ -731,18 +733,26 @@ public:
 					temp_v = XRaytriangleintersect_Get_v(&RaytiInstancePTR);
 					// Set return 
 					temp_return = (bool)XRaytriangleintersect_Get_return(&RaytiInstancePTR);
-
+					/*
+					std::cerr << "\nDEBUG:  \n";
+					std::cerr << "\nOrig " << orig.x << " " << orig.y << " " << orig.z << " ";
+					std::cerr << "\nDir " << dir.x << " " << dir.y  << " " << dir.z << " ";
+					std::cerr << "\nV0 " << v0.x << " " << v0.y << " " << v0.z << " ";
+					std::cerr << "\nV1 " << v1.x << " " << v1.y << " " << v1.z << " ";
+					std::cerr << "\nV2 " << v2.x << " " << v2.y << " " << v2.z << " ";
+					std::cerr << "\nDEBUG: result " << temp_t << " " << temp_u << " " << temp_v << " " << temp_return << "\n";
+					*/
 					if ( (temp_return) && temp_t < tNear)
 						{
-							/*
-							std::cerr << "\nDEBUG: " << temp_t << " " << tNear << " " << temp_return <<"\n";
+							
+							std::cerr << "\nDEBUG:  \n";
 							std::cerr << orig.x << " " << orig.y << " " << orig.z << " ";
 							std::cerr << dir.x << " " << dir.y  << " " << dir.z << " ";
 							std::cerr << v0.x << " " << v0.y << " " << v0.z << " ";
 							std::cerr << v1.x << " " << v1.y << " " << v1.z << " ";
 							std::cerr << v2.x << " " << v2.y << " " << v2.z << " ";
 							std::cerr << "\nDEBUG: result " << temp_t << " " << temp_u << " " << temp_v << " " << temp_return << "\n";
-							*/
+							
 							tNear = temp_t;
 							uv.x = temp_u;
 							uv.y = temp_v;
@@ -1429,7 +1439,7 @@ int render(
 			return XST_FAILURE;
 		} 
 #ifdef DEBUG
-	std::cerr << "\n\rDEBUG: HEADER Wrote " << off << " bytes to the SD card\n\r" << std::endl;
+	xil_printf("\r\nDEBUG: HEADER Wrote %d bytes to the SD card\r\n", off );
 #endif
 	writtenBytes = 0;
 	off = 0;
@@ -1463,14 +1473,10 @@ int render(
 					return XST_FAILURE;
 				}
 			off+=writtenBytes;
-			//std::cerr << "\r";
-			//fprintf(stderr, "\r");
-			//fprintf(stderr, "\r%3lu%c", uint32_t(i / (float)(options.height * options.width) * 100), '%');
 		}
-	std::cerr << "\r";
-	fprintf(stderr, "\r");
+	xil_printf("\r");
 #ifdef DEBUG
-	fprintf(stderr,"\rDEBUG: RGB wrote %d bytes to the SD card\r", off);
+	xil_printf("\rDEBUG: RGB wrote %d bytes to the SD card\r", off);
 #endif
 	//std::cerr << "\n\rDEBUG: RGB wrote " << off << " bytes to the SD card\n\r";
 	std::cerr << "\n\rWriting to SD card DONE\n\r\n\r";
