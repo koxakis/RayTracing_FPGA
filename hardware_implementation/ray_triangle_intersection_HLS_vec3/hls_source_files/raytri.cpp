@@ -3,8 +3,8 @@
 
 // Perform the MT Ray triangle intersecion and return u, v coordinates if intersection occurs 
 bool rayTriangleIntersect(
-	const Vec3f &orig, const Vec3f &dir,
-	const Vec3f &v0, const Vec3f &v1, const Vec3f &v2,
+	Vec3f &orig, Vec3f &dir,
+	Vec3f &v0, Vec3f &v1, Vec3f &v2,
 	float &t, float &u, float &v)
 {
   
@@ -24,6 +24,8 @@ bool rayTriangleIntersect(
 	#pragma HLS INTERFACE m_axi depth=128 port=orig offset=slave bundle=ray_orig_bundle
 	#pragma HLS INTERFACE m_axi depth=128 port=dir offset=slave bundle=ray_dir_bundle
 	// find if the ray intersects the triangle 
+
+	float local_t ,local_u, local_v;
 
 	// Transfer data with memcpy
 	Vec3f orig_local;
@@ -74,20 +76,40 @@ bool rayTriangleIntersect(
 	// translate to the unit triangle 
 	Vec3f tvec = orig_local - v0_local;
 	// compute u from (T dotproduct P) * 1/P*E1
-	u = tvec.dotProduct(pvec) * invDet;
+	local_u = tvec.dotProduct(pvec) * invDet;
 	// we reject the triangle if u is either lower than 0 or greater than 1
-	if (u < 0 || u > 1) return false;
-
+	if (local_u< 0 || local_u > 1) 
+		{
+			u = local_u;
+			return false;
+		}
 	// Q in the equation 
 	Vec3f qvec = tvec.crossProduct(v0v1);
 	// compute v from (D dotproduct Q) * 1/P*E1 
-	v = dir_local.dotProduct(qvec) * invDet;
+	local_v = dir_local.dotProduct(qvec) * invDet;
 	// we reject the triangle if v is either lower than 0 or greater than 1
-	if (v < 0 || u + v > 1) return false;
-
+	if (local_v < 0 || local_u + local_v > 1) 
+		{
+			v = local_v;
+			u = local_u;
+			return false;
+		}
 	// compute t from (E2 dotproduct Q) * 1/P*E1 
-	t = v0v2.dotProduct(qvec) * invDet;
+	local_t = v0v2.dotProduct(qvec) * invDet;
 	
-	return (t > 0) ? true : false;
+	if ( local_t > 0)
+		{
+			v = local_v;
+			u = local_u;
+			t = local_t;
+			return true;
+		}
+	else
+		{
+			v = local_v;
+			u = local_u;
+			t = local_t;	
+			return false;	
+		}
 }
 

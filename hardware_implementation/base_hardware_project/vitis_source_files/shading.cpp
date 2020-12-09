@@ -676,42 +676,47 @@ public:
 	// Test if the ray interesests this triangle mesh
 	bool intersect(const Vec3f &orig, const Vec3f &dir, float &tNear, uint32_t &triIndex, Vec2f &uv) const
 		{
-			uint32_t temp_t, temp_u, temp_v; 
+			float temp_t, temp_u, temp_v;
+			float local_t, local_u, local_v;  
 			bool temp_return;
 			uint32_t j = 0;
 			bool isect = false;
+			Vec3f local_orig, local_dir;
+			Vec3f local_v0, local_v1, local_v2;
+
+			// Set local values to send correctly to the peripheral 
+			local_orig = orig;
+			local_dir = dir;
 			// Loop each object's triangles
 			for (uint32_t i = 0; i < numTris; ++i) 
 				{
 					const Vec3f &v0 = P[trisIndex[j]];
+					local_v0 = v0;
 					const Vec3f &v1 = P[trisIndex[j + 1]];
+					local_v1 = v1;
 					const Vec3f &v2 = P[trisIndex[j + 2]];
+					local_v2 = v2;
 					/* a ray may intersect more than one triangle from the mesh therefore we also 
 					need to keep track of the nearest intersection distance as we iterate over the triangles.            
 					*/
 					// Set I/O pointers 
 					// Set Ray origin
-					XRaytriangleintersect_Set_orig(&RaytiInstancePTR, (u64)(&orig));
-					Vec3f orig_ret = (u64)XRaytriangleintersect_Get_orig(&RaytiInstancePTR);
+					XRaytriangleintersect_Set_orig(&RaytiInstancePTR, (u64)(&local_orig));
 					// Set Ray direction
-					XRaytriangleintersect_Set_dir(&RaytiInstancePTR, (u64)(&dir));
-					Vec3f dir_ret = (u64)XRaytriangleintersect_Get_dir(&RaytiInstancePTR);
+					XRaytriangleintersect_Set_dir(&RaytiInstancePTR, (u64)(&local_dir));
 					// Set triangle V0 
-					XRaytriangleintersect_Set_v0(&RaytiInstancePTR, (u64)(&v0));
-					Vec3f v0_ret = (u64)XRaytriangleintersect_Get_v0(&RaytiInstancePTR);
+					XRaytriangleintersect_Set_v0(&RaytiInstancePTR, (u64)(&local_v0));
 					// Set triangle V1
-					XRaytriangleintersect_Set_v1(&RaytiInstancePTR, (u64)(&v1));
-					Vec3f v1_ret = (u64)XRaytriangleintersect_Get_v1(&RaytiInstancePTR);
+					XRaytriangleintersect_Set_v1(&RaytiInstancePTR, (u64)(&local_v1));
 					// Set triangle V2
-					XRaytriangleintersect_Set_v2(&RaytiInstancePTR, (u64)(&v2));
-					Vec3f v2_ret = (u64)XRaytriangleintersect_Get_v2(&RaytiInstancePTR);
+					XRaytriangleintersect_Set_v2(&RaytiInstancePTR, (u64)(&local_v2));
 
-
-					std::cerr << "\r\n Orig per " << orig_ret << std::endl;
-					std::cerr << "\r\n Dir per " << dir_ret << std::endl;
-					std::cerr << "\r\n v0 per " << v0_ret << std::endl;
-					std::cerr << "\r\n v1 per " << v1_ret << std::endl;
-					std::cerr << "\r\n v2 per " << v2_ret << std::endl;
+					// Set u
+					XRaytriangleintersect_Set_u(&RaytiInstancePTR, (u64)(&local_u));
+					// Set v
+					XRaytriangleintersect_Set_v(&RaytiInstancePTR, (u64)(&local_v));
+					// Set t
+					XRaytriangleintersect_Set_t(&RaytiInstancePTR, (u64)(&local_t));		
 
 					// Check if the peripheral is ready
 					if (!XRaytriangleintersect_IsReady(&RaytiInstancePTR))
@@ -725,33 +730,53 @@ public:
 					// Wait util completion
 					while (!XRaytriangleintersect_IsDone(&RaytiInstancePTR)) {}
 
+					// Get input values back from the peripheral 
+					Vec3f orig_ret = (u64)XRaytriangleintersect_Get_orig(&RaytiInstancePTR);
+					Vec3f dir_ret = (u64)XRaytriangleintersect_Get_dir(&RaytiInstancePTR);
+					Vec3f v0_ret = (u64)XRaytriangleintersect_Get_v0(&RaytiInstancePTR);
+					Vec3f v1_ret = (u64)XRaytriangleintersect_Get_v1(&RaytiInstancePTR);
+					Vec3f v2_ret = (u64)XRaytriangleintersect_Get_v2(&RaytiInstancePTR);
+
 					// Set t distance to intersection point
-					temp_t = XRaytriangleintersect_Get_t(&RaytiInstancePTR);
+					temp_t = (u64)XRaytriangleintersect_Get_t(&RaytiInstancePTR);
 					// Set u intersection coordinate 
-					temp_u = XRaytriangleintersect_Get_u(&RaytiInstancePTR);
+					temp_u = (u64)XRaytriangleintersect_Get_u(&RaytiInstancePTR);
 					// Set v intersection coordinate
-					temp_v = XRaytriangleintersect_Get_v(&RaytiInstancePTR);
+					temp_v = (u64)XRaytriangleintersect_Get_v(&RaytiInstancePTR);
 					// Set return 
 					temp_return = (bool)XRaytriangleintersect_Get_return(&RaytiInstancePTR);
-					/*
+					// Print values returned from the peripheral 
+					
 					std::cerr << "\nDEBUG:  \n";
-					std::cerr << "\nOrig " << orig.x << " " << orig.y << " " << orig.z << " ";
-					std::cerr << "\nDir " << dir.x << " " << dir.y  << " " << dir.z << " ";
-					std::cerr << "\nV0 " << v0.x << " " << v0.y << " " << v0.z << " ";
-					std::cerr << "\nV1 " << v1.x << " " << v1.y << " " << v1.z << " ";
-					std::cerr << "\nV2 " << v2.x << " " << v2.y << " " << v2.z << " ";
+					std::cerr << "\r\nOrig per " << orig_ret ;
+					std::cerr << "\r\nDir per " << dir_ret ;
+					std::cerr << "\r\nv0 per " << v0_ret ;
+					std::cerr << "\r\nv1 per " << v1_ret ;
+					std::cerr << "\r\nv2 per " << v2_ret ;
+					std::cerr << "\nOrig local " << local_orig.x << " " << local_orig.y << " " << local_orig.z << " ";
+					std::cerr << "\nDir local " << local_dir.x << " " << local_dir.y  << " " << local_dir.z << " ";
+					std::cerr << "\nV0 local " << local_v0.x << " " << local_v0.y << " " << local_v0.z << " ";
+					std::cerr << "\nV1 local " << local_v1.x << " " << local_v1.y << " " << local_v1.z << " ";
+					std::cerr << "\nV2 local " << local_v2.x << " " << local_v2.y << " " << local_v2.z << " ";
 					std::cerr << "\nDEBUG: result " << temp_t << " " << temp_u << " " << temp_v << " " << temp_return << "\n";
-					*/
+					std::cerr << "\nDEBUG: result " << local_t << " " << local_u << " " << local_v << " " << "\n";
+
 					if ( (temp_return) && temp_t < tNear)
 						{
-							
+							/*
 							std::cerr << "\nDEBUG:  \n";
-							std::cerr << orig.x << " " << orig.y << " " << orig.z << " ";
-							std::cerr << dir.x << " " << dir.y  << " " << dir.z << " ";
-							std::cerr << v0.x << " " << v0.y << " " << v0.z << " ";
-							std::cerr << v1.x << " " << v1.y << " " << v1.z << " ";
-							std::cerr << v2.x << " " << v2.y << " " << v2.z << " ";
+							std::cerr << "\r\n Orig per " << orig_ret ;
+							std::cerr << "\r\n Dir per " << dir_ret ;
+							std::cerr << "\r\n v0 per " << v0_ret ;
+							std::cerr << "\r\n v1 per " << v1_ret ;
+							std::cerr << "\r\n v2 per " << v2_ret ;
+							std::cerr << "\nOrig " << orig.x << " " << orig.y << " " << orig.z << " ";
+							std::cerr << "\nDir " << dir.x << " " << dir.y  << " " << dir.z << " ";
+							std::cerr << "\nV0 " << v0.x << " " << v0.y << " " << v0.z << " ";
+							std::cerr << "\nV1 " << v1.x << " " << v1.y << " " << v1.z << " ";
+							std::cerr << "\nV2 " << v2.x << " " << v2.y << " " << v2.z << " ";
 							std::cerr << "\nDEBUG: result " << temp_t << " " << temp_u << " " << temp_v << " " << temp_return << "\n";
+							*/
 							
 							tNear = temp_t;
 							uv.x = temp_u;
@@ -1479,7 +1504,7 @@ int render(
 	xil_printf("\rDEBUG: RGB wrote %d bytes to the SD card\r", off);
 #endif
 	//std::cerr << "\n\rDEBUG: RGB wrote " << off << " bytes to the SD card\n\r";
-	std::cerr << "\n\rWriting to SD card DONE\n\r\n\r";
+	xil_printf("\n\rWriting to SD card DONE\n\r");
 
 	// Close the file
 	fun_ret = f_close(&frameBufferFile);
@@ -1693,6 +1718,7 @@ int main(int argc, char **argv)
 			std::cerr << "\n\rAn I/O Error has occurred\n\r";
 			return XST_FAILURE;
 		}
+	xil_printf("End of run \n\r");
 	
 	cleanup_platform();
 	return XST_SUCCESS;

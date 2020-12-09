@@ -1,33 +1,4 @@
-//[header]
-// This program illustrates how the concept of vector and matrix can be implemented
-// in C++. This is a light version of the implementation. It contains the most
-// essential methods to manipulate vectors and matrices. It should be enough
-// for most projects. Vectors and matrices are really the alphabet as we said
-// in the lesson of any graphics application. It's really important you feel
-// confortable with these techniques especially with the concepts of
-// normalizing vectors, computing their length, computing the dot and cross products
-// of two vectors, and the point- and vector-matrix multiplication (and knowing
-// the difference between the two).
-//[/header]
-//[compile]
-// c++ geometry.cpp  -o geometry -std=c++11
-//[/compile]
-//[ignore]
-// Copyright (C) 2012  www.scratchapixel.com
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//[/ignore]
+
 #include <cstdlib>
 #include <cstdio>
 #include <iostream>
@@ -150,6 +121,13 @@ public:
 typedef Vec3<float> Vec3f;
 typedef Vec3<int> Vec3i;
 
+// Perform the MT Ray triangle intersecion and return u, v coordinates if intersection occurs 
+bool rayTriangleIntersect(
+	Vec3f &orig, Vec3f &dir,
+	Vec3f &v0, Vec3f &v1, Vec3f &v2,
+	float &t, float &u, float &v);
+
+
 //[comment]
 // Implementation of a generic 4x4 Matrix class - Same thing here than with the Vec3 class. It uses
 // a template which is maybe less useful than with vectors but it can be used to
@@ -215,14 +193,6 @@ public:
     //[/comment]
     static void multiply(const Matrix44<T> &a, const Matrix44& b, Matrix44 &c)
     {
-#if 0
-        for (unsigned char i = 0; i < 4; ++i) {
-            for (unsigned char j = 0; j < 4; ++j) {
-                c[i][j] = a[i][0] * b[0][j] + a[i][1] * b[1][j] +
-                    a[i][2] * b[2][j] + a[i][3] * b[3][j];
-            }
-        }
-#else
         // A restric qualified pointer (or reference) is basically a promise
         // to the compiler that for the scope of the pointer, the target of the
         // pointer will only be accessed through that pointer (and pointers
@@ -272,22 +242,11 @@ public:
         cp[13] = a0 * bp[1]  + a1 * bp[5]  + a2 * bp[9]  + a3 * bp[13];
         cp[14] = a0 * bp[2]  + a1 * bp[6]  + a2 * bp[10] + a3 * bp[14];
         cp[15] = a0 * bp[3]  + a1 * bp[7]  + a2 * bp[11] + a3 * bp[15];
-#endif
     }
     
     // \brief return a transposed copy of the current matrix as a new matrix
     Matrix44 transposed() const
     {
-#if 0
-        Matrix44 t;
-        for (unsigned char i = 0; i < 4; ++i) {
-            for (unsigned char j = 0; j < 4; ++j) {
-                t[i][j] = x[j][i];
-            }
-        }
-
-        return t;
-#else
         return Matrix44 (x[0][0],
                          x[1][0],
                          x[2][0],
@@ -304,7 +263,6 @@ public:
                          x[1][3],
                          x[2][3],
                          x[3][3]);
-#endif
     }
 
     // \brief transpose itself
@@ -512,32 +470,3 @@ public:
 };
 
 typedef Matrix44<float> Matrix44f;
-
-//[comment]
-// Testing our code. To test the matrix inversion code, we used Maya to output
-// the values of a matrix and its inverse (check the video at the top of this page). Of course this implies
-// that Maya actually does the right thing, but we can probably agree, that is actually does;).
-// These are the values for the input matrix:
-//
-// 0.707107 0 -0.707107 0 -0.331295 0.883452 -0.331295 0 0.624695 0.468521 0.624695 0 4.000574 3.00043 4.000574 1
-//
-// Given the input matrix, the inverse matrix computed by our code should match the following values:
-//
-// 0.707107 -0.331295 0.624695 0 0 0.883452 0.468521 0 -0.707107 -0.331295 0.624695 0 0 0 -6.404043 1
-//[/comment]
-#if 0
-int main(int argc, char **argv)
-{
-    Vec3f v(0, 1, 2);
-    std::cerr << v << std::endl;
-    Matrix44f a, b, c;
-    c = a * b;
-
-    Matrix44f d(0.707107, 0, -0.707107, 0, -0.331295, 0.883452, -0.331295, 0, 0.624695, 0.468521, 0.624695, 0, 4.000574, 3.00043, 4.000574, 1);
-    std::cerr << d << std::endl;
-    d.invert();
-    std::cerr << d << std::endl;
-
-    return 0;
-}
-#endif

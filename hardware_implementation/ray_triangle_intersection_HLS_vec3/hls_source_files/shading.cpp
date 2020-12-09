@@ -450,11 +450,7 @@ void readObjectOptionDataFile(const char *file, Object *mesh)
 	// Close the stream
 	ifs.close();	
 }
-// Perform the MT Ray triangle intersecion and return u, v coordinates if intersection occurs 
-bool rayTriangleIntersect(
-	const Vec3f &orig, const Vec3f &dir,
-	const Vec3f &v0, const Vec3f &v1, const Vec3f &v2,
-	float &t, float &u, float &v);
+
 /* This class reads the geometry file that describes the scene. All the data such as 
 	number of faces, the face and vertex arrays, the point, normal and st coordinates arrays
 	are passed to the triangle mesh constractor.
@@ -546,21 +542,32 @@ public:
 	// Test if the ray interesests this triangle mesh
 	bool intersect(const Vec3f &orig, const Vec3f &dir, float &tNear, uint32_t &triIndex, Vec2f &uv) const
 		{
-			uint32_t j = 0;
+			float local_t, local_u, local_v;
 			bool isect = false;
+			uint32_t j = 0;
 			bool temp_ret;
+			Vec3f local_orig, local_dir;
+			Vec3f local_v0, local_v1, local_v2;
+			
+			// Set local values to send correctly to the peripheral 
+			local_orig = orig;
+			local_dir = dir;
 			// Loop each object's triangles
 			for (uint32_t i = 0; i < numTris; ++i) 
 				{
-					const Vec3f &v0 = P[trisIndex[j]];
-					const Vec3f &v1 = P[trisIndex[j + 1]];
-					const Vec3f &v2 = P[trisIndex[j + 2]];
-					float t = kInfinity, u, v;
+					Vec3f &v0 = P[trisIndex[j]];
+					local_v0 = v0;
+					Vec3f &v1 = P[trisIndex[j + 1]];
+					local_v1 = v1;
+					Vec3f &v2 = P[trisIndex[j + 2]];
+					local_v2 = v2;
+					float t = kInfinity;
+					float u, v;
 					/* a ray may intersect more than one triangle from the mesh therefore we also 
 					need to keep track of the nearest intersection distance as we iterate over the triangles.            
 					*/
-					temp_ret = rayTriangleIntersect(orig, dir, v0, v1, v2, t, u, v);
-					if ( (temp_ret == true ) && t < tNear) 
+					temp_ret = rayTriangleIntersect(local_orig, local_dir, local_v0, local_v1, local_v2, local_t, local_u, local_v);
+					if ( (temp_ret == true ) && local_t < tNear) 
 						{
 							/*
 							std::cout << "\n START DEBUG \n";
@@ -575,9 +582,9 @@ public:
 							std::cout << "DEBUG: result " << t << " " << u << " " << v << " " << "\n"; 
 							std::cout << "END DEBUG\n";
 							*/
-							tNear = t;
-							uv.x = u;
-							uv.y = v;
+							tNear = local_t;
+							uv.x = local_u;
+							uv.y = local_v;
 							triIndex = i;
 							isect = true;
 						}                                                                                                                                                                                                                                
