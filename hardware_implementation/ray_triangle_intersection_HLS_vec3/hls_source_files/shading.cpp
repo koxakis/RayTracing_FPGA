@@ -561,8 +561,8 @@ public:
 					local_v1 = v1;
 					Vec3f &v2 = P[trisIndex[j + 2]];
 					local_v2 = v2;
-					float t = kInfinity;
-					float u, v;
+					
+					local_t = kInfinity;
 					/* a ray may intersect more than one triangle from the mesh therefore we also 
 					need to keep track of the nearest intersection distance as we iterate over the triangles.            
 					*/
