@@ -391,14 +391,7 @@ void readObjectOptionDataFile(const char *file, Object *mesh)
 	// Close the stream
 	ifs.close();	
 }
-// Perform the MT Ray triangle intersecion and return u, v coordinates if intersection occurs 
-bool rayTI(
-		const float &orig_x, const float &orig_y, const float &orig_z,
-		const float &dir_x, const float &dir_y, const float &dir_z,
-		const float &v0_x, const float &v0_y, const float &v0_z,
-		const float &v1_x, const float &v1_y, const float &v1_z,
-		const float &v2_x, const float &v2_y, const float &v2_z,
-		float &t, float &u, float &v);
+
 /* This class reads the geometry file that describes the scene. All the data such as 
 	number of faces, the face and vertex arrays, the point, normal and st coordinates arrays
 	are passed to the triangle mesh constractor.

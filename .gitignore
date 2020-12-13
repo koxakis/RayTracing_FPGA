@@ -28,10 +28,11 @@ hardware_implementation/Base_System_Vivado_project/Base_System_Vivado_project.sr
 hardware_implementation/Base_System_Vivado_project/Base_System_Vivado_project.xpr
 hardware_implementation/base_hardware_project/Base_System_Vivado_project/
 hardware_implementation/base_hardware_project/Packages/
+hardware_implementation/base_hardware_project/Base_System_Vivado_project_float/
 # Vitis Files
 hardware_implementation/vitis_workspace/
 hardware_implementation/base_hardware_project/vitis_workspace/
-
+hardware_implementation/base_hardware_project/vitis_workspace_float/
 # Executables
 shading
 check_out
