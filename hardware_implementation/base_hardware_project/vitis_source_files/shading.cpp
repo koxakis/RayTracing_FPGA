@@ -676,9 +676,9 @@ public:
 	// Test if the ray interesests this triangle mesh
 	bool intersect(const Vec3f &orig, const Vec3f &dir, float &tNear, uint32_t &triIndex, Vec2f &uv) const
 		{
-			float temp_t = kInfinity;
-			float temp_u, temp_v;
-			float local_t, local_u, local_v;  
+			float local_t = kInfinity;
+			float local_u = 0, local_v = 0;
+			int ret_t, ret_u, ret_v;  
 			bool temp_return;
 			uint32_t j = 0;
 			bool isect = false;
@@ -698,28 +698,28 @@ public:
 					Vec3f &v2 = P[trisIndex[j + 2]];
 					local_v2 = v2;
 
-					temp_t = kInfinity;
+					local_t = kInfinity;
 					/* a ray may intersect more than one triangle from the mesh therefore we also 
 					need to keep track of the nearest intersection distance as we iterate over the triangles.            
 					*/
 					// Set I/O pointers 
 					// Set Ray origin
-					XRaytriangleintersect_Set_orig(&RaytiInstancePTR, (u64)(&local_orig));
+					XRaytriangleintersect_Set_orig(&RaytiInstancePTR, *((u64*)&local_orig) );
 					// Set Ray direction
-					XRaytriangleintersect_Set_dir(&RaytiInstancePTR, (u64)(&local_dir));
+					XRaytriangleintersect_Set_dir(&RaytiInstancePTR, *((u64*)&local_dir) );
 					// Set triangle V0 
-					XRaytriangleintersect_Set_v0(&RaytiInstancePTR, (u64)(&local_v0));
+					XRaytriangleintersect_Set_v0(&RaytiInstancePTR, *((u64*)&local_v0));
 					// Set triangle V1
-					XRaytriangleintersect_Set_v1(&RaytiInstancePTR, (u64)(&local_v1));
+					XRaytriangleintersect_Set_v1(&RaytiInstancePTR, *((u64*)&local_v1));
 					// Set triangle V2
-					XRaytriangleintersect_Set_v2(&RaytiInstancePTR, (u64)(&local_v2));
+					XRaytriangleintersect_Set_v2(&RaytiInstancePTR, *((u64*)&local_v2));
 
 					// Set u
-					XRaytriangleintersect_Set_u(&RaytiInstancePTR, (u64)(&local_u));
+					XRaytriangleintersect_Set_u(&RaytiInstancePTR, *((u64*)&local_u));
 					// Set v
-					XRaytriangleintersect_Set_v(&RaytiInstancePTR, (u64)(&local_v));
+					XRaytriangleintersect_Set_v(&RaytiInstancePTR, *((u64*)&local_v));
 					// Set t
-					XRaytriangleintersect_Set_t(&RaytiInstancePTR, (u64)(&local_t));		
+					XRaytriangleintersect_Set_t(&RaytiInstancePTR, *((u64*)&local_t));		
 
 					// Check if the peripheral is ready
 					if (!XRaytriangleintersect_IsReady(&RaytiInstancePTR))
@@ -734,18 +734,31 @@ public:
 					while (!XRaytriangleintersect_IsDone(&RaytiInstancePTR)) {}
 
 					// Get input values back from the peripheral 
-					Vec3f orig_ret = (Vec3f)XRaytriangleintersect_Get_orig(&RaytiInstancePTR);
-					Vec3f dir_ret = (Vec3f)XRaytriangleintersect_Get_dir(&RaytiInstancePTR);
-					Vec3f v0_ret = (Vec3f)XRaytriangleintersect_Get_v0(&RaytiInstancePTR);
-					Vec3f v1_ret = (Vec3f)XRaytriangleintersect_Get_v1(&RaytiInstancePTR);
-					Vec3f v2_ret = (Vec3f)XRaytriangleintersect_Get_v2(&RaytiInstancePTR);
+					
+					int orig_temp = XRaytriangleintersect_Get_orig(&RaytiInstancePTR);
+					Vec3f orig_ret = *((Vec3f*)&orig_temp);
+
+					int dir_temp = XRaytriangleintersect_Get_dir(&RaytiInstancePTR);
+					Vec3f dir_ret = *((Vec3f*)&dir_temp);
+
+					int v0_temp = XRaytriangleintersect_Get_v0(&RaytiInstancePTR);
+					Vec3f v0_ret = *((Vec3f*)&v0_temp); 
+
+					int v1_temp = XRaytriangleintersect_Get_v1(&RaytiInstancePTR);
+					Vec3f v1_ret = *((Vec3f*)&v1_temp);
+
+					int v2_temp = XRaytriangleintersect_Get_v2(&RaytiInstancePTR);
+					Vec3f v2_ret = *((Vec3f*)&v2_temp);
 
 					// Set t distance to intersection point
-					temp_t = (float)XRaytriangleintersect_Get_t(&RaytiInstancePTR);
+					ret_t = XRaytriangleintersect_Get_t(&RaytiInstancePTR);
+					local_t = *((float*)&ret_t);
 					// Set u intersection coordinate 
-					temp_u = (float)XRaytriangleintersect_Get_u(&RaytiInstancePTR);
+					ret_u = XRaytriangleintersect_Get_u(&RaytiInstancePTR);
+					local_u = *((float*)&ret_u);
 					// Set v intersection coordinate
-					temp_v = (float)XRaytriangleintersect_Get_v(&RaytiInstancePTR);
+					ret_v = XRaytriangleintersect_Get_v(&RaytiInstancePTR);
+					local_v = *((float*)&ret_v);
 					// Set return 
 					temp_return = (bool)XRaytriangleintersect_Get_return(&RaytiInstancePTR);
 					// Print values returned from the peripheral 
@@ -755,16 +768,16 @@ public:
 					std::cerr << "\r\nDir per " << dir_ret ;
 					std::cerr << "\r\nv0 per " << v0_ret ;
 					std::cerr << "\r\nv1 per " << v1_ret ;
-					std::cerr << "\r\nv2 per " << v2_ret ;
+					std::cerr << "\r\nv2 per " << v2_ret << "\n\r";
 					std::cerr << "\nOrig local " << local_orig.x << " " << local_orig.y << " " << local_orig.z << " ";
 					std::cerr << "\nDir local " << local_dir.x << " " << local_dir.y  << " " << local_dir.z << " ";
 					std::cerr << "\nV0 local " << local_v0.x << " " << local_v0.y << " " << local_v0.z << " ";
 					std::cerr << "\nV1 local " << local_v1.x << " " << local_v1.y << " " << local_v1.z << " ";
 					std::cerr << "\nV2 local " << local_v2.x << " " << local_v2.y << " " << local_v2.z << " ";
-					std::cerr << "\nDEBUG: result " << temp_t << " " << temp_u << " " << temp_v << " " << temp_return << "\n";
+					std::cerr << "\nDEBUG: result " << ret_t << " " << ret_u << " " << ret_v << " " << temp_return << "\n";
 					std::cerr << "\nDEBUG: result " << local_t << " " << local_u << " " << local_v << " " << "\n";
 					
-					if ( (temp_return) && temp_t < tNear)
+					if ( (temp_return) && local_t < tNear)
 						{
 							/*
 							std::cerr << "\nDEBUG:  \n";
@@ -781,9 +794,9 @@ public:
 							std::cerr << "\nDEBUG: result " << temp_t << " " << temp_u << " " << temp_v << " " << temp_return << "\n";
 							*/
 							
-							tNear = temp_t;
-							uv.x = temp_u;
-							uv.y = temp_v;
+							tNear = local_t;
+							uv.x = local_u;
+							uv.y = local_v;
 							triIndex = i;
 							isect = true;
 						}                                                                                                                                                                                                                                
