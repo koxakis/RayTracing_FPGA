@@ -1,3 +1,4 @@
+// C++ libraries
 #include <cstdio>
 #include <cstdlib>
 #include <memory>
@@ -8,9 +9,28 @@
 #include <fstream>
 #include <cmath>
 #include <sstream>
-#include <chrono>
+#include <limits>
 
+// Program libraries
 #include "geometry.h"
+
+// Xilinx libraries
+#include "xtime_l.h"
+#include "xsdps.h"
+#include "ff.h"
+#include "xil_io.h"
+#include "xil_types.h"
+#include "xscutimer.h"
+#include "platform.h"
+
+// Peripheral libraries 
+#include "xparameters.h"
+#include "xrayti_hw.h"
+#include "xrayti.h"
+
+// Peripheral pointers 
+XRayti RaytiInstancePTR;
+XRayti_Config *RaytiConfig;
 
 /*
   Example 1:  Glass and pen
@@ -27,7 +47,7 @@
 	Pattern 5:	Solid Grey Colour
 */
 #define PATTERN_5
-//#define DEBUG
+#define DEBUG
 //#define DEBUG_RENDER
 //#define DEBUG_GEO
 
@@ -122,7 +142,7 @@ class Object
 	// phong model specular weight, control the size of matte lighting spot
 	float Ks = 0.2; 
 	// phong specular exponent, control the size of specular spot
-	float n = 10;   
+	float n = 10;
 };
 
 // Perform the MT Ray triangle intersecion and return u, v coordinates if intersection occurs 
@@ -183,329 +203,443 @@ bool rayTriangleIntersect(
 }
 
 // Reads scene options from a file
-void readSceneOptionDataFile (const char *file, Options *options, uint32_t *numoflight)
+int readSceneOptionDataFile (const char *file, Options *options, uint32_t *numoflight)
 {
-	std::ifstream ifs;
-	try 
+	FRESULT f_sceneOptionDataFile;
+	FIL sceneOptionDataFile;
+	unsigned int readBytes =0;
+	FRESULT fun_ret;
+	static char *Log_File = (char *)"sceneP1.sod";
+
+	// Open the file or throw exeption
+	f_sceneOptionDataFile = f_open(&sceneOptionDataFile, Log_File, FA_READ);
+	if (f_sceneOptionDataFile != FR_OK)
 		{
-			// Open the file or throw exeption
-			ifs.open(file);
-			if (ifs.fail()) throw;
+			std::cerr << "\rERROR: Opening Scene Data File failed " << Log_File << "\n\r";
+			return XST_FAILURE;
+		}
+	fun_ret = f_lseek(&sceneOptionDataFile, 0);
+	if (fun_ret != FR_OK)
+		{
+			perror("\rERROR: lseek failed\n\r");
+		}
 
-			// Open stream to file
-			std::stringstream ss;
-			ss << ifs.rdbuf();
+	// Read width 
+	uint32_t width;
+	fun_ret = f_read(&sceneOptionDataFile, &width, sizeof(width), &readBytes);
+	if (fun_ret != FR_OK)
+		{
+			perror("\rERROR: Reading width failed\n\r");
+			return XST_FAILURE;
+		}
+#ifdef DEBUG
+	std::cerr << "\rDEBUG: Width: " << width << "\n";
+#endif	
+	options->width = width;
+	
+	// Read height
+	uint32_t height;
+	fun_ret = f_read(&sceneOptionDataFile, &height, sizeof(height), &readBytes);
+	if (fun_ret != FR_OK)
+		{
+			perror("\rERROR: Reading height failed\n\r");
+			return XST_FAILURE;
+		}
+#ifdef DEBUG
+	std::cerr << "DEBUG: Height: " << height << "\n";
+#endif	
+	options->height = height;
+	
+	// Read FOV
+	float fov;
+	fun_ret = f_read(&sceneOptionDataFile, &fov, sizeof(fov), &readBytes);
+	if (fun_ret != FR_OK)
+		{
+			perror("\rERROR: Reading fov failed\n\r");
+			return XST_FAILURE;
+		}
+#ifdef DEBUG
+	std::cerr << "\rDEBUG: FOV: " << fov << "\n";
+#endif	
+	options->fov = fov;
+	
+	// Read background Colour
+	float backgroundcolour[3];
+#ifdef DEBUG
+	std::cerr << "\rDEBUG: Background Colour: " ;
+#endif
+	for (uint32_t i=0; i < 3; i++)
+		{
+			fun_ret = f_read(&sceneOptionDataFile, &backgroundcolour[i], sizeof(float), &readBytes);
+			if (fun_ret != FR_OK)
+				{
+					perror("\rERROR: Reading background colour failed\n\r");
+					return XST_FAILURE;
+				}
+#ifdef DEBUG
+			std::cerr << backgroundcolour[i] << " "; 
+#endif		
+		}
+#ifdef DEBUG
+	std::cerr << "\r\n";
+#endif	
+	options->backgroundColor.x = backgroundcolour[0];
+	options->backgroundColor.y = backgroundcolour[1];
+	options->backgroundColor.z = backgroundcolour[2];
 
-			// Read width 
-			uint32_t width;
-			ss >> width;
+	// Read camera to world
+	float camera2world[16];
+	for (uint32_t i=0; i < 16; i++)
+		{
+			fun_ret = f_read(&sceneOptionDataFile, &camera2world[i], sizeof(float), &readBytes);
+			if (fun_ret != FR_OK)
+				{
+					perror("\rERROR: Reading camera to world failed\n\r");
+					return XST_FAILURE;
+				}
+
+		}
 #ifdef DEBUG
-			std::cout << "DEBUG: Width: " << width << "\n";
+	std::cerr << "\rDEBUG: Camera to World: " << camera2world << "\n\r";
 #endif
-			options->width = width;
-			
-			// Read height
-			uint32_t height;
-			ss >> height;
+
+	for (uint32_t i=0; i < 4; i++)
+		{
+			for (uint32_t j=0; j < 4; j++)
+				{
 #ifdef DEBUG
-			std::cout << "DEBUG: Height: " << height << "\n";
+					std::cerr << "\rDEBUG: camera to world matrix [" << i << "][" << j << "] " << camera2world[(i*4)+j] << "\n\r";
 #endif
-			options->height = height;
-			
-			// Read FOV
-			float fov;
-			ss >> fov;
+					options->cameraToWorld.x[i][j] = camera2world[(i*4)+j];
+				}
+		}
+	
+	// Read bias
+	float bias;
+	fun_ret = f_read(&sceneOptionDataFile, &bias, sizeof(bias), &readBytes);
+	if (fun_ret != FR_OK)
+		{
+			perror("\rERROR: Reading bias failed\n\r");
+			return XST_FAILURE;
+		}
 #ifdef DEBUG
-			std::cout << "DEBUG: FOV: " << fov << "\n";
+	std::cerr << "\rDEBUG: Bias: " << bias << "\n\r";
 #endif
-			options->fov = fov;
-			
-			// Read background Colour
-			float backgroundcolour[3];
+	options->bias = bias;
+	
+	// Read max depth
+	uint32_t maxDepth;
+	fun_ret = f_read(&sceneOptionDataFile, &maxDepth, sizeof(maxDepth), &readBytes);
+	if (fun_ret != FR_OK)
+		{
+			perror("\rERROR: Reading max depth\n\r");
+			return XST_FAILURE;
+		}
 #ifdef DEBUG
-			std::cout << "DEBUG: Background Colour: ";
+	std::cerr << "\rDEBUG: Max Depth: " << maxDepth << "\n\r";
+#endif
+	options->maxDepth = maxDepth;
+
+	// Read light data 
+
+	// Read the number of lights to the world
+	uint32_t temp_lights;
+	fun_ret = f_read(&sceneOptionDataFile, &temp_lights, sizeof(temp_lights), &readBytes);
+	if (fun_ret != FR_OK)
+		{
+			perror("\rERROR: Reading light count failed\n\r");
+			return XST_FAILURE;
+		}	
+#ifdef DEBUG
+	std::cerr << "\rDEBUG: Number of Light Sources: " << temp_lights << "\n\r";
+#endif
+	*numoflight = temp_lights;
+
+	// Allocate memory for light data 
+	lightData = (lightdata_structT*) malloc(temp_lights * sizeof(lightdata_structT));
+	if ( lightData == NULL )
+		{
+			perror("\rERROR: Light data allocation failed\n\r");
+			return XST_FAILURE;
+		}
+
+	float light2world[16];
+	uint32_t templighttype;
+	for (uint32_t k = 0; k < temp_lights; k++)
+		{
+			// Read light type
+			fun_ret = f_read(&sceneOptionDataFile, &templighttype, sizeof(templighttype), &readBytes);
+			if (fun_ret != FR_OK)
+				{
+					perror("\rERROR: Reading light type failed\n\r");
+					return XST_FAILURE;
+				}
+#ifdef DEBUG
+			std::cerr << "\rDEBUG: Light Source " << k << "->Light type " << templighttype << "\n\r";
+#endif
+			lightData[k].lighttype = templighttype;
+			
+			// Read light colour
+			float lightcolour[3];
+#ifdef DEBUG
+			std::cerr << "\rDEBUG: Light Source " << k << "->Light Colour ";
 #endif
 			for (uint32_t i=0; i < 3; i++)
 				{
-					ss >> backgroundcolour[i];
+					fun_ret = f_read(&sceneOptionDataFile, &lightcolour[i], sizeof(float), &readBytes);
+					if (fun_ret != FR_OK)
+						{
+							perror("\rERROR: Reading light colour failed\n\r");
+							return XST_FAILURE;
+						}
 #ifdef DEBUG
-					std::cout << backgroundcolour[i] << " "; 
+					std::cerr << lightcolour[i] << " ";
 #endif
 				}
 #ifdef DEBUG
-			std::cout << "\n";
+			std::cerr << "\n\r";
 #endif
-			options->backgroundColor.x = backgroundcolour[0];
-			options->backgroundColor.y = backgroundcolour[1];
-			options->backgroundColor.z = backgroundcolour[2];
+			lightData[k].colour.x = lightcolour[0];
+			lightData[k].colour.y = lightcolour[1];
+			lightData[k].colour.z = lightcolour[2];
 
-			// Read camera to world
-			float camera2world[16];
+			// Read light intensity
+			float colourintensity;
+			fun_ret = f_read(&sceneOptionDataFile, &colourintensity, sizeof(colourintensity), &readBytes);
+			if (fun_ret != FR_OK)
+				{
+					perror("\rERROR: Reading colour intensity failed\n\r");
+					return XST_FAILURE;
+				}
+#ifdef DEBUG
+			std::cerr << "\rDEBUG: Light Source " << k << "->Light intensity " << colourintensity << "\n\r";
+#endif
+			lightData[k].intensity = colourintensity;
+
+			// Read light to world data from file
 			for (uint32_t i=0; i < 16; i++)
 				{
-					ss >> camera2world[i];
+					fun_ret = f_read(&sceneOptionDataFile, &light2world[i], sizeof(float), &readBytes);
+					if (fun_ret != FR_OK)
+						{
+							perror("\rERROR: Reading light to world failed\n\r");
+							return XST_FAILURE;
+						}
 				}
+#ifdef DEBUG
+			std::cerr << "\rDEBUG: Light Source " << k << "->Light to world " << light2world << "\n\r";
+#endif
+			// Pass light to world data to struct
 			for (uint32_t i=0; i < 4; i++)
 				{
 					for (uint32_t j=0; j < 4; j++)
 						{
 #ifdef DEBUG
-							std::cout << "DEBUG: camera to world matrix [" << i << "][" << j << "] " << camera2world[(i*4)+j] << "\n";
+							std::cerr << "\rDEBUG: Light Source " << k << "->Light to world [" << i << "][" << j << "] " << light2world[(i*4)+j] << "\n\r";
 #endif
-							options->cameraToWorld.x[i][j] = camera2world[(i*4)+j];
+							lightData[k].light2world.x[i][j] = light2world[(i*4)+j];
 						}
-				}
-			
-			// Read bias
-			float bias;
-			ss >> bias;
-#ifdef DEBUG
-			std::cout << "DEBUG: Bias: " << bias << "\n";
-#endif
-			options->bias = bias;
-			
-			// Read max depth
-			uint32_t maxDepth;
-			ss >> maxDepth;
-#ifdef DEBUG
-			std::cout << "DEBUG: Max Depth: " << maxDepth << "\n";
-#endif
-			options->maxDepth = maxDepth;
+				}	
+		}		
 
-			// Read light data 
-
-			// Read the number of lights to the world
-			uint32_t temp_lights;
-			ss >> temp_lights;
-#ifdef DEBUG
-			std::cout << "DEBUG: Number of Light Sources: " << temp_lights << "\n";
-#endif
-			*numoflight = temp_lights;
-
-			// Allocate memory for light data 
-			lightData = (lightdata_structT*) malloc(temp_lights * sizeof(lightdata_structT));
-			if ( lightData == NULL )
-				{
-					perror("Light data allocation");
-					exit(EXIT_FAILURE);
-				}
-
-			float light2world[16];
-			uint32_t templighttype;
-			for (uint32_t k = 0; k < temp_lights; k++)
-				{
-					// Read light type
-					ss >> templighttype;
-#ifdef DEBUG
-					std::cout << "DEBUG: Light Source " << k << "->Light type " << templighttype << "\n";
-#endif
-					lightData[k].lighttype = templighttype;
-					
-					// Read light colour
-					float lightcolour[3];
-#ifdef DEBUG
-					std::cout << "DEBUG: Light Source " << k << "->Light Colour ";
-#endif
-					for (uint32_t i=0; i < 3; i++)
-						{
-							ss >> lightcolour[i];
-#ifdef DEBUG
-							std::cout << lightcolour[i] << " ";
-#endif
-						}
-#ifdef DEBUG
-					std::cout << "\n";
-#endif
-					lightData[k].colour.x = lightcolour[0];
-					lightData[k].colour.y = lightcolour[1];
-					lightData[k].colour.z = lightcolour[2];
-
-					// Read light intensity
-					float colourintensity;
-					ss >> colourintensity;
-#ifdef DEBUG
-					std::cout << "DEBUG: Light Source " << k << "->Light intensity " << colourintensity << "\n";
-#endif
-					lightData[k].intensity = colourintensity;
-
-					// Read light to world data from file
-					for (uint32_t i=0; i < 16; i++)
-						{
-							ss >> light2world[i];
-						}
-#ifdef DEBUG
-					std::cout << "DEBUG: Light Source " << k << "->Light to world " << light2world << "\n";
-#endif
-					// Pass light to world data to struct
-					for (uint32_t i=0; i < 4; i++)
-						{
-							for (uint32_t j=0; j < 4; j++)
-								{
-#ifdef DEBUG
-									std::cout << "DEBUG: Light Source " << k << "->Light to world [" << i << "][" << j << "] " << light2world[(i*4)+j] << "\n";
-#endif
-									lightData[k].light2world.x[i][j] = light2world[(i*4)+j];
-								}
-						}	
-				}		
-		}
-	catch (const std::exception& e) 
+	fun_ret = f_close(&sceneOptionDataFile);
+	if (fun_ret != FR_OK)
 		{
-			std::cerr << e.what() << '\n';
-			std::cerr << "Error opening scene option file" << std::endl;
-			ifs.close();
+			perror("\rERROR: Closing Scene Option File failed");
+			return XST_FAILURE;
 		}
-	// Close the stream
-	ifs.close();
+	return XST_SUCCESS;
 }
 
 // Read object 2 world from ood file 
-void readObjectOptionDataFile(const char *file, Matrix44f *o2w)
+int readObjectOptionDataFile(const char *file, Matrix44f *o2w)
 {
-	std::ifstream ifs;
-	try 
-		{
-			// Open the file or throw exeption
-			ifs.open(file);
-			if (ifs.fail()) throw;	
+	FRESULT f_objectDataFile;
+	FIL objectDataFile;
+	unsigned int readBytes=0;
+	FRESULT fun_ret;
 
-			// Open stream to file
-			std::stringstream ss;
-			ss << ifs.rdbuf();			
-			
-			float object2world[16];
-#ifdef DEBUG
-			std::cout << "DEBUG: Object to world " << object2world << "\n";
-#endif
-			for (uint32_t i=0; i < 16; i++)
-				{
-					ss >> object2world[i];
-				}
-			for (uint32_t i=0; i < 4; i++)
-				{
-					for (uint32_t j=0; j < 4; j++)
-						{
-#ifdef DEBUG
-							std::cout << "DEBUG: object to world matrix [" << i << "][" << j << "] " << object2world[(i*4)+j] << "\n";
-#endif
-							o2w->x[i][j] = object2world[(i*4)+j];
-						}
-				}
-		}
-	catch (const std::exception& e) 
+	file = "plane.ood";	
+
+	// Open the file or throw exeption
+	f_objectDataFile = f_open(&objectDataFile, file, FA_READ);
+	if (f_objectDataFile != FR_OK)
 		{
-			std::cerr << e.what() << '\n';
-			std::cerr << "Error opening object option file (object2world)" << std::endl;
-			ifs.close();
+			perror("\rERROR: Opening Object Data File failed\n\r");
+			return XST_FAILURE;
+		}	
+	
+	float object2world[16];
+	for (uint32_t i=0; i < 16; i++)
+		{
+			fun_ret = f_read(&objectDataFile, &object2world[i], sizeof(float), &readBytes);
+			if (fun_ret != FR_OK)
+				{
+					perror("\rERROR: Reading object to world failed\n\r");
+					return XST_FAILURE;
+				}
 		}
-	// Close the stream
-	ifs.close();
+#ifdef DEBUG
+	std::cerr << "\rDEBUG: Object to world " << object2world << "\n\r";
+#endif
+	for (uint32_t i=0; i < 4; i++)
+		{
+			for (uint32_t j=0; j < 4; j++)
+				{
+#ifdef DEBUG
+					std::cerr << "\rDEBUG: object to world matrix [" << i << "][" << j << "] " << object2world[(i*4)+j] << "\n\r";
+#endif
+					o2w->x[i][j] = object2world[(i*4)+j];
+				}
+		}
+	fun_ret = f_close(&objectDataFile);
+	if (fun_ret != FR_OK)
+		{
+			perror("\rERROR: Closing Object Option File failed");
+			return XST_FAILURE;
+		}
+	return XST_SUCCESS;
 }
 
 // Reads object options from file 
-void readObjectOptionDataFile(const char *file, Object *mesh)
+int readObjectOptionDataFile(const char *file, Object *mesh)
 {
-	std::ifstream ifs;
-	try 
+	FRESULT f_objectDataFile;
+	FIL objectDataFile;
+	unsigned int readBytes;
+	FRESULT fun_ret;	
+
+	file = "plane.ood";	
+
+	// Open the file or throw exeption
+	f_objectDataFile = f_open(&objectDataFile, file, FA_READ);
+	if (f_objectDataFile != FR_OK)
 		{
-			// Open the file or throw exeption
-			ifs.open(file);
-			if (ifs.fail()) throw;
+			perror("\rERROR: Opening Object Data File failed\n\r");
+			return XST_FAILURE;
+		}	
 
-			// Open stream to file
-			std::stringstream ss;
-			ss << ifs.rdbuf();
-
-			float skipdata;
-			for (uint32_t i=0; i < 16; i++)
-				{
-					ss >> skipdata;
-				}
-
-			// Read type
-			uint32_t type;
-			ss >> type;
-#ifdef DEBUG
-			std::cout << "DEBUG: Object type " << type << "\n";
-#endif
-			switch (type)
-				{
-					case 0:
-						mesh->type = kDiffuse;
-						break;
-					case 1:
-						mesh->type = kReflection;
-						break;
-					case 2:
-						mesh->type = kReflectionAndRefraction;
-						break;
-					case 3:
-						mesh->type = kPhong;
-						break;
-					default:
-						break;
-				}			
-
-			// Read Index of refraction
-			float ior;
-			ss >> ior;
-#ifdef DEBUG
-			std::cout << "DEBUG: Object Index of Reflection " << ior << "\n";
-#endif
-			mesh->ior = ior;
-			
-			// Read albedo
-			float albedo[3];
-#ifdef DEBUG
-			std::cout << "DEBUG: Object albedo ";
-#endif
-			for (uint32_t i=0; i < 3; i++)
-				{
-					ss >> albedo[i];
-#ifdef DEBUG
-					std::cout << albedo[i] << " ";
-#endif
-				}
-#ifdef DEBUG
-			std::cout << "\n";
-#endif
-			mesh->albedo.x = albedo[0];
-			mesh->albedo.y = albedo[1];
-			mesh->albedo.z = albedo[2];
-				
-
-			// Read kd 
-			float kd;
-			ss >> kd;
-#ifdef DEBUG
-			std::cout << "DEBUG: Object Phong shading kd factor " << kd << "\n";
-#endif
-			mesh->Kd = kd;
-
-			// Read ks
-			float ks;
-			ss >> ks;
-#ifdef DEBUG
-			std::cout << "DEBUG: Object Phong shading ks factor " << ks << "\n";
-#endif
-			mesh->Ks = ks;
-
-			// Read n
-			float n;
-			ss >> n;
-#ifdef DEBUG
-			std::cout << "DEBUG: Object Phong shading n factor " << n << "\n";
-#endif
-			mesh->n = n;	
-		}
-	catch (const std::exception& e) 
+	// Skip already read data from file
+	fun_ret = f_lseek(&objectDataFile, 64);
+	if (fun_ret != FR_OK)
 		{
-			std::cerr << e.what() << '\n';
-			std::cerr << "Error opening object option file (options)" << std::endl;
-			ifs.close();
+			perror("\rERROR: lseek failed\n\r");
+			return XST_FAILURE;
 		}
-	// Close the stream
-	ifs.close();	
+
+	// Read type
+	uint32_t type;
+	fun_ret = f_read(&objectDataFile, &type, sizeof(uint32_t), &readBytes);
+	if (fun_ret != FR_OK)
+		{
+			perror("\rERROR: Reading type failed\n\r");
+			return XST_FAILURE;
+		}
+#ifdef DEBUG
+	std::cerr << "\rDEBUG: Object type " << type << "\n\r";
+#endif
+	switch (type)
+		{
+			case 0:
+				mesh->type = kDiffuse;
+				break;
+			case 1:
+				mesh->type = kReflection;
+				break;
+			case 2:
+				mesh->type = kReflectionAndRefraction;
+				break;
+			case 3:
+				mesh->type = kPhong;
+				break;
+			default:
+				break;
+		}			
+
+	// Read Index of refraction
+	float ior;
+	fun_ret = f_read(&objectDataFile, &ior, sizeof(float), &readBytes);
+	if (fun_ret != FR_OK)
+		{
+			perror("\rERROR: Reading ior failed\n\r");
+			return XST_FAILURE;
+		}	
+#ifdef DEBUG
+	std::cerr << "\rDEBUG: Object Index of Reflection " << ior << "\n\r";
+#endif
+	mesh->ior = ior;
+	
+	// Read albedo
+	float albedo[3];
+#ifdef DEBUG
+	std::cerr << "\rDEBUG: Object albedo ";
+#endif
+	for (uint32_t i=0; i < 3; i++)
+		{
+			fun_ret = f_read(&objectDataFile, &albedo[i], sizeof(float), &readBytes);
+			if (fun_ret != FR_OK)
+				{
+					perror("\rERROR: Reading albedo failed\n\r");
+					return XST_FAILURE;
+				}
+#ifdef DEBUG
+			std::cerr << albedo[i] << " ";
+#endif
+		}
+#ifdef DEBUG
+	std::cerr << "\n\r";
+#endif
+	mesh->albedo.x = albedo[0];
+	mesh->albedo.y = albedo[1];
+	mesh->albedo.z = albedo[2];
+		
+
+	// Read kd 
+	float kd;
+	fun_ret = f_read(&objectDataFile, &kd, sizeof(float), &readBytes);
+	if (fun_ret != FR_OK)
+		{
+			perror("\rERROR: Reading kd failed\n\r");
+			return XST_FAILURE;
+		}	
+#ifdef DEBUG
+	std::cerr << "\rDEBUG: Object Phong shading kd factor " << kd << "\n\r";
+#endif
+	mesh->Kd = kd;
+
+	// Read ks
+	float ks;
+	fun_ret = f_read(&objectDataFile, &ks, sizeof(float), &readBytes);
+	if (fun_ret != FR_OK)
+		{
+			perror("\rERROR: Reading ks failed\n\r");
+			return XST_FAILURE;
+		}		
+#ifdef DEBUG
+	std::cerr << "\rDEBUG: Object Phong shading ks factor " << ks << "\n\r";
+#endif
+	mesh->Ks = ks;
+
+	// Read n
+	float n;
+	fun_ret = f_read(&objectDataFile, &n, sizeof(float), &readBytes);
+	if (fun_ret != FR_OK)
+		{
+			perror("\rERROR: Reading n failed\n\r");
+			return XST_FAILURE;
+		}	
+#ifdef DEBUG
+	std::cerr << "\rDEBUG: Object Phong shading n factor " << n << "\n\r";
+#endif
+	mesh->n = n;	
+
+	fun_ret = f_close(&objectDataFile);
+	if (fun_ret != FR_OK)
+		{
+			perror("\rERROR: Closing Object Option File failed");
+			return XST_FAILURE;
+		}
+	return XST_SUCCESS;
 }
 
 /* This class reads the geometry file that describes the scene. All the data such as 
@@ -599,39 +733,53 @@ public:
 	// Test if the ray interesests this triangle mesh
 	bool intersect(const Vec3f &orig, const Vec3f &dir, float &tNear, uint32_t &triIndex, Vec2f &uv) const
 		{
+			float local_t = kInfinity;
+			float local_u = 0, local_v = 0;
+			int ret_t, ret_u, ret_v;  
+			bool temp_return;
 			uint32_t j = 0;
 			bool isect = false;
-			bool temp_ret;
+			Vec3f local_orig, local_dir;
+			Vec3f local_v0, local_v1, local_v2;
+
+			// Set local values to send correctly to the peripheral 
+			local_orig = orig;
+			local_dir = dir;
 			// Loop each object's triangles
 			for (uint32_t i = 0; i < numTris; ++i) 
 				{
-					const Vec3f &v0 = P[trisIndex[j]];
-					const Vec3f &v1 = P[trisIndex[j + 1]];
-					const Vec3f &v2 = P[trisIndex[j + 2]];
-					float t = kInfinity, u, v;
+					Vec3f &v0 = P[trisIndex[j]];
+					local_v0 = v0;
+					Vec3f &v1 = P[trisIndex[j + 1]];
+					local_v1 = v1;
+					Vec3f &v2 = P[trisIndex[j + 2]];
+					local_v2 = v2;
+
+					local_t = kInfinity;
 					/* a ray may intersect more than one triangle from the mesh therefore we also 
 					need to keep track of the nearest intersection distance as we iterate over the triangles.            
 					*/
-					temp_ret = rayTriangleIntersect(orig, dir, v0, v1, v2, t, u, v);
-					if ( (temp_ret == true ) && t < tNear) 
+					temp_return = rayTriangleIntersect(orig, dir, v0, v1, v2, local_t, local_u, local_v);
+					if ( (temp_return) && local_t < tNear)
 						{
 							/*
-							std::cout << "\n START DEBUG \n";
-							std::cout << "DEBUG: result " << t << " " << u << " " << v << " " << "\n"; 
-							std::cout << "DEBUG: " << t << " " << tNear << "\n";
-							std::cout << "DEBUG: input data \n";
-							std::cout << orig.x << " " << orig.y << " " << orig.z << " ";
-							std::cout << dir.x << " " << dir.y  << " " << dir.z << " ";
-							std::cout << v0.x << " " << v0.y << " " << v0.z << " ";
-							std::cout << v1.x << " " << v1.y << " " << v1.z << " ";
-							std::cout << v2.x << " " << v2.y << " " << v2.z << " ";
-							std::cout << "DEBUG: result " << t << " " << u << " " << v << " " << "\n";
-							std::cout << "END DEBUG\n";
+							std::cerr << "\nDEBUG:  \n";
+							std::cerr << "\r\n Orig per " << orig_ret ;
+							std::cerr << "\r\n Dir per " << dir_ret ;
+							std::cerr << "\r\n v0 per " << v0_ret ;
+							std::cerr << "\r\n v1 per " << v1_ret ;
+							std::cerr << "\r\n v2 per " << v2_ret ;
+							std::cerr << "\nOrig " << orig.x << " " << orig.y << " " << orig.z << " ";
+							std::cerr << "\nDir " << dir.x << " " << dir.y  << " " << dir.z << " ";
+							std::cerr << "\nV0 " << v0.x << " " << v0.y << " " << v0.z << " ";
+							std::cerr << "\nV1 " << v1.x << " " << v1.y << " " << v1.z << " ";
+							std::cerr << "\nV2 " << v2.x << " " << v2.y << " " << v2.z << " ";
+							std::cerr << "\nDEBUG: result " << temp_t << " " << temp_u << " " << temp_v << " " << temp_return << "\n";
 							*/
-						
-							tNear = t;
-							uv.x = u;
-							uv.y = v;
+							
+							tNear = local_t;
+							uv.x = local_u;
+							uv.y = local_v;
 							triIndex = i;
 							isect = true;
 						}                                                                                                                                                                                                                                
@@ -690,96 +838,163 @@ public:
 
 TriangleMesh* loadPolyMeshFromFile(const char *file, const Matrix44f &o2w)
 {
-	std::ifstream ifs;
-	try 
+	FRESULT f_objectDataFile;
+	FIL objectDataFile;
+	unsigned int readBytes;
+	FRESULT fun_ret;	
+
+	file = "plane.geo";	
+
+	// Open the file or throw exeption
+	f_objectDataFile = f_open(&objectDataFile, file, FA_READ);
+	if (f_objectDataFile != FR_OK)
 		{
-			// Open the file or throw exeption
-			ifs.open(file);
-			if (ifs.fail()) throw;
+			perror("\rERROR: Opening Object Data File failed\n\r");
+			return nullptr;
+		}	
 
-			// Open stream to file
-			std::stringstream ss;
-			ss << ifs.rdbuf();
-
-			// Read number of faces 
-			uint32_t numFaces;
-			ss >> numFaces;
-#ifdef DEBUG_GEO
-			std::cout << "DEBUG: Number of Faces: " << numFaces << "\n";
-#endif
-			std::unique_ptr<uint32_t []> faceIndex(new uint32_t[numFaces]);
-
-			uint32_t vertsIndexArraySize = 0;
-			// reading face index array
-			for (uint32_t i = 0; i < numFaces; ++i) 
-				{
-					ss >> faceIndex[i];
-#ifdef DEBUG_GEO
-					std::cout << "DEBUG: Face index [ " << i << "]: " << faceIndex[i] << "\n";
-#endif
-					vertsIndexArraySize += faceIndex[i];
-				}
-			std::unique_ptr<uint32_t []> vertsIndex(new uint32_t[vertsIndexArraySize]);
-#ifdef DEBUG_GEO
-			std::cout << "DEBUG: Vertex Index Array Size: " << vertsIndexArraySize << "\n";
-#endif
-
-			uint32_t vertsArraySize = 0;
-			// reading vertex index array
-			for (uint32_t i = 0; i < vertsIndexArraySize; ++i) 
-				{
-					ss >> vertsIndex[i];
-#ifdef DEBUG_GEO
-					std::cout << "DEBUG: Vertex index [ " << i << "]: " << vertsIndex[i] << "\n";
-#endif
-					if (vertsIndex[i] > vertsArraySize) vertsArraySize = vertsIndex[i];
-				}
-			vertsArraySize += 1;
-#ifdef DEBUG_GEO
-			std::cout << "DEBUG: Vertex Array Size: " << vertsArraySize << "\n";
-#endif
-
-			// reading vertices
-			std::unique_ptr<Vec3f []> verts(new Vec3f[vertsArraySize]);
-			for (uint32_t i = 0; i < vertsArraySize; ++i) 
-				{
-					ss >> verts[i].x >> verts[i].y >> verts[i].z;
-#ifdef DEBUG_GEO
-					std::cout << "DEBUG: Vertex [ " << i << "]: " << verts[i].x << " " << verts[i].y << " " << verts[i].z << "\n";	
-#endif
-				}
-
-			// reading normals
-			std::unique_ptr<Vec3f []> normals(new Vec3f[vertsIndexArraySize]);
-			for (uint32_t i = 0; i < vertsIndexArraySize; ++i) 
-				{
-					ss >> normals[i].x >> normals[i].y >> normals[i].z;
-#ifdef DEBUG_GEO
-					std::cout << "DEBUG: Normal [ " << i << "]: " << normals[i].x << " " << normals[i].y << " " << normals[i].z << "\n";
-#endif
-				}
-
-			// reading st coordinates
-			std::unique_ptr<Vec2f []> st(new Vec2f[vertsIndexArraySize]);
-			for (uint32_t i = 0; i < vertsIndexArraySize; ++i) 
-				{
-					ss >> st[i].x >> st[i].y;
-#ifdef DEBUG_GEO
-					std::cout << "DEBUG: Textrure Coordinates [ " << i << "]: " << st[i].x << " " << st[i].y << "\n";	
-#endif
-				}
-			
-			return new TriangleMesh(o2w, numFaces, faceIndex, vertsIndex, verts, normals, st);
-		}
-	catch (const std::exception& e) 
+	// Skip already read data from file
+	fun_ret = f_lseek(&objectDataFile, 0);
+	if (fun_ret != FR_OK)
 		{
-			std::cerr << e.what() << '\n';
-			std::cerr << "Error opening object geo file" << std::endl;
-			ifs.close();
+			perror("\rERROR: lseek failed\n\r");
+			return nullptr;
 		}
-	ifs.close();
+
+	// Read number of faces 
+	uint32_t numFaces;
+	fun_ret = f_read(&objectDataFile, &numFaces, sizeof(uint32_t), &readBytes);
+	if (fun_ret != FR_OK)
+		{
+			perror("\rERROR: Reading number of faces failed\n\r");
+			return nullptr;
+		}
+#ifdef DEBUG
+	std::cerr << "\rDEBUG: Number of Faces: " << numFaces << "\n\r";
+#endif
+	std::unique_ptr<uint32_t []> faceIndex(new uint32_t[numFaces]);
+
+	uint32_t vertsIndexArraySize = 0;
+	// reading face index array
+	for (uint32_t i = 0; i < numFaces; ++i) 
+		{
+			fun_ret = f_read(&objectDataFile, &faceIndex[i], sizeof(uint32_t), &readBytes);
+			if (fun_ret != FR_OK)
+				{
+					perror("\rERROR: Reading Face index failed\n\r");
+					return nullptr;
+				}
+#ifdef DEBUG
+			std::cerr << "\rDEBUG: Face index [ " << i << "]: " << faceIndex[i] << "\n\r";
+#endif
+			vertsIndexArraySize += faceIndex[i];
+		}
+#ifdef DEBUG
+	std::cerr << "\rDEBUG: Vertex Index Array Size: " << vertsIndexArraySize << "\n\r";
+#endif
+
+	std::unique_ptr<uint32_t []> vertsIndex(new uint32_t[vertsIndexArraySize]);
+
+	uint32_t vertsArraySize = 0;
+	// reading vertex index array
+	for (uint32_t i = 0; i < vertsIndexArraySize; ++i) 
+		{
+			fun_ret = f_read(&objectDataFile, &vertsIndex[i], sizeof(uint32_t), &readBytes);
+			if (fun_ret != FR_OK)
+				{
+					perror("\rERROR: Reading face index failed\n\r");
+					return nullptr;
+				}
+#ifdef DEBUG
+			std::cerr << "\rDEBUG: Vertex index [ " << i << "]: " << vertsIndex[i] << "\n\r";
+#endif
+
+			if (vertsIndex[i] > vertsArraySize) 
+				{
+					vertsArraySize = vertsIndex[i];
+				}
+		}
+	vertsArraySize += 1;
+#ifdef DEBUG
+	std::cerr << "\rDEBUG: Vertex Array Size: " << vertsArraySize << "\n\r";
+#endif
+	// reading vertices
+	std::unique_ptr<Vec3f []> verts(new Vec3f[vertsArraySize]);
+	for (uint32_t i = 0; i < vertsArraySize; ++i) 
+		{
+			fun_ret = f_read(&objectDataFile, &verts[i].x, sizeof(uint32_t), &readBytes);
+			if (fun_ret != FR_OK)
+				{
+					perror("\rERROR: Reading vertices failed\n\r");
+					return nullptr;
+				}
+			fun_ret = f_read(&objectDataFile, &verts[i].y, sizeof(uint32_t), &readBytes);
+			if (fun_ret != FR_OK)
+				{
+					perror("\rERROR: Reading vertices failed\n\r");
+					return nullptr;
+				}
+			fun_ret = f_read(&objectDataFile, &verts[i].z, sizeof(uint32_t), &readBytes);
+			if (fun_ret != FR_OK)
+				{
+					perror("\rERROR: Reading vertices failed\n\r");
+					return nullptr;
+				}
+#ifdef DEBUG
+			std::cerr << "\rDEBUG: Vertex [ " << i << "]: " << verts[i].x << " " << verts[i].y << " " << verts[i].z << "\n\r";	
+#endif
+		}
+
+	// reading normals
+	std::unique_ptr<Vec3f []> normals(new Vec3f[vertsIndexArraySize]);
+	for (uint32_t i = 0; i < vertsIndexArraySize; ++i) 
+		{
+			fun_ret = f_read(&objectDataFile, &normals[i].x, sizeof(uint32_t), &readBytes);
+			if (fun_ret != FR_OK)
+				{
+					perror("\rERROR: Reading normals failed\n\r");
+					return nullptr;
+				}
+			fun_ret = f_read(&objectDataFile, &normals[i].y, sizeof(uint32_t), &readBytes);
+			if (fun_ret != FR_OK)
+				{
+					perror("\rERROR: Reading normals failed\n\r");
+					return nullptr;
+				}
+			fun_ret = f_read(&objectDataFile, &normals[i].z, sizeof(uint32_t), &readBytes);
+			if (fun_ret != FR_OK)
+				{
+					perror("\rERROR: Reading normals failed\n\r");
+					return nullptr;
+				}	
+#ifdef DEBUG
+			std::cerr << "\rDEBUG: Normal [ " << i << "]: " << normals[i].x << " " << normals[i].y << " " << normals[i].z << "\n\r";	
+#endif
+		}
+
+	// reading st coordinates
+	std::unique_ptr<Vec2f []> st(new Vec2f[vertsIndexArraySize]);
+	for (uint32_t i = 0; i < vertsIndexArraySize; ++i) 
+		{
+			fun_ret = f_read(&objectDataFile, &st[i].x, sizeof(uint32_t), &readBytes);
+			if (fun_ret != FR_OK)
+				{
+					perror("\rERROR: Reading normals failed\n\r");
+					return nullptr;
+				}
+			fun_ret = f_read(&objectDataFile, &st[i].y, sizeof(uint32_t), &readBytes);
+			if (fun_ret != FR_OK)
+				{
+					perror("\rERROR: Reading normals failed\n\r");
+					return nullptr;
+				}
+#ifdef DEBUG
+			std::cerr << "\rDEBUG: Textrure Coordinates [ " << i << "]: " << st[i].x << " " << st[i].y << "\n\r";	
+#endif
+		}
 	
-	return nullptr;
+	return new TriangleMesh(o2w, numFaces, faceIndex, vertsIndex, verts, normals, st);
+	
 }
 
 /* In code, we will differentiate lights from geometry by creating a special Light class. 
@@ -872,7 +1087,7 @@ bool trace(
 	RayType rayType = kPrimaryRay)
 {
 	isect.hitObject = nullptr;
-	bool rayIntersectRes;
+
 	// Iterate the list of objects and check intersection 
 	for (uint32_t k = 0; k < objects.size(); ++k) 
 		{
@@ -881,11 +1096,8 @@ bool trace(
 			Vec2f uv;
 
 			// For each object iterate it's list of triangles and check the intersecion point's distance  
-			rayIntersectRes = objects[k]->intersect(orig, dir, tNear, index, uv);
-			//std::cout << "DEBUG: intersection res " << rayIntersectRes << " tnear " << tNear << " orig " << orig << " dir " << dir << " uv " << uv << std::endl;
-			if ( (rayIntersectRes == true) && tNear < isect.tNear)
+			if (objects[k]->intersect(orig, dir, tNear, index, uv) && tNear < isect.tNear)
 				{
-					//std::cout << "DEBUG: intersection res " << rayIntersectRes << " tnear " << tNear << " orig " << orig << " dir " << dir << " uv " << uv << std::endl;
 					if (rayType == kShadowRay && objects[k]->type == kReflectionAndRefraction) continue;
 					isect.hitObject = objects[k].get();
 					isect.tNear = tNear;
@@ -1020,7 +1232,6 @@ Vec3f castRay(
 									by the light source)
 									*/
 									bool vis = !trace(hitPoint + hitNormal * options.bias, -lightDir, objects, isectShad, kShadowRay);
-									//std::cerr << "DEBUG: vis input Vis = " << vis << " , " << hitPoint + hitNormal * options.bias << " , " << -lightDir << std::endl;
 									// compute the pattern
 #ifdef PATTERN_1
 									float scaleS = 20, scaleT = 20;
@@ -1122,7 +1333,7 @@ Vec3f castRay(
 							hitColor = diffuse * isect.hitObject->Kd + specular * isect.hitObject->Ks;
 #ifdef DEBUG_RENDER
 							std::cerr << "DEBUG: Phong hit colour: " << hitColor << std::endl;
-#endif							
+#endif	
 							break;
 						}
 					default:
@@ -1139,14 +1350,19 @@ Vec3f castRay(
 // The main render function. This where we iterate over all pixels in the image, generate
 // primary rays and cast these rays into the scene. The content of the framebuffer is
 // saved to a file.
-void render(
+int render(
 	const Options &options,
 	const std::vector<std::unique_ptr<Object>> &objects,
 	const std::vector<std::unique_ptr<Light>> &lights)
 {
+	XTime tStart, tEnd;
 	// Allocate memory for the frame buffer
 	std::unique_ptr<Vec3f []> framebuffer(new Vec3f[options.width * options.height]);
 	Vec3f *pix = framebuffer.get();
+
+	FRESULT f_frameBufferFile;
+	FIL frameBufferFile;
+	FRESULT fun_ret;
 
 	/* image scale 
 	define the field of view of the camera in terms of the angle α, and multiply the screen pixel 
@@ -1161,7 +1377,8 @@ void render(
 	options.cameraToWorld.multVecMatrix(Vec3f(0), orig);
 
 	// Start timer 
-	auto timeStart = std::chrono::high_resolution_clock::now();
+	std::cerr << "\n\rStarting main render loop\n\rStarting timer\n\r";
+	XTime_GetTime(&tStart);
 
 	for (uint32_t j = 0; j < options.height; ++j) 
 		{
@@ -1182,7 +1399,6 @@ void render(
 					*/                  
 					float x = (2 * (i + 0.5) / (float)options.width - 1) * imageAspectRatio * scale;
 					float y = (1 - 2 * (j + 0.5) / (float)options.height) * scale;
-					//std::cout << "dir x y " << x << y << std::endl;
 					Vec3f dir;
 					// Multiply the pixel coordinates with the camera to world matrix to generate the rays from the desired point in space
 					options.cameraToWorld.multDirMatrix(Vec3f(x, y, -1), dir);
@@ -1195,30 +1411,108 @@ void render(
 					*/
 					dir.normalize();
 					// Take the arguments Ray origin, direction, object list, light list and scene option
-					//std::cout << "dir " << dir << " orig " << orig << " x y " << x << " " << y << " j i " << j << " " << i << std::endl;
 					*(pix++) = castRay(orig, dir, objects, lights, options);
 				}
 			// Print the percentage of completion based on height 
-			fprintf(stderr, "\r%3d%c", uint32_t(j / (float)options.height * 100), '%');
+			fprintf(stderr, "\r%3lu%c", uint32_t(j / (float)options.height * 100), '%');
 		}
 
 	// Stop timer and messure time
-	auto timeEnd = std::chrono::high_resolution_clock::now();
-	auto passedTime = std::chrono::duration<double, std::milli>(timeEnd - timeStart).count();
-	fprintf(stderr, "\rDone: %.2f (sec)\n", passedTime / 1000);
+	std::cerr << "\n\rMain render loop done\n\r";
+	XTime_GetTime(&tEnd);
+	printf("\rEnded with %.4lf secs\r\n",(double)((1.0*(tEnd - tStart))/(COUNTS_PER_SECOND)));
     
-	// save framebuffer to file
-	std::ofstream ofs;
-	ofs.open("out.ppm");
-	ofs << "P6\n" << options.width << " " << options.height << "\n255\n";
+	// Save framebuffer to file
+	// Open file
+	f_frameBufferFile = f_open(&frameBufferFile, "out.ppm", FA_CREATE_ALWAYS | FA_WRITE);
+	if (f_frameBufferFile != FR_OK)
+		{
+			perror("\rERROR: Output file failed to open\n\r");
+			return XST_FAILURE;
+		}
+
+	// Write to output file
+	char outputFileBuffer[18];
+	int off = 0;
+	unsigned int writtenBytes = 0;
+
+	// Move the write point to the start of the file
+	fun_ret = f_lseek(&frameBufferFile , 0);
+	if (fun_ret!= FR_OK)
+		{
+			return XST_FAILURE;
+		}
+
+	// Form header of output file
+	sprintf(outputFileBuffer,"P6\n%lu %lu\n255\n", options.width, options.height);
+	// Write header of output file 
+	for (uint32_t i = 0; i < sizeof(outputFileBuffer)-1; i++)
+		{
+			fun_ret = f_write(&frameBufferFile, &outputFileBuffer[off], sizeof(char), &writtenBytes);
+			if (fun_ret != FR_OK)
+				{
+					perror("\rERROR: Write to file failed\n\r");
+					return XST_FAILURE;
+				}
+			off+=writtenBytes;
+		}
+	fun_ret = f_sync(&frameBufferFile);
+	if (fun_ret != FR_OK)
+		{
+			perror("\rERROR: Sync to file failed\n\r");
+			return XST_FAILURE;
+		} 
+#ifdef DEBUG
+	xil_printf("\r\nDEBUG: HEADER Wrote %d bytes to the SD card\r\n", off );
+#endif
+	writtenBytes = 0;
+	off = 0;
+	// Write the main core of the file ( dump framebuffer )
 	for (uint32_t i = 0; i < options.height * options.width; ++i) 
 		{
 			char r = (char)(255 * clamp(0, 1, framebuffer[i].x));
 			char g = (char)(255 * clamp(0, 1, framebuffer[i].y));
 			char b = (char)(255 * clamp(0, 1, framebuffer[i].z));
-			ofs << r << g << b;
+
+			fun_ret = f_write(&frameBufferFile, &r, sizeof(char), &writtenBytes);
+			if (fun_ret != FR_OK)
+				{
+					perror("\rERROR: Write to file failed\n\r");
+					return XST_FAILURE;
+				}
+
+			off+=writtenBytes;
+			fun_ret = f_write(&frameBufferFile, &g, sizeof(char), &writtenBytes);
+			if (fun_ret != FR_OK)
+				{
+					perror("\rERROR: Write to file failed\n\r");
+					return XST_FAILURE;
+				}
+
+			off+=writtenBytes;
+			fun_ret = f_write(&frameBufferFile, &b, sizeof(char), &writtenBytes);
+			if (fun_ret != FR_OK)
+				{
+					perror("\rERROR: Write to file failed\n\r");
+					return XST_FAILURE;
+				}
+			off+=writtenBytes;
 		}
-  ofs.close();
+	xil_printf("\r");
+#ifdef DEBUG
+	xil_printf("\rDEBUG: RGB wrote %d bytes to the SD card\r", off);
+#endif
+	//std::cerr << "\n\rDEBUG: RGB wrote " << off << " bytes to the SD card\n\r";
+	xil_printf("\n\rWriting to SD card DONE\n\r");
+
+	// Close the file
+	fun_ret = f_close(&frameBufferFile);
+	if (fun_ret != FR_OK)
+		{
+			perror("\rERROR: Closing Scene Option File failed\n\r");
+			return XST_FAILURE;
+		}
+	return XST_SUCCESS;
 }
 
 // In the main function of the program, we create the scene (create objects and lights)
@@ -1231,6 +1525,11 @@ int main(int argc, char **argv)
 	// lights
 	std::vector<std::unique_ptr<Light>> lights;
 	Options options;
+
+	// Set filesstem variables 
+	FRESULT  result;
+	static FATFS  FS_instance;
+	const char *Path = "0:/";
 
 	/* Geometry file data
 		The first number defines the number of faces making up the mesh. 
@@ -1300,18 +1599,59 @@ int main(int argc, char **argv)
 
 		6) Increment factors and repeat for every object
 	*/
+  init_platform();
 
-	// Check number of CLI arguments
-	if ( argc < 2 )
+	// Start Printring 
+	std::cerr << "\r";
+	fprintf(stderr, "\r");
+
+	// Mount the filesystem 
+	result = f_mount(&FS_instance,Path, 0);
+	if (result != FR_OK) 
 		{
-			std::cout << "Wrong number of arguments\n Must at least have a scene option data file" << std::endl;
-			return 1;
+			std::cerr << "\rERROR: Cannot mount sd\n\r";
+			return XST_FAILURE;
 		}
+
+	// FLUSH CACHE 
+	Xil_DCacheFlush();
+	// sync barrier
+	dsb();
+
+	// Initialize peripheral
+	std::cerr << "\n\rInitialising Ray Triangle Intersection peripheral...\n\r";
+	RaytiConfig = XRayti_LookupConfig(XPAR_RAYTI_0_DEVICE_ID);
+	if (!RaytiConfig)
+		{
+			perror("\rERROR: Lookup of accelerator failed.\n\r");
+			return XST_FAILURE;
+		}
+
+	uint32_t status = XRayti_CfgInitialize(&RaytiInstancePTR, RaytiConfig);
+	if (status != XST_SUCCESS)
+		{
+			perror("\rERROR: HLS peripheral setup failed\n\r");
+			return XST_FAILURE;
+		} 
+	std::cerr << "ARGC: " << argc << "\n\r"; 
+	// Check number of CLI arguments
+	//if ( argc < 2 )
+	//	{
+	//		std::cerr << "Wrong number of arguments\n Must at least have a scene option data file\n\r" << std::endl;
+	//		return 1;
+	//	}
 	// Load lighting and scene options
 	uint32_t numoflights;
 
 	// Read scene data from file
-	readSceneOptionDataFile(argv[1], &options, &numoflights);
+	int fun_ret;
+	fun_ret = readSceneOptionDataFile(argv[1], &options, &numoflights);
+	if ( fun_ret != XST_SUCCESS)
+		{
+			std::cerr << "\n\rAn I/O Error has occurred\n\r";
+			return XST_FAILURE;
+		}
+	std::cerr << "Parsing of Scene Option Data Done \n\r";
 	// Iterate the light sources and push the appropriate light type
 	for (uint32_t i = 0; i < numoflights; i++)
 		{
@@ -1323,7 +1663,7 @@ int main(int argc, char **argv)
 			// If the light source is point light push the l2w array to a new Distand light unique ptr along with the 
 			else if (lightData[i].lighttype == (uint32_t)1)
 				{
-					//std::cout << "LIGHT TYPE " << lightData[i].lighttype << "\nLIGHT 2 WORLD \n" << lightData[i].light2world << "\n LIGHT COLOUR " << lightData[i].colour << "\n INTENSITY " << lightData[i].intensity << std::endl;
+					//std::cerr << "LIGHT TYPE " << lightData[i].lighttype << "\nLIGHT 2 WORLD \n" << lightData[i].light2world << "\n LIGHT COLOUR " << lightData[i].colour << "\n INTENSITY " << lightData[i].intensity << std::endl;
 					lights.push_back(std::unique_ptr<Light>(new PointLight( lightData[i].light2world, lightData[i].colour, lightData[i].intensity )));
 				}		 
 		}
@@ -1332,7 +1672,8 @@ int main(int argc, char **argv)
 	// Load object geometries and options for multiple objects 
 
 	// Read the number of objects 
-	uint32_t numofobjects = atoi(argv[2]);
+	//uint32_t numofobjects = atoi(argv[2]);
+	uint32_t numofobjects = 1;
 
 	uint32_t indexfactorgeo = 3;
 	uint32_t indexfactorood = 4;
@@ -1341,14 +1682,26 @@ int main(int argc, char **argv)
 	for (uint32_t i=0; i < numofobjects; i++)
 		{
 			// Use overloaded function to read the object to world array first
-			readObjectOptionDataFile(argv[i+indexfactorood],&object2world);
-			
+			fun_ret = readObjectOptionDataFile(argv[i+indexfactorood],&object2world);
+			if ( fun_ret != XST_SUCCESS)
+				{
+					std::cerr << "\n\rAn I/O Error has occurred\n\r";
+					return XST_FAILURE;
+				}
+			std::cerr << "Parsing of Object " << i << " Option File (Object to world) Done \n\r";
 			// Load object geometry from file
 			TriangleMesh *mesh1 = loadPolyMeshFromFile(argv[i+indexfactorgeo], object2world);
+			std::cerr << "Parsing of Object " << i << " Geometry Done \n\r";
 			if (mesh1 != nullptr) 
 				{	
 					// Load the rest of the options
-					readObjectOptionDataFile(argv[i+indexfactorood],mesh1);
+					fun_ret = readObjectOptionDataFile(argv[i+indexfactorood],mesh1);
+					if ( fun_ret != XST_SUCCESS)
+						{
+							std::cerr << "\n\rAn I/O Error has occurred\n\r";
+							return XST_FAILURE;
+						}
+					std::cerr << "Parsing of Object " << i << " Option File (Rest of options) Done \n\r";
 					objects.push_back(std::unique_ptr<Object>(mesh1));
 				}
 			// Increment the factors to maintain +2 pattern for input files 
@@ -1356,8 +1709,16 @@ int main(int argc, char **argv)
 			indexfactorood++;
 		}
 
+	
 	// finally, render
-	render(options, objects, lights);
-
-	return 0;
+	fun_ret = render(options, objects, lights);
+	if ( fun_ret != XST_SUCCESS)
+		{
+			std::cerr << "\n\rAn I/O Error has occurred\n\r";
+			return XST_FAILURE;
+		}
+	xil_printf("End of run \n\r");
+	
+	cleanup_platform();
+	return XST_SUCCESS;
 }

@@ -149,7 +149,6 @@ public:
 //[/comment]
 typedef Vec3<float> Vec3f;
 typedef Vec3<int> Vec3i;
-
 //[comment]
 // Implementation of a generic 4x4 Matrix class - Same thing here than with the Vec3 class. It uses
 // a template which is maybe less useful than with vectors but it can be used to

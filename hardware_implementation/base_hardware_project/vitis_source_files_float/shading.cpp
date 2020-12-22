@@ -736,7 +736,7 @@ public:
 					// Wait util completion
 					while (!XRayti_IsDone(&RaytiInstancePTR)) {}
 
-					// Get input values back from the peripheral 
+					// Get input values back from the peripheral for debuging purposes
 					/*
 					int orig_temp = XRaytriangleintersect_Get_orig(&RaytiInstancePTR);
 					Vec3f orig_ret = *((Vec3f*)&orig_temp);
@@ -764,7 +764,7 @@ public:
 					local_v = *((float*)&ret_v);
 					// Set return 
 					temp_return = (bool)XRayti_Get_return(&RaytiInstancePTR);
-					// Print values returned from the peripheral 
+					// Print values returned from the peripheral for debuging perposes
 					/*
 					std::cerr << "\nDEBUG:  \n";
 					std::cerr << "\r\nOrig per " << orig_ret ;

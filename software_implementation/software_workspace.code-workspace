@@ -8,6 +8,9 @@
 		},
 		{
 			"path": "../test_scenes"
+		},
+		{
+			"path": "../../../grive/Panepistimio/10)_Final_Assignment/documentation/reasersh_results/sources/Phase_1_Step_4"
 		}
 	],
 	"settings": {
@@ -77,10 +80,6 @@
 			"typeinfo": "cpp",
 			"valarray": "cpp",
 			"complex": "cpp"
-		},
-		"cSpell.words": [
-			"Textrure",
-			"occured"
-		]
+		}
 	}
 }
