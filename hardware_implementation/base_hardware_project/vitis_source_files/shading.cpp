@@ -1289,6 +1289,8 @@ Vec3f castRay(
 							// Use the ray direction to find the hit normal
 							Vec3f R = reflect(dir, hitNormal);
 							R.normalize();
+							// Added the hit colour contribiution in case of a stand alone object
+							hitColor += 0.8 * castRay(hitPoint + hitNormal * options.bias, R, objects, lights, options, depth + 1);
 							break;
 						}
 					// Simulate transparent object (reflection/transmission/fresnel)
