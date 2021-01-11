@@ -51,6 +51,7 @@ XRayti_Config *RaytiConfig;
 //#define DEBUG_RENDER
 //#define DEBUG_GEO
 
+
 static const float kInfinity = std::numeric_limits<float>::max();
 static const float kEpsilon = 1e-8;
 static const Vec3f kDefaultBackgroundColor = Vec3f(0.235294, 0.67451, 0.843137);
@@ -152,13 +153,12 @@ int readSceneOptionDataFile (const char *file, Options *options, uint32_t *numof
 	FIL sceneOptionDataFile;
 	unsigned int readBytes =0;
 	FRESULT fun_ret;
-	static char *Log_File = (char *)"sceneP1.sod";
 
 	// Open the file or throw exeption
-	f_sceneOptionDataFile = f_open(&sceneOptionDataFile, Log_File, FA_READ);
+	f_sceneOptionDataFile = f_open(&sceneOptionDataFile, file, FA_READ);
 	if (f_sceneOptionDataFile != FR_OK)
 		{
-			std::cerr << "\rERROR: Opening Scene Data File failed " << Log_File << "\n\r";
+			std::cerr << "\rERROR: Opening Scene Data File failed " << file << "\n\r";
 			return XST_FAILURE;
 		}
 	fun_ret = f_lseek(&sceneOptionDataFile, 0);
@@ -400,15 +400,13 @@ int readObjectOptionDataFile(const char *file, Matrix44f *o2w)
 	FRESULT f_objectDataFile;
 	FIL objectDataFile;
 	unsigned int readBytes=0;
-	FRESULT fun_ret;
-
-	file = "plane.ood";	
+	FRESULT fun_ret;	
 
 	// Open the file or throw exeption
 	f_objectDataFile = f_open(&objectDataFile, file, FA_READ);
 	if (f_objectDataFile != FR_OK)
 		{
-			perror("\rERROR: Opening Object Data File failed\n\r");
+			std::cerr << "\rERROR: Opening Scene Data File failed " << file << "\n\r";
 			return XST_FAILURE;
 		}	
 	
@@ -452,13 +450,11 @@ int readObjectOptionDataFile(const char *file, Object *mesh)
 	unsigned int readBytes;
 	FRESULT fun_ret;	
 
-	file = "plane.ood";	
-
 	// Open the file or throw exeption
 	f_objectDataFile = f_open(&objectDataFile, file, FA_READ);
 	if (f_objectDataFile != FR_OK)
 		{
-			perror("\rERROR: Opening Object Data File failed\n\r");
+			std::cerr << "\rERROR: Opening Scene Data File failed " << file << "\n\r";
 			return XST_FAILURE;
 		}	
 
@@ -863,13 +859,11 @@ TriangleMesh* loadPolyMeshFromFile(const char *file, const Matrix44f &o2w)
 	unsigned int readBytes;
 	FRESULT fun_ret;	
 
-	file = "plane.geo";	
-
 	// Open the file or throw exeption
 	f_objectDataFile = f_open(&objectDataFile, file, FA_READ);
 	if (f_objectDataFile != FR_OK)
 		{
-			perror("\rERROR: Opening Object Data File failed\n\r");
+			std::cerr << "\rERROR: Opening Scene Data File failed " << file << "\n\r";
 			return nullptr;
 		}	
 
@@ -1537,6 +1531,80 @@ int render(
 	return XST_SUCCESS;
 }
 
+// Check the PSNR of the output image compaired to a gold sample
+double checkPSNR(Options options)
+{
+	double PSNR = 0;
+	double t;
+	unsigned int readBytes =0;
+	FRESULT f_gold, f_tocheck, fun_ret;
+	FIL goldFile, tocheckFile;
+
+	unsigned char golden[options.width * options.height];	
+	unsigned char tocheck[options.width * options.height];
+
+	static char *Log_Golden= (char*)"gold.ppm";
+	static char *Log_Tocheck= (char*)"OUT.PPM";
+
+	// Load the input files
+
+	f_gold = f_open(&goldFile, Log_Golden, FA_READ);
+	if (f_gold != FR_OK)
+		{
+			std::cerr << "\rERROR: Opening Scene Data File failed " << Log_Golden << "\n\r";
+			return XST_FAILURE;
+		}
+	fun_ret = f_lseek(&goldFile, 0);
+	if (fun_ret != FR_OK)
+		{
+			perror("\rERROR: lseek failed\n\r");
+		}
+	fun_ret = f_read(&goldFile, &golden, options.width * options.height, &readBytes);
+	if (fun_ret != FR_OK)
+		{
+			perror("\rERROR: Reading width failed\n\r");
+			return XST_FAILURE;
+		}
+	
+	readBytes = 0;
+
+	f_tocheck = f_open(&tocheckFile, Log_Tocheck, FA_READ);
+	if (f_tocheck != FR_OK)
+		{
+			std::cerr << "\rERROR: Opening Scene Data File failed " << Log_Tocheck << "\n\r";
+			return XST_FAILURE;
+		}
+	fun_ret = f_lseek(&tocheckFile, 0);
+	if (fun_ret != FR_OK)
+		{
+			perror("\rERROR: lseek failed\n\r");
+		}
+	fun_ret = f_read(&tocheckFile, &tocheck, options.width * options.height, &readBytes);
+	if (fun_ret != FR_OK)
+		{
+			perror("\rERROR: Reading width failed\n\r");
+			return XST_FAILURE;
+		}
+	
+	
+
+	// Calculate psnr
+	for(uint32_t i=3; i<options.height; i++)
+		{
+			for(uint32_t j=0; j<options.width; j++)
+				{
+					t = pow((tocheck[i*options.width+j] - golden[i*options.width+j]), 2);
+					PSNR += t;
+				}
+		}
+
+	PSNR /= (double)(options.width*options.height);
+	PSNR = 10*log10(65536/PSNR);
+
+	return PSNR;
+}
+
+
 // In the main function of the program, we create the scene (create objects and lights)
 // as well as set the options for the render (image widht and height, maximum recursion
 // depth, field-of-view, etc.). We then call the render function().
@@ -1649,25 +1717,26 @@ int main(int argc, char **argv)
 			return XST_FAILURE;
 		}
 
+	// This table replaces the argv input arguments as the bare metal run does not support CLI arguments
+	static char *argument_table[]={"shading",
+																"sceneP1.sod",
+																"1",
+																"plane.geo",
+																"plane.ood"};
+
 	uint32_t status = XRayti_CfgInitialize(&RaytiInstancePTR, RaytiConfig);
 	if (status != XST_SUCCESS)
 		{
 			perror("\rERROR: HLS peripheral setup failed\n\r");
 			return XST_FAILURE;
 		} 
-	std::cerr << "ARGC: " << argc << "\n\r"; 
-	// Check number of CLI arguments
-	//if ( argc < 2 )
-	//	{
-	//		std::cerr << "Wrong number of arguments\n Must at least have a scene option data file\n\r" << std::endl;
-	//		return 1;
-	//	}
+
 	// Load lighting and scene options
 	uint32_t numoflights;
 
 	// Read scene data from file
 	int fun_ret;
-	fun_ret = readSceneOptionDataFile(argv[1], &options, &numoflights);
+	fun_ret = readSceneOptionDataFile(argument_table[1], &options, &numoflights);
 	if ( fun_ret != XST_SUCCESS)
 		{
 			std::cerr << "\n\rAn I/O Error has occurred\n\r";
@@ -1694,8 +1763,7 @@ int main(int argc, char **argv)
 	// Load object geometries and options for multiple objects 
 
 	// Read the number of objects 
-	//uint32_t numofobjects = atoi(argv[2]);
-	uint32_t numofobjects = 1;
+	uint32_t numofobjects = atoi(argument_table[2]);
 
 	uint32_t indexfactorgeo = 3;
 	uint32_t indexfactorood = 4;
@@ -1704,7 +1772,7 @@ int main(int argc, char **argv)
 	for (uint32_t i=0; i < numofobjects; i++)
 		{
 			// Use overloaded function to read the object to world array first
-			fun_ret = readObjectOptionDataFile(argv[i+indexfactorood],&object2world);
+			fun_ret = readObjectOptionDataFile(argument_table[i+indexfactorood],&object2world);
 			if ( fun_ret != XST_SUCCESS)
 				{
 					std::cerr << "\n\rAn I/O Error has occurred\n\r";
@@ -1712,12 +1780,12 @@ int main(int argc, char **argv)
 				}
 			std::cerr << "Parsing of Object " << i << " Option File (Object to world) Done \n\r";
 			// Load object geometry from file
-			TriangleMesh *mesh1 = loadPolyMeshFromFile(argv[i+indexfactorgeo], object2world);
+			TriangleMesh *mesh1 = loadPolyMeshFromFile(argument_table[i+indexfactorgeo], object2world);
 			std::cerr << "Parsing of Object " << i << " Geometry Done \n\r";
 			if (mesh1 != nullptr) 
 				{	
 					// Load the rest of the options
-					fun_ret = readObjectOptionDataFile(argv[i+indexfactorood],mesh1);
+					fun_ret = readObjectOptionDataFile(argument_table[i+indexfactorood],mesh1);
 					if ( fun_ret != XST_SUCCESS)
 						{
 							std::cerr << "\n\rAn I/O Error has occurred\n\r";
@@ -1741,6 +1809,13 @@ int main(int argc, char **argv)
 		}
 	xil_printf("End of run \n\r");
 	
+	// Check PSNR
+	xil_printf("\n\rChecking Image PSNR \n\r");
+
+	double PSNR;
+	PSNR = checkPSNR(options);
+	std::cerr << "PSNR is: " << PSNR << "\n\r";
+
 	cleanup_platform();
 	return XST_SUCCESS;
 }

@@ -1534,6 +1534,80 @@ int render(
 	return XST_SUCCESS;
 }
 
+// Check the PSNR of the output image compaired to a gold sample
+double checkPSNR(Options options)
+{
+	double PSNR = 0;
+	double t;
+	unsigned int readBytes =0;
+	FRESULT f_gold, f_tocheck, fun_ret;
+	FIL goldFile, tocheckFile;
+
+	unsigned char golden[options.width * options.height];	
+	unsigned char tocheck[options.width * options.height];
+
+	static char *Log_Golden= (char*)"gold.ppm";
+	static char *Log_Tocheck= (char*)"OUT.PPM";
+
+	// Load the input files
+
+	f_gold = f_open(&goldFile, Log_Golden, FA_READ);
+	if (f_gold != FR_OK)
+		{
+			std::cerr << "\rERROR: Opening Scene Data File failed " << Log_Golden << "\n\r";
+			return XST_FAILURE;
+		}
+	fun_ret = f_lseek(&goldFile, 0);
+	if (fun_ret != FR_OK)
+		{
+			perror("\rERROR: lseek failed\n\r");
+		}
+	fun_ret = f_read(&goldFile, &golden, options.width * options.height, &readBytes);
+	if (fun_ret != FR_OK)
+		{
+			perror("\rERROR: Reading width failed\n\r");
+			return XST_FAILURE;
+		}
+	
+	readBytes = 0;
+
+	f_tocheck = f_open(&tocheckFile, Log_Tocheck, FA_READ);
+	if (f_tocheck != FR_OK)
+		{
+			std::cerr << "\rERROR: Opening Scene Data File failed " << Log_Tocheck << "\n\r";
+			return XST_FAILURE;
+		}
+	fun_ret = f_lseek(&tocheckFile, 0);
+	if (fun_ret != FR_OK)
+		{
+			perror("\rERROR: lseek failed\n\r");
+		}
+	fun_ret = f_read(&tocheckFile, &tocheck, options.width * options.height, &readBytes);
+	if (fun_ret != FR_OK)
+		{
+			perror("\rERROR: Reading width failed\n\r");
+			return XST_FAILURE;
+		}
+	
+	
+
+	// Calculate psnr
+	for(uint32_t i=3; i<options.height; i++)
+		{
+			for(uint32_t j=0; j<options.width; j++)
+				{
+					t = pow((tocheck[i*options.width+j] - golden[i*options.width+j]), 2);
+					PSNR += t;
+				}
+		}
+
+	PSNR /= (double)(options.width*options.height);
+	PSNR = 10*log10(65536/PSNR);
+
+	return PSNR;
+}
+
+
 // In the main function of the program, we create the scene (create objects and lights)
 // as well as set the options for the render (image widht and height, maximum recursion
 // depth, field-of-view, etc.). We then call the render function().
@@ -1738,6 +1812,14 @@ int main(int argc, char **argv)
 		}
 	xil_printf("End of run \n\r");
 	
+
+	// Check PSNR
+	xil_printf("\n\rChecking Image PSNR \n\r");
+
+	double PSNR;
+	PSNR = checkPSNR(options);
+	std::cerr << "PSNR is: " << PSNR << "\n\r";
+
 	cleanup_platform();
 	return XST_SUCCESS;
 }
