@@ -47,7 +47,31 @@ XRayti_Config *RaytiConfig;
 	Pattern 5:	Solid Grey Colour
 */
 #define PATTERN_5
+
+// Scene Defines
+//Scene 1:  Glass and pen
+#define SCENE_1
+
+//Scene 2:  Whole plane
 #define SCENE_2
+
+//Scene 3:  4 Glasses refraction
+#define SCENE_3
+
+//Scene 4:  4 Glasses refraction Point light
+#define SCENE_4
+
+//Scene 5:  Horizontal Plane
+#define SCENE_5
+
+//Scene 6:  Utah Teapod
+#define SCENE_5
+
+//Scene 7:	All MaterialS 
+#define SCENE_6
+
+// Debug defines 
+
 //#define DEBUG
 //#define DEBUG_RENDER
 //#define DEBUG_GEO
@@ -1719,15 +1743,29 @@ int main(int argc, char **argv)
 		}
 
 	// This table replaces the argv input arguments as the bare metal run does not support CLI arguments
+	//Scene 1:  Glass and pen
 #ifdef SCENE_1
+	static char *argument_table[]={"shading",
+																"scene_WP.sod",
+																"3",
+																"back.geo",
+																"back.ood",
+																"cylinder.geo",
+																"cylinder.ood",
+																"pen.geo",
+																"pen.ood"};
+#endif
+	//Scene 2:  Whole plane
+#ifdef SCENE_2
 	static char *argument_table[]={"shading",
 																"scene_P1.sod",
 																"1",
 																"plane.geo",
 																"plane.ood"};
 #endif
-#ifdef SCENE_2
-static char *argument_table[]={"shading",
+	//4 Glasses refraction
+#ifdef SCENE_3
+	static char *argument_table[]={"shading",
 																"scene_GL.sod",
 																"2",
 																"glasses.geo",
@@ -1735,6 +1773,56 @@ static char *argument_table[]={"shading",
 																"back.geo",
 																"back.ood"};
 #endif
+	//4 Glasses refraction Point light
+#ifdef SCENE_4
+	static char *argument_table[]={"shading",
+																"scene_GP.sod",
+																"2",
+																"glasses.geo",
+																"glasses.ood",
+																"back.geo",
+																"back.ood"};
+#endif
+	//Horizontal Plane
+#ifdef SCENE_5
+	static char *argument_table[]={"shading",
+																"scene_P1.sod",
+																"1",
+																"plane.geo",
+																"plane.ood"};
+#endif
+	//Utah Teapod
+#ifdef SCENE_6
+	static char *argument_table[]={"shading",
+																"scene_TP.sod",
+																"2",
+																"teapot.geo",
+																"teapot.ood",
+																"plane.geo",
+																"plane.ood"};
+#endif
+	//All Materials
+#ifdef SCENE_7
+	static char *argument_table[]={"shading",
+																"scene_AM.sod",
+																"7",
+																"back1.geo",
+																"back1.ood",
+																"back1.geo",
+																"back2.ood",
+																"back1.geo",
+																"back3.ood",
+																"glasses.geo",
+																"glasses.ood",
+																"cylinder.geo",
+																"cylinder.ood",
+																"teapot.geo",
+																"teapot1.ood",
+																"teapot.geo",
+																"teapot2.ood"};
+#endif
+
+
 
 	uint32_t status = XRayti_CfgInitialize(&RaytiInstancePTR, RaytiConfig);
 	if (status != XST_SUCCESS)
