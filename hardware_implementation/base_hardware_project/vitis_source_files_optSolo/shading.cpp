@@ -50,25 +50,25 @@ XRayti_Config *RaytiConfig;
 
 // Scene Defines
 //Scene 1:  Glass and pen
-#define SCENE_1
+//#define SCENE_1
 
 //Scene 2:  Whole plane
 #define SCENE_2
 
 //Scene 3:  4 Glasses refraction
-#define SCENE_3
+//#define SCENE_3
 
 //Scene 4:  4 Glasses refraction Point light
-#define SCENE_4
+//#define SCENE_4
 
 //Scene 5:  Horizontal Plane
-#define SCENE_5
+//#define SCENE_5
 
 //Scene 6:  Utah Teapod
-#define SCENE_5
+//#define SCENE_6
 
 //Scene 7:	All MaterialS 
-#define SCENE_6
+//#define SCENE_7
 
 // Debug defines 
 
