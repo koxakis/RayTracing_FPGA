@@ -47,7 +47,8 @@ XRayti_Config *RaytiConfig;
 	Pattern 5:	Solid Grey Colour
 */
 #define PATTERN_5
-#define DEBUG
+#define SCENE_2
+//#define DEBUG
 //#define DEBUG_RENDER
 //#define DEBUG_GEO
 
@@ -406,7 +407,7 @@ int readObjectOptionDataFile(const char *file, Matrix44f *o2w)
 	f_objectDataFile = f_open(&objectDataFile, file, FA_READ);
 	if (f_objectDataFile != FR_OK)
 		{
-			std::cerr << "\rERROR: Opening Scene Data File failed " << file << "\n\r";
+			std::cerr << "\rERROR: Opening Object Data File (o2w) failed " << file << "\n\r";
 			return XST_FAILURE;
 		}	
 	
@@ -454,7 +455,7 @@ int readObjectOptionDataFile(const char *file, Object *mesh)
 	f_objectDataFile = f_open(&objectDataFile, file, FA_READ);
 	if (f_objectDataFile != FR_OK)
 		{
-			std::cerr << "\rERROR: Opening Scene Data File failed " << file << "\n\r";
+			std::cerr << "\rERROR: Opening Object Data File (after o2w) failed " << file << "\n\r";
 			return XST_FAILURE;
 		}	
 
@@ -1430,7 +1431,7 @@ int render(
 					*(pix++) = castRay(orig, dir, objects, lights, options);
 				}
 			// Print the percentage of completion based on height 
-			//fprintf(stderr, "\r%3lu%c", uint32_t(j / (float)options.height * 100), '%');
+			fprintf(stderr, "\r%3lu%c", uint32_t(j / (float)options.height * 100), '%');
 		}
 
 	// Stop timer and messure time
@@ -1718,11 +1719,22 @@ int main(int argc, char **argv)
 		}
 
 	// This table replaces the argv input arguments as the bare metal run does not support CLI arguments
+#ifdef SCENE_1
 	static char *argument_table[]={"shading",
-																"sceneP1.sod",
+																"scene_P1.sod",
 																"1",
 																"plane.geo",
 																"plane.ood"};
+#endif
+#ifdef SCENE_2
+static char *argument_table[]={"shading",
+																"scene_GL.sod",
+																"2",
+																"glasses.geo",
+																"glasses.ood",
+																"back.geo",
+																"back.ood"};
+#endif
 
 	uint32_t status = XRayti_CfgInitialize(&RaytiInstancePTR, RaytiConfig);
 	if (status != XST_SUCCESS)
@@ -1778,10 +1790,10 @@ int main(int argc, char **argv)
 					std::cerr << "\n\rAn I/O Error has occurred\n\r";
 					return XST_FAILURE;
 				}
-			std::cerr << "Parsing of Object " << i << " Option File (Object to world) Done \n\r";
+			std::cout << "Parsing of Object " << i << " Option File (Object to world) Done \n\r";
 			// Load object geometry from file
 			TriangleMesh *mesh1 = loadPolyMeshFromFile(argument_table[i+indexfactorgeo], object2world);
-			std::cerr << "Parsing of Object " << i << " Geometry Done \n\r";
+			std::cout << "Parsing of Object " << i << " Geometry Done \n\r";
 			if (mesh1 != nullptr) 
 				{	
 					// Load the rest of the options
@@ -1791,7 +1803,7 @@ int main(int argc, char **argv)
 							std::cerr << "\n\rAn I/O Error has occurred\n\r";
 							return XST_FAILURE;
 						}
-					std::cerr << "Parsing of Object " << i << " Option File (Rest of options) Done \n\r";
+					std::cout << "Parsing of Object " << i << " Option File (Rest of options) Done \n\r";
 					objects.push_back(std::unique_ptr<Object>(mesh1));
 				}
 			// Increment the factors to maintain +2 pattern for input files 

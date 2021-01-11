@@ -18,7 +18,9 @@ using namespace std;
 
 void getNewFileName (char filedirname[], char *file)
 {
-	const char *token = strtok(file, "/");
+	char sourcefiledir[150];
+	strcpy(sourcefiledir,file);
+	const char *token = strtok(sourcefiledir, "/");
 	uint32_t i=0;
 
 	strcpy(filedirname,"../../test_scenes/");
@@ -44,7 +46,7 @@ int parseSceneOptionFile (char *file)
 	ifstream ifs;
 	ofstream fout;
 
-	char filedirname[133];
+	char filedirname[150];
 
 	getNewFileName(filedirname, file);
 	cout << filedirname << "\n";
@@ -174,7 +176,7 @@ int parseGeometryFile (char *file)
 {
 	ifstream ifs;
 	ofstream fout;
-	char filedirname[133];
+	char filedirname[150];
 
 	getNewFileName(filedirname, file);
 	cout << filedirname << "\n";
@@ -275,7 +277,7 @@ int parseObjectOptionFile (char *file)
 {
 	ifstream ifs;
 	ofstream fout;
-	char filedirname[133];
+	char filedirname[150];
 
 	getNewFileName(filedirname, file);
 	cout << filedirname << "\n";
