@@ -47,9 +47,35 @@ XRayti_Config *RaytiConfig;
 	Pattern 5:	Solid Grey Colour
 */
 #define PATTERN_5
-#define DEBUG
+
+// Scene Defines
+//Scene 1:  Glass and pen
+//#define SCENE_1
+
+//Scene 2:  Whole plane
+#define SCENE_2
+
+//Scene 3:  4 Glasses refraction
+//#define SCENE_3
+
+//Scene 4:  4 Glasses refraction Point light
+//#define SCENE_4
+
+//Scene 5:  Horizontal Plane
+//#define SCENE_5
+
+//Scene 6:  Utah Teapod
+//#define SCENE_6
+
+//Scene 7:	All MaterialS 
+//#define SCENE_7
+
+// Debug defines 
+
+//#define DEBUG
 //#define DEBUG_RENDER
 //#define DEBUG_GEO
+
 
 static const float kInfinity = std::numeric_limits<float>::max();
 static const float kEpsilon = 1e-8;
@@ -145,63 +171,6 @@ class Object
 	float n = 10;
 };
 
-// Perform the MT Ray triangle intersecion and return u, v coordinates if intersection occurs 
-bool rayTriangleIntersect(
-	const Vec3f &orig, const Vec3f &dir,
-	const Vec3f &v0, const Vec3f &v1, const Vec3f &v2,
-	float &t, float &u, float &v)
-{
-	// find if the ray intersects the triangle 
-
-	// find the triangles normal
-	// E1 in equation
-	Vec3f v0v1 = v1 - v0;
-	// E2 in equation
-	Vec3f v0v2 = v2 - v0;
-	// P in the equation
-	// y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x
-	Vec3f pvec = dir.crossProduct(v0v2);
-	// the user might want to cull (discard) back-facing triangles
-	// if the triangle is front-facing the determinant is positive otherwise it is negative
-	// P*E1 in the equation 
-	// x * v.x + y * v.y + z * v.z
-  float det = v0v1.dotProduct(pvec);
-
-	// Deactivate CULLING in order to render back facing triangles as well
-	// Useful for secondary rays can be neglected for primary rays 
-#ifdef CULLING
-    // if the determinant is negative the triangle is backfacing
-    // if the determinant is close to 0, the ray misses the triangle
-    if (det < kEpsilon) return false;
-#else
-    // ray and triangle are parallel if det is close to 0
-    if (fabs(det) < kEpsilon) return false;
-#endif
-
-	// compute once and multiply to find u,v and t
-	// 1/P*E1 in the equation 
-	float invDet = 1 / det;
-
-	// translate to the unit triangle 
-	Vec3f tvec = orig - v0;
-	// compute u from (T dotproduct P) * 1/P*E1
-	u = tvec.dotProduct(pvec) * invDet;
-	// we reject the triangle if u is either lower than 0 or greater than 1
-	if (u < 0 || u > 1) return false;
-
-	// Q in the equation 
-	Vec3f qvec = tvec.crossProduct(v0v1);
-	// compute v from (D dotproduct Q) * 1/P*E1 
-	v = dir.dotProduct(qvec) * invDet;
-	// we reject the triangle if v is either lower than 0 or greater than 1
-	if (v < 0 || u + v > 1) return false;
-
-	// compute t from (E2 dotproduct Q) * 1/P*E1 
-	t = v0v2.dotProduct(qvec) * invDet;
-	
-	return (t > 0) ? true : false;
-}
-
 // Reads scene options from a file
 int readSceneOptionDataFile (const char *file, Options *options, uint32_t *numoflight)
 {
@@ -209,13 +178,12 @@ int readSceneOptionDataFile (const char *file, Options *options, uint32_t *numof
 	FIL sceneOptionDataFile;
 	unsigned int readBytes =0;
 	FRESULT fun_ret;
-	static char *Log_File = (char *)"scene_P2.sod";
 
 	// Open the file or throw exeption
-	f_sceneOptionDataFile = f_open(&sceneOptionDataFile, Log_File, FA_READ);
+	f_sceneOptionDataFile = f_open(&sceneOptionDataFile, file, FA_READ);
 	if (f_sceneOptionDataFile != FR_OK)
 		{
-			std::cerr << "\rERROR: Opening Scene Data File failed " << Log_File << "\n\r";
+			std::cerr << "\rERROR: Opening Scene Data File failed " << file << "\n\r";
 			return XST_FAILURE;
 		}
 	fun_ret = f_lseek(&sceneOptionDataFile, 0);
@@ -457,15 +425,13 @@ int readObjectOptionDataFile(const char *file, Matrix44f *o2w)
 	FRESULT f_objectDataFile;
 	FIL objectDataFile;
 	unsigned int readBytes=0;
-	FRESULT fun_ret;
-
-	file = "plane.ood";	
+	FRESULT fun_ret;	
 
 	// Open the file or throw exeption
 	f_objectDataFile = f_open(&objectDataFile, file, FA_READ);
 	if (f_objectDataFile != FR_OK)
 		{
-			perror("\rERROR: Opening Object Data File failed\n\r");
+			std::cerr << "\rERROR: Opening Object Data File (o2w) failed " << file << "\n\r";
 			return XST_FAILURE;
 		}	
 	
@@ -509,13 +475,11 @@ int readObjectOptionDataFile(const char *file, Object *mesh)
 	unsigned int readBytes;
 	FRESULT fun_ret;	
 
-	file = "plane.ood";	
-
 	// Open the file or throw exeption
 	f_objectDataFile = f_open(&objectDataFile, file, FA_READ);
 	if (f_objectDataFile != FR_OK)
 		{
-			perror("\rERROR: Opening Object Data File failed\n\r");
+			std::cerr << "\rERROR: Opening Object Data File (after o2w) failed " << file << "\n\r";
 			return XST_FAILURE;
 		}	
 
@@ -759,7 +723,84 @@ public:
 					/* a ray may intersect more than one triangle from the mesh therefore we also 
 					need to keep track of the nearest intersection distance as we iterate over the triangles.            
 					*/
-					temp_return = rayTriangleIntersect(orig, dir, v0, v1, v2, local_t, local_u, local_v);
+					// Set I/O pointers 
+					// Set Ray origin
+					XRayti_Set_orig_x_i(&RaytiInstancePTR, *((u32*)&local_orig.x));
+					XRayti_Set_orig_y_i(&RaytiInstancePTR, *((u32*)&local_orig.y));
+					XRayti_Set_orig_z_i(&RaytiInstancePTR, *((u32*)&local_orig.z));
+					// Set Ray direction
+					XRayti_Set_dir_x_i(&RaytiInstancePTR, *((u32*)&local_dir.x));
+					XRayti_Set_dir_y_i(&RaytiInstancePTR, *((u32*)&local_dir.y));
+					XRayti_Set_dir_z_i(&RaytiInstancePTR, *((u32*)&local_dir.z));
+					// Set triangle V0 
+					XRayti_Set_v0_x_i(&RaytiInstancePTR, *((u32*)&local_v0.x));
+					XRayti_Set_v0_y_i(&RaytiInstancePTR, *((u32*)&local_v0.y));
+					XRayti_Set_v0_z_i(&RaytiInstancePTR, *((u32*)&local_v0.z));
+					// Set triangle V1
+					XRayti_Set_v1_x_i(&RaytiInstancePTR, *((u32*)&local_v1.x));
+					XRayti_Set_v1_y_i(&RaytiInstancePTR, *((u32*)&local_v1.y));
+					XRayti_Set_v1_z_i(&RaytiInstancePTR, *((u32*)&local_v1.z));
+					// Set triangle V2
+					XRayti_Set_v2_x_i(&RaytiInstancePTR, *((u32*)&local_v2.x));
+					XRayti_Set_v2_y_i(&RaytiInstancePTR, *((u32*)&local_v2.y));
+					XRayti_Set_v2_z_i(&RaytiInstancePTR, *((u32*)&local_v2.z));
+
+					// Check if the peripheral is ready
+					if (!XRayti_IsReady(&RaytiInstancePTR))
+						{
+							std::cerr << "\rERROR: HLS peripheral is not ready. Exiting...\n\r";
+							exit(-1);
+						}
+					// Start the peripheral
+					XRayti_Start(&RaytiInstancePTR);
+
+					// Wait util completion
+					while (!XRayti_IsDone(&RaytiInstancePTR)) {}
+
+					// Get input values back from the peripheral for debuging purposes
+					/*
+					int orig_temp = XRaytriangleintersect_Get_orig(&RaytiInstancePTR);
+					Vec3f orig_ret = *((Vec3f*)&orig_temp);
+
+					int dir_temp = XRaytriangleintersect_Get_dir(&RaytiInstancePTR);
+					Vec3f dir_ret = *((Vec3f*)&dir_temp);
+
+					int v0_temp = XRaytriangleintersect_Get_v0(&RaytiInstancePTR);
+					Vec3f v0_ret = *((Vec3f*)&v0_temp); 
+
+					int v1_temp = XRaytriangleintersect_Get_v1(&RaytiInstancePTR);
+					Vec3f v1_ret = *((Vec3f*)&v1_temp);
+
+					int v2_temp = XRaytriangleintersect_Get_v2(&RaytiInstancePTR);
+					Vec3f v2_ret = *((Vec3f*)&v2_temp);
+					*/
+					// Set t distance to intersection point
+					ret_t = XRayti_Get_t(&RaytiInstancePTR);
+					local_t = *((float*)&ret_t);
+					// Set u intersection coordinate 
+					ret_u = XRayti_Get_u(&RaytiInstancePTR);
+					local_u = *((float*)&ret_u);
+					// Set v intersection coordinate
+					ret_v = XRayti_Get_v(&RaytiInstancePTR);
+					local_v = *((float*)&ret_v);
+					// Set return 
+					temp_return = (bool)XRayti_Get_return(&RaytiInstancePTR);
+					// Print values returned from the peripheral for debuging perposes
+					/*
+					std::cerr << "\nDEBUG:  \n";
+					std::cerr << "\r\nOrig per " << orig_ret ;
+					std::cerr << "\r\nDir per " << dir_ret ;
+					std::cerr << "\r\nv0 per " << v0_ret ;
+					std::cerr << "\r\nv1 per " << v1_ret ;
+					std::cerr << "\r\nv2 per " << v2_ret << "\n\r";
+					std::cerr << "\nOrig local " << local_orig.x << " " << local_orig.y << " " << local_orig.z << " ";
+					std::cerr << "\nDir local " << local_dir.x << " " << local_dir.y  << " " << local_dir.z << " ";
+					std::cerr << "\nV0 local " << local_v0.x << " " << local_v0.y << " " << local_v0.z << " ";
+					std::cerr << "\nV1 local " << local_v1.x << " " << local_v1.y << " " << local_v1.z << " ";
+					std::cerr << "\nV2 local " << local_v2.x << " " << local_v2.y << " " << local_v2.z << " ";
+					std::cerr << "\nDEBUG: result " << ret_t << " " << ret_u << " " << ret_v << " " << temp_return << "\n";
+					std::cerr << "\nDEBUG: result " << local_t << " " << local_u << " " << local_v << " " << "\n";
+					*/
 					if ( (temp_return) && local_t < tNear)
 						{
 							/*
@@ -843,13 +884,11 @@ TriangleMesh* loadPolyMeshFromFile(const char *file, const Matrix44f &o2w)
 	unsigned int readBytes;
 	FRESULT fun_ret;	
 
-	file = "plane.geo";	
-
 	// Open the file or throw exeption
 	f_objectDataFile = f_open(&objectDataFile, file, FA_READ);
 	if (f_objectDataFile != FR_OK)
 		{
-			perror("\rERROR: Opening Object Data File failed\n\r");
+			std::cerr << "\rERROR: Opening Scene Data File failed " << file << "\n\r";
 			return nullptr;
 		}	
 
@@ -1194,6 +1233,7 @@ Vec3f castRay(
 {
 	// If maximum depth has been reached then return the background colour
 	if (depth > options.maxDepth) return options.backgroundColor;
+	//std::cout << options.backgroundColor << std::endl;
 	Vec3f hitColor = 0;
 
 	// Intersected object info
@@ -1339,12 +1379,15 @@ Vec3f castRay(
 							break;
 						}
 					default:
+						//hitColor = options.backgroundColor;
+						//std::cout << options.backgroundColor << std::endl;
 						break;
 				}
 		}
 	else 
 		{
 			hitColor = options.backgroundColor;
+			//std::cout << options.backgroundColor << std::endl;
 		}
   return hitColor;
 }
@@ -1480,7 +1523,6 @@ int render(
 				}
 		}
 
-
 	fun_ret = f_sync(&frameBufferFile);
 	if (fun_ret != FR_OK)
 		{
@@ -1539,7 +1581,6 @@ int render(
 		}
 	return XST_SUCCESS;
 }
-
 
 // Check the PSNR of the output image compaired to a gold sample
 double checkPSNR(Options options)
@@ -1727,25 +1768,101 @@ int main(int argc, char **argv)
 			return XST_FAILURE;
 		}
 
+	// This table replaces the argv input arguments as the bare metal run does not support CLI arguments
+	//Scene 1:  Glass and pen
+#ifdef SCENE_1
+	static char *argument_table[]={"shading",
+																"scene_WP.sod",
+																"3",
+																"back.geo",
+																"back.ood",
+																"cylinder.geo",
+																"cylinder.ood",
+																"pen.geo",
+																"pen.ood"};
+#endif
+	//Scene 2:  Whole plane
+#ifdef SCENE_2
+	static char *argument_table[]={"shading",
+																"scene_P1.sod",
+																"1",
+																"plane.geo",
+																"plane.ood"};
+#endif
+	//4 Glasses refraction
+#ifdef SCENE_3
+	static char *argument_table[]={"shading",
+																"scene_GL.sod",
+																"2",
+																"glasses.geo",
+																"glasses.ood",
+																"back.geo",
+																"back.ood"};
+#endif
+	//4 Glasses refraction Point light
+#ifdef SCENE_4
+	static char *argument_table[]={"shading",
+																"scene_GP.sod",
+																"2",
+																"glasses.geo",
+																"glasses.ood",
+																"back.geo",
+																"back.ood"};
+#endif
+	//Horizontal Plane
+#ifdef SCENE_5
+	static char *argument_table[]={"shading",
+																"scene_P2.sod",
+																"1",
+																"plane.geo",
+																"plane.ood"};
+#endif
+	//Utah Teapod
+#ifdef SCENE_6
+	static char *argument_table[]={"shading",
+																"scene_TP.sod",
+																"2",
+																"teapot.geo",
+																"teapot.ood",
+																"plane.geo",
+																"plane.ood"};
+#endif
+	//All Materials
+#ifdef SCENE_7
+	static char *argument_table[]={"shading",
+																"scene_AM.sod",
+																"7",
+																"back1.geo",
+																"back1.ood",
+																"back1.geo",
+																"back2.ood",
+																"back1.geo",
+																"back3.ood",
+																"glasses.geo",
+																"glasses.ood",
+																"cylinder.geo",
+																"cylinder.ood",
+																"teapot.geo",
+																"teapot1.ood",
+																"teapot.geo",
+																"teapot2.ood"};
+#endif
+
+
+
 	uint32_t status = XRayti_CfgInitialize(&RaytiInstancePTR, RaytiConfig);
 	if (status != XST_SUCCESS)
 		{
 			perror("\rERROR: HLS peripheral setup failed\n\r");
 			return XST_FAILURE;
 		} 
-	std::cerr << "ARGC: " << argc << "\n\r"; 
-	// Check number of CLI arguments
-	//if ( argc < 2 )
-	//	{
-	//		std::cerr << "Wrong number of arguments\n Must at least have a scene option data file\n\r" << std::endl;
-	//		return 1;
-	//	}
+
 	// Load lighting and scene options
 	uint32_t numoflights;
 
 	// Read scene data from file
 	int fun_ret;
-	fun_ret = readSceneOptionDataFile(argv[1], &options, &numoflights);
+	fun_ret = readSceneOptionDataFile(argument_table[1], &options, &numoflights);
 	if ( fun_ret != XST_SUCCESS)
 		{
 			std::cerr << "\n\rAn I/O Error has occurred\n\r";
@@ -1772,8 +1889,7 @@ int main(int argc, char **argv)
 	// Load object geometries and options for multiple objects 
 
 	// Read the number of objects 
-	//uint32_t numofobjects = atoi(argv[2]);
-	uint32_t numofobjects = 1;
+	uint32_t numofobjects = atoi(argument_table[2]);
 
 	uint32_t indexfactorgeo = 3;
 	uint32_t indexfactorood = 4;
@@ -1782,26 +1898,26 @@ int main(int argc, char **argv)
 	for (uint32_t i=0; i < numofobjects; i++)
 		{
 			// Use overloaded function to read the object to world array first
-			fun_ret = readObjectOptionDataFile(argv[i+indexfactorood],&object2world);
+			fun_ret = readObjectOptionDataFile(argument_table[i+indexfactorood],&object2world);
 			if ( fun_ret != XST_SUCCESS)
 				{
 					std::cerr << "\n\rAn I/O Error has occurred\n\r";
 					return XST_FAILURE;
 				}
-			std::cerr << "Parsing of Object " << i << " Option File (Object to world) Done \n\r";
+			std::cout << "Parsing of Object " << i << " Option File (Object to world) Done \n\r";
 			// Load object geometry from file
-			TriangleMesh *mesh1 = loadPolyMeshFromFile(argv[i+indexfactorgeo], object2world);
-			std::cerr << "Parsing of Object " << i << " Geometry Done \n\r";
+			TriangleMesh *mesh1 = loadPolyMeshFromFile(argument_table[i+indexfactorgeo], object2world);
+			std::cout << "Parsing of Object " << i << " Geometry Done \n\r";
 			if (mesh1 != nullptr) 
 				{	
 					// Load the rest of the options
-					fun_ret = readObjectOptionDataFile(argv[i+indexfactorood],mesh1);
+					fun_ret = readObjectOptionDataFile(argument_table[i+indexfactorood],mesh1);
 					if ( fun_ret != XST_SUCCESS)
 						{
 							std::cerr << "\n\rAn I/O Error has occurred\n\r";
 							return XST_FAILURE;
 						}
-					std::cerr << "Parsing of Object " << i << " Option File (Rest of options) Done \n\r";
+					std::cout << "Parsing of Object " << i << " Option File (Rest of options) Done \n\r";
 					objects.push_back(std::unique_ptr<Object>(mesh1));
 				}
 			// Increment the factors to maintain +2 pattern for input files 
@@ -1818,14 +1934,14 @@ int main(int argc, char **argv)
 			return XST_FAILURE;
 		}
 	xil_printf("End of run \n\r");
-
+	
 	// Check PSNR
 	xil_printf("\n\rChecking Image PSNR \n\r");
 
 	double PSNR;
 	PSNR = checkPSNR(options);
 	std::cerr << "PSNR is: " << PSNR << "\n\r";
-	
+
 	cleanup_platform();
 	return XST_SUCCESS;
 }

@@ -52,7 +52,7 @@ echo -e "Scene 5:  Horizontal Plane\n"
 ./shading ../../test_scenes/Simple_plane2_scene/scene_P2.sod 1 ../../test_scenes/Simple_plane2_scene/plane.geo ../../test_scenes/Simple_plane2_scene/plane.ood
 ./check_out ../../test_scenes/Simple_plane2_scene/gold.ppm out.ppm
 #	static char *argument_table[]={"shading",
-#																"scene_P1.sod",
+#																"scene_P2.sod",
 #																"1",
 #																"plane.geo",
 #																"plane.ood"};

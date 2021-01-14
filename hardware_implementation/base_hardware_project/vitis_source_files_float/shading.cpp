@@ -152,7 +152,7 @@ int readSceneOptionDataFile (const char *file, Options *options, uint32_t *numof
 	FIL sceneOptionDataFile;
 	unsigned int readBytes =0;
 	FRESULT fun_ret;
-	static char *Log_File = (char *)"sceneP1.sod";
+	static char *Log_File = (char *)"scene_P1.sod";
 
 	// Open the file or throw exeption
 	f_sceneOptionDataFile = f_open(&sceneOptionDataFile, Log_File, FA_READ);
@@ -1453,8 +1453,11 @@ int render(
 			return XST_FAILURE;
 		}
 
-	// Write to output file
-	char outputFileBuffer[18];
+	// Write to output file 
+	// xxxx * xxxx resolution
+	char outputFileBuffer_xxxx[18];
+	// xxxx * xxx resolution
+	char outputFileBuffer_xxx[17];
 	int off = 0;
 	unsigned int writtenBytes = 0;
 
@@ -1466,18 +1469,37 @@ int render(
 		}
 
 	// Form header of output file
-	sprintf(outputFileBuffer,"P6\n%lu %lu\n255\n", options.width, options.height);
-	// Write header of output file 
-	for (uint32_t i = 0; i < sizeof(outputFileBuffer)-1; i++)
+	if (options.height == (uint32_t)1080)
 		{
-			fun_ret = f_write(&frameBufferFile, &outputFileBuffer[off], sizeof(char), &writtenBytes);
-			if (fun_ret != FR_OK)
+			sprintf(outputFileBuffer_xxxx,"P6\n%lu %lu\n255\n", options.width, options.height);
+			// Write header of output file 
+			for (uint32_t i = 0; i < sizeof(outputFileBuffer_xxxx)-1; i++)
 				{
-					perror("\rERROR: Write to file failed\n\r");
-					return XST_FAILURE;
+					fun_ret = f_write(&frameBufferFile, &outputFileBuffer_xxxx[off], sizeof(char), &writtenBytes);
+					if (fun_ret != FR_OK)
+						{
+							perror("\rERROR: Write to file failed\n\r");
+							return XST_FAILURE;
+						}
+					off+=writtenBytes;
 				}
-			off+=writtenBytes;
 		}
+	else
+		{
+			sprintf(outputFileBuffer_xxx,"P6\n%lu %lu\n255\n", options.width, options.height);
+			// Write header of output file 
+			for (uint32_t i = 0; i < sizeof(outputFileBuffer_xxx)-1; i++)
+				{
+					fun_ret = f_write(&frameBufferFile, &outputFileBuffer_xxx[off], sizeof(char), &writtenBytes);
+					if (fun_ret != FR_OK)
+						{
+							perror("\rERROR: Write to file failed\n\r");
+							return XST_FAILURE;
+						}
+					off+=writtenBytes;
+				}
+		}
+
 	fun_ret = f_sync(&frameBufferFile);
 	if (fun_ret != FR_OK)
 		{
