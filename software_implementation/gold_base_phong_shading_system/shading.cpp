@@ -612,21 +612,34 @@ public:
 					/* a ray may intersect more than one triangle from the mesh therefore we also 
 					need to keep track of the nearest intersection distance as we iterate over the triangles.            
 					*/
+					//std::cout.precision(17);
+					/*
+					std::cout << "\n START DEBUG \n";
+					std::cout << "DEBUG: input data \n";
+					std::cout << "\nOrig " << orig.x << " " << orig.y << " " << orig.z << " ";
+					std::cout << "\nDir " << dir.x << " " << dir.y  << " " << dir.z << " ";
+					std::cout << "\nV0 "  << v0.x << " " << v0.y << " " << v0.z << " ";
+					std::cout << "\nV1 " << v1.x << " " << v1.y << " " << v1.z << " ";
+					std::cout << "\nV2 " << v2.x << " " << v2.y << " " << v2.z << " ";
+					std::cout << "\nDEBUG: result " << t << " " << u << " " << v << " ";
+					std::cout << "\nDEBUG: " << t << " " << tNear;
+					std::cout << "\nEND DEBUG\n";
+					*/
 					temp_ret = rayTriangleIntersect(orig, dir, v0, v1, v2, t, u, v);
 					if ( (temp_ret == true ) && t < tNear) 
 						{
 							/*
+              std::cout.precision(17);
 							std::cout << "\n START DEBUG \n";
-							std::cout << "DEBUG: result " << t << " " << u << " " << v << " " << "\n"; 
-							std::cout << "DEBUG: " << t << " " << tNear << "\n";
 							std::cout << "DEBUG: input data \n";
-							std::cout << orig.x << " " << orig.y << " " << orig.z << " ";
-							std::cout << dir.x << " " << dir.y  << " " << dir.z << " ";
-							std::cout << v0.x << " " << v0.y << " " << v0.z << " ";
-							std::cout << v1.x << " " << v1.y << " " << v1.z << " ";
-							std::cout << v2.x << " " << v2.y << " " << v2.z << " ";
-							std::cout << "DEBUG: result " << t << " " << u << " " << v << " " << "\n";
-							std::cout << "END DEBUG\n";
+							std::cout << "\nOrig " << orig.x << " " << orig.y << " " << orig.z << " ";
+							std::cout << "\nDir " << dir.x << " " << dir.y  << " " << dir.z << " ";
+							std::cout << "\nV0 "  << v0.x << " " << v0.y << " " << v0.z << " ";
+							std::cout << "\nV1 " << v1.x << " " << v1.y << " " << v1.z << " ";
+							std::cout << "\nV2 " << v2.x << " " << v2.y << " " << v2.z << " ";
+							std::cout << "\nDEBUG: result " << t << " " << u << " " << v << " ";
+							std::cout << "\nDEBUG: " << t << " " << tNear;
+							std::cout << "\nEND DEBUG\n";
 							*/
 						
 							tNear = t;

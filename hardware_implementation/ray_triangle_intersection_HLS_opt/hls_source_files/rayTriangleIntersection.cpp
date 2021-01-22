@@ -1,6 +1,7 @@
 // Perform the MT Ray triangle intersecion and return u, v coordinates if intersection occurs
 #include "ap_fixed.h"
-typedef ap_fixed<16,5> fp_16;
+typedef ap_fixed<32,16> fp_16;
+//typedef ap_fixed<12,9,AP_RND_ZERO,AP_SAT_SYM> fp_16;
 
 bool rayTI(
 	const float &orig_x_i,

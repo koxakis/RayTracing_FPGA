@@ -152,10 +152,9 @@ int readSceneOptionDataFile (const char *file, Options *options, uint32_t *numof
 	FIL sceneOptionDataFile;
 	unsigned int readBytes =0;
 	FRESULT fun_ret;
-	static char *Log_File = (char *)"scene_P1.sod";
 
 	// Open the file or throw exeption
-	f_sceneOptionDataFile = f_open(&sceneOptionDataFile, Log_File, FA_READ);
+	f_sceneOptionDataFile = f_open(&sceneOptionDataFile, file, FA_READ);
 	if (f_sceneOptionDataFile != FR_OK)
 		{
 			std::cerr << "\rERROR: Opening Scene Data File failed " << Log_File << "\n\r";
@@ -402,8 +401,6 @@ int readObjectOptionDataFile(const char *file, Matrix44f *o2w)
 	unsigned int readBytes=0;
 	FRESULT fun_ret;
 
-	file = "plane.ood";	
-
 	// Open the file or throw exeption
 	f_objectDataFile = f_open(&objectDataFile, file, FA_READ);
 	if (f_objectDataFile != FR_OK)
@@ -451,8 +448,6 @@ int readObjectOptionDataFile(const char *file, Object *mesh)
 	FIL objectDataFile;
 	unsigned int readBytes;
 	FRESULT fun_ret;	
-
-	file = "plane.ood";	
 
 	// Open the file or throw exeption
 	f_objectDataFile = f_open(&objectDataFile, file, FA_READ);
@@ -862,8 +857,6 @@ TriangleMesh* loadPolyMeshFromFile(const char *file, const Matrix44f &o2w)
 	FIL objectDataFile;
 	unsigned int readBytes;
 	FRESULT fun_ret;	
-
-	file = "plane.geo";	
 
 	// Open the file or throw exeption
 	f_objectDataFile = f_open(&objectDataFile, file, FA_READ);
@@ -1742,25 +1735,99 @@ int main(int argc, char **argv)
 			return XST_FAILURE;
 		}
 
+	// This table replaces the argv input arguments as the bare metal run does not support CLI arguments
+	//Scene 1:  Glass and pen
+#ifdef SCENE_1
+	static char *argument_table[]={"shading",
+																"scene_WP.sod",
+																"3",
+																"back.geo",
+																"back.ood",
+																"cylinder.geo",
+																"cylinder.ood",
+																"pen.geo",
+																"pen.ood"};
+#endif
+	//Scene 2:  Whole plane
+#ifdef SCENE_2
+	static char *argument_table[]={"shading",
+																"scene_P1.sod",
+																"1",
+																"plane.geo",
+																"plane.ood"};
+#endif
+	//4 Glasses refraction
+#ifdef SCENE_3
+	static char *argument_table[]={"shading",
+																"scene_GL.sod",
+																"2",
+																"glasses.geo",
+																"glasses.ood",
+																"back.geo",
+																"back.ood"};
+#endif
+	//4 Glasses refraction Point light
+#ifdef SCENE_4
+	static char *argument_table[]={"shading",
+																"scene_GP.sod",
+																"2",
+																"glasses.geo",
+																"glasses.ood",
+																"back.geo",
+																"back.ood"};
+#endif
+	//Horizontal Plane
+#ifdef SCENE_5
+	static char *argument_table[]={"shading",
+																"scene_P2.sod",
+																"1",
+																"plane.geo",
+																"plane.ood"};
+#endif
+	//Utah Teapod
+#ifdef SCENE_6
+	static char *argument_table[]={"shading",
+																"scene_TP.sod",
+																"2",
+																"teapot.geo",
+																"teapot.ood",
+																"plane.geo",
+																"plane.ood"};
+#endif
+	//All Materials
+#ifdef SCENE_7
+	static char *argument_table[]={"shading",
+																"scene_AM.sod",
+																"7",
+																"back1.geo",
+																"back1.ood",
+																"back1.geo",
+																"back2.ood",
+																"back1.geo",
+																"back3.ood",
+																"glasses.geo",
+																"glasses.ood",
+																"cylinder.geo",
+																"cylinder.ood",
+																"teapot.geo",
+																"teapot1.ood",
+																"teapot.geo",
+																"teapot2.ood"};
+#endif
+
 	uint32_t status = XRayti_CfgInitialize(&RaytiInstancePTR, RaytiConfig);
 	if (status != XST_SUCCESS)
 		{
 			perror("\rERROR: HLS peripheral setup failed\n\r");
 			return XST_FAILURE;
 		} 
-	std::cerr << "ARGC: " << argc << "\n\r"; 
-	// Check number of CLI arguments
-	//if ( argc < 2 )
-	//	{
-	//		std::cerr << "Wrong number of arguments\n Must at least have a scene option data file\n\r" << std::endl;
-	//		return 1;
-	//	}
+
 	// Load lighting and scene options
 	uint32_t numoflights;
 
 	// Read scene data from file
 	int fun_ret;
-	fun_ret = readSceneOptionDataFile(argv[1], &options, &numoflights);
+	fun_ret = readSceneOptionDataFile(argument_table[1], &options, &numoflights);
 	if ( fun_ret != XST_SUCCESS)
 		{
 			std::cerr << "\n\rAn I/O Error has occurred\n\r";
@@ -1787,8 +1854,7 @@ int main(int argc, char **argv)
 	// Load object geometries and options for multiple objects 
 
 	// Read the number of objects 
-	//uint32_t numofobjects = atoi(argv[2]);
-	uint32_t numofobjects = 1;
+	uint32_t numofobjects = atoi(argument_table[2]);
 
 	uint32_t indexfactorgeo = 3;
 	uint32_t indexfactorood = 4;
@@ -1797,7 +1863,7 @@ int main(int argc, char **argv)
 	for (uint32_t i=0; i < numofobjects; i++)
 		{
 			// Use overloaded function to read the object to world array first
-			fun_ret = readObjectOptionDataFile(argv[i+indexfactorood],&object2world);
+			fun_ret = readObjectOptionDataFile(argument_table[i+indexfactorood],&object2world);
 			if ( fun_ret != XST_SUCCESS)
 				{
 					std::cerr << "\n\rAn I/O Error has occurred\n\r";
@@ -1805,12 +1871,12 @@ int main(int argc, char **argv)
 				}
 			std::cerr << "Parsing of Object " << i << " Option File (Object to world) Done \n\r";
 			// Load object geometry from file
-			TriangleMesh *mesh1 = loadPolyMeshFromFile(argv[i+indexfactorgeo], object2world);
+			TriangleMesh *mesh1 = loadPolyMeshFromFile(argument_table[i+indexfactorgeo], object2world);
 			std::cerr << "Parsing of Object " << i << " Geometry Done \n\r";
 			if (mesh1 != nullptr) 
 				{	
 					// Load the rest of the options
-					fun_ret = readObjectOptionDataFile(argv[i+indexfactorood],mesh1);
+					fun_ret = readObjectOptionDataFile(argument_table[i+indexfactorood],mesh1);
 					if ( fun_ret != XST_SUCCESS)
 						{
 							std::cerr << "\n\rAn I/O Error has occurred\n\r";

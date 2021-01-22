@@ -11,7 +11,9 @@
 #include <chrono>
 
 #include "geometry.h"
-
+#include "ap_fixed.h"
+typedef ap_fixed<32,20> fp_16;
+//typedef ap_fixed<12,9,AP_RND_ZERO,AP_SAT_SYM> fp_16;
 /*
   Example 1:  Glass and pen
   Example 2:  Whole plane
@@ -485,7 +487,7 @@ public:
 		{
 			uint32_t j = 0;
 			bool isect = false;
-			bool temp_ret;
+			bool temp_ret = false;
 			// Loop each object's triangles
 			for (uint32_t i = 0; i < numTris; ++i) 
 				{
@@ -493,13 +495,13 @@ public:
 					const Vec3f &v1 = P[trisIndex[j + 1]];
 					const Vec3f &v2 = P[trisIndex[j + 2]];
 					float t = kInfinity;
-					float u;
-					float v;
+					float u = 0;
+					float v = 0;
 					/* a ray may intersect more than one triangle from the mesh therefore we also 
 					need to keep track of the nearest intersection distance as we iterate over the triangles.            
 					*/
-					temp_ret = rayTI(orig.x, orig.y, orig.z, dir.x, dir.y, dir.z, v0.x, v0.y, v0.z, v1.x, v1.y, v1.z, v2.x, v2.y, v2.z, t, u, v);
-					
+					//temp_ret = rayTI(orig.x, orig.y, orig.z, dir.x, dir.y, dir.z, v0.x, v0.y, v0.z, v1.x, v1.y, v1.z, v2.x, v2.y, v2.z, t, u, v);
+
 					if ((temp_ret) && t < tNear)
 						{
 							tNear = t;
@@ -1038,6 +1040,14 @@ void render(
 						x *= factor, y *= factor, z *= factor; }
 					*/
 					dir.normalize();
+					fp_16 dir_x = (fp_16) dir.x;
+					fp_16 dir_y = (fp_16) dir.y;
+					fp_16 dir_z = (fp_16) dir.z;
+					std::cout << "\n float" << dir << "-> FP 16 " << dir_x << " " << dir_y << " " << dir_z << " \n";
+					fp_16 orig_x = (fp_16) orig.x;
+					fp_16 orig_y = (fp_16) orig.y;
+					fp_16 orig_z = (fp_16) orig.z;
+					std::cout << "\n float" << orig << "-> FP 16 " << orig_x << " " << orig_y << " " << orig_z << " \n";
 					// Take the arguments Ray origin, direction, object list, light list and scene option
 					*(pix++) = castRay(orig, dir, objects, lights, options);
 				}

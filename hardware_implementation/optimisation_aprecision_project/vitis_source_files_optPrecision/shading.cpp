@@ -72,7 +72,7 @@ XRayti_Config *RaytiConfig;
 
 // Debug defines 
 
-//#define DEBUG
+#define DEBUG
 //#define DEBUG_RENDER
 //#define DEBUG_GEO
 
@@ -755,25 +755,8 @@ public:
 					XRayti_Start(&RaytiInstancePTR);
 
 					// Wait util completion
-					while (!XRayti_IsDone(&RaytiInstancePTR)) {}
-
-					// Get input values back from the peripheral for debuging purposes
-					/*
-					int orig_temp = XRaytriangleintersect_Get_orig(&RaytiInstancePTR);
-					Vec3f orig_ret = *((Vec3f*)&orig_temp);
-
-					int dir_temp = XRaytriangleintersect_Get_dir(&RaytiInstancePTR);
-					Vec3f dir_ret = *((Vec3f*)&dir_temp);
-
-					int v0_temp = XRaytriangleintersect_Get_v0(&RaytiInstancePTR);
-					Vec3f v0_ret = *((Vec3f*)&v0_temp); 
-
-					int v1_temp = XRaytriangleintersect_Get_v1(&RaytiInstancePTR);
-					Vec3f v1_ret = *((Vec3f*)&v1_temp);
-
-					int v2_temp = XRaytriangleintersect_Get_v2(&RaytiInstancePTR);
-					Vec3f v2_ret = *((Vec3f*)&v2_temp);
-					*/
+					while (!XRayti_IsDone(&RaytiInstancePTR)) {}	
+					
 					// Set t distance to intersection point
 					ret_t = XRayti_Get_t(&RaytiInstancePTR);
 					local_t = *((float*)&ret_t);
@@ -786,38 +769,36 @@ public:
 					// Set return 
 					temp_return = (bool)XRayti_Get_return(&RaytiInstancePTR);
 					// Print values returned from the peripheral for debuging perposes
-					/*
-					std::cerr << "\nDEBUG:  \n";
-					std::cerr << "\r\nOrig per " << orig_ret ;
-					std::cerr << "\r\nDir per " << dir_ret ;
-					std::cerr << "\r\nv0 per " << v0_ret ;
-					std::cerr << "\r\nv1 per " << v1_ret ;
-					std::cerr << "\r\nv2 per " << v2_ret << "\n\r";
-					std::cerr << "\nOrig local " << local_orig.x << " " << local_orig.y << " " << local_orig.z << " ";
-					std::cerr << "\nDir local " << local_dir.x << " " << local_dir.y  << " " << local_dir.z << " ";
-					std::cerr << "\nV0 local " << local_v0.x << " " << local_v0.y << " " << local_v0.z << " ";
-					std::cerr << "\nV1 local " << local_v1.x << " " << local_v1.y << " " << local_v1.z << " ";
-					std::cerr << "\nV2 local " << local_v2.x << " " << local_v2.y << " " << local_v2.z << " ";
-					std::cerr << "\nDEBUG: result " << ret_t << " " << ret_u << " " << ret_v << " " << temp_return << "\n";
-					std::cerr << "\nDEBUG: result " << local_t << " " << local_u << " " << local_v << " " << "\n";
+					/*				
+					std::cout << "\n START DEBUG \n";
+					std::cout << "DEBUG: input data \n";							
+					std::cerr << "\nOrig " << orig.x << " " << orig.y << " " << orig.z << " ";
+					std::cerr << "\nDir " << dir.x << " " << dir.y  << " " << dir.z << " ";
+					std::cerr << "\nV0 " << v0.x << " " << v0.y << " " << v0.z << " ";
+					std::cerr << "\nV1 " << v1.x << " " << v1.y << " " << v1.z << " ";
+					std::cerr << "\nV2 " << v2.x << " " << v2.y << " " << v2.z << " ";
+					std::cerr << "\nDEBUG: result int " << ret_t << " " << ret_u << " " << ret_v << " " << temp_return ;
+					std::cerr << "\nDEBUG: result float " << local_t << " " << local_u << " " << local_v << " " << "\n";
+					std::cout << "\nDEBUG: " << local_t << " " << tNear;
+					std::cout << "\nEND DEBUG\n";
 					*/
+					
 					if ( (temp_return) && local_t < tNear)
 						{
-							/*
-							std::cerr << "\nDEBUG:  \n";
-							std::cerr << "\r\n Orig per " << orig_ret ;
-							std::cerr << "\r\n Dir per " << dir_ret ;
-							std::cerr << "\r\n v0 per " << v0_ret ;
-							std::cerr << "\r\n v1 per " << v1_ret ;
-							std::cerr << "\r\n v2 per " << v2_ret ;
+							
+							std::cout << "\n START DEBUG \n";
+							std::cout << "DEBUG: input data \n";							
 							std::cerr << "\nOrig " << orig.x << " " << orig.y << " " << orig.z << " ";
 							std::cerr << "\nDir " << dir.x << " " << dir.y  << " " << dir.z << " ";
 							std::cerr << "\nV0 " << v0.x << " " << v0.y << " " << v0.z << " ";
 							std::cerr << "\nV1 " << v1.x << " " << v1.y << " " << v1.z << " ";
 							std::cerr << "\nV2 " << v2.x << " " << v2.y << " " << v2.z << " ";
-							std::cerr << "\nDEBUG: result " << temp_t << " " << temp_u << " " << temp_v << " " << temp_return << "\n";
-							*/
+							std::cerr << "\nDEBUG: result int " << ret_t << " " << ret_u << " " << ret_v << " " << temp_return ;
+							std::cerr << "\nDEBUG: result float " << local_t << " " << local_u << " " << local_v << " " << "\n";
+							std::cout << "\nDEBUG: " << local_t << " " << tNear;
+							std::cout << "\nEND DEBUG\n";
 							
+
 							tNear = local_t;
 							uv.x = local_u;
 							uv.y = local_v;
@@ -1602,7 +1583,7 @@ double checkPSNR(Options options)
 	f_gold = f_open(&goldFile, Log_Golden, FA_READ);
 	if (f_gold != FR_OK)
 		{
-			std::cerr << "\rERROR: Opening Scene Data File failed " << Log_Golden << "\n\r";
+			std::cerr << "\rERROR: Opening golden sample failed " << Log_Golden << "\n\r";
 			return XST_FAILURE;
 		}
 	fun_ret = f_lseek(&goldFile, 0);
@@ -1622,7 +1603,7 @@ double checkPSNR(Options options)
 	f_tocheck = f_open(&tocheckFile, Log_Tocheck, FA_READ);
 	if (f_tocheck != FR_OK)
 		{
-			std::cerr << "\rERROR: Opening Scene Data File failed " << Log_Tocheck << "\n\r";
+			std::cerr << "\rERROR: Opening to check sample failed " << Log_Tocheck << "\n\r";
 			return XST_FAILURE;
 		}
 	fun_ret = f_lseek(&tocheckFile, 0);
@@ -1640,7 +1621,7 @@ double checkPSNR(Options options)
 	
 
 	// Calculate psnr
-	for(uint32_t i=3; i<options.height; i++)
+	for(uint32_t i=1; i<options.height; i++)
 		{
 			for(uint32_t j=0; j<options.width; j++)
 				{
@@ -1847,8 +1828,6 @@ int main(int argc, char **argv)
 																"teapot.geo",
 																"teapot2.ood"};
 #endif
-
-
 
 	uint32_t status = XRayti_CfgInitialize(&RaytiInstancePTR, RaytiConfig);
 	if (status != XST_SUCCESS)
