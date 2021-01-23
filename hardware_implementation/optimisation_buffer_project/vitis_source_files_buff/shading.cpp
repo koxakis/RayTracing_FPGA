@@ -69,7 +69,6 @@ XRayti_Config *RaytiConfig;
 //Scene 7:	All MaterialS 
 //#define SCENE_7
 
-
 #define PATTERN_5
 #define DEBUG
 //#define DEBUG_RENDER
