@@ -785,7 +785,7 @@ public:
 					
 					if ( (temp_return) && local_t < tNear)
 						{
-							
+							/*
 							std::cout << "\n START DEBUG \n";
 							std::cout << "DEBUG: input data \n";							
 							std::cerr << "\nOrig " << orig.x << " " << orig.y << " " << orig.z << " ";
@@ -797,7 +797,7 @@ public:
 							std::cerr << "\nDEBUG: result float " << local_t << " " << local_u << " " << local_v << " " << "\n";
 							std::cout << "\nDEBUG: " << local_t << " " << tNear;
 							std::cout << "\nEND DEBUG\n";
-							
+							*/
 
 							tNear = local_t;
 							uv.x = local_u;

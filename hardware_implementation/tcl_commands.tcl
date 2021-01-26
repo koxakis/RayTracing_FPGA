@@ -128,14 +128,14 @@ launch_runs impl_1 -to_step write_bitstream -jobs 4
 wait_on_run impl_1
 write_hw_platform -fixed -include_bit -force -file /home/nikolas/Git_Repos/RayTracing_FPGA/hardware_implementation/optimisation_buffer_project/Optimised_System_Vivado_project/base_block_design_wrapper.xsa
 
-# Vivado tcl report timing 
+# Vivado tcl report timing ap
 open_project /home/nikolas/Git_Repos/RayTracing_FPGA/hardware_implementation/optimisation_aprecision_project/Optimised_System_Vivado_project/Optimised_vivado_project_ap.xpr
 update_compile_order -fileset sources_1
 open_run impl_1
 report_timing_summary
 report_utilization
 
-# Vivado tcl change zync freq
+# Vivado tcl change zync freq ap
 open_project /home/nikolas/Git_Repos/RayTracing_FPGA/hardware_implementation/optimisation_aprecision_project/Optimised_System_Vivado_project/Optimised_vivado_project_ap.xpr
 update_compile_order -fileset sources_1
 open_bd_design {/home/nikolas/Git_Repos/RayTracing_FPGA/hardware_implementation/optimisation_aprecision_project/Optimised_System_Vivado_project/Optimised_vivado_project_ap.srcs/sources_1/bd/block_design/block_design.bd}

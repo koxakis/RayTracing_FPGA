@@ -12,7 +12,7 @@
 
 #include "geometry.h"
 #include "ap_fixed.h"
-typedef ap_fixed<32,20> fp_16;
+typedef ap_fixed<16,13> fp_16;
 //typedef ap_fixed<12,9,AP_RND_ZERO,AP_SAT_SYM> fp_16;
 /*
   Example 1:  Glass and pen
@@ -1044,10 +1044,12 @@ void render(
 					fp_16 dir_y = (fp_16) dir.y;
 					fp_16 dir_z = (fp_16) dir.z;
 					std::cout << "\n float" << dir << "-> FP 16 " << dir_x << " " << dir_y << " " << dir_z << " \n";
+					std::cout << "\n fp 16 -> float " << dir_x.to_float() << " " << dir_y.to_float() << " " << dir_z.to_float() << "\n";
 					fp_16 orig_x = (fp_16) orig.x;
 					fp_16 orig_y = (fp_16) orig.y;
 					fp_16 orig_z = (fp_16) orig.z;
 					std::cout << "\n float" << orig << "-> FP 16 " << orig_x << " " << orig_y << " " << orig_z << " \n";
+					std::cout << "\n fp 16 -> float " << orig_x.to_float() << " " << orig_y.to_float() << " " << orig_z.to_float() << "\n";
 					// Take the arguments Ray origin, direction, object list, light list and scene option
 					*(pix++) = castRay(orig, dir, objects, lights, options);
 				}
