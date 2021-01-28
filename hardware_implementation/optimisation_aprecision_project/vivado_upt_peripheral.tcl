@@ -3,10 +3,10 @@
 open_project /home/nikolas/Git_Repos/RayTracing_FPGA/hardware_implementation/optimisation_aprecision_project/Optimised_System_Vivado_project/Optimised_vivado_project_ap.xpr
 open_bd_design {/home/nikolas/Git_Repos/RayTracing_FPGA/hardware_implementation/optimisation_aprecision_project/Optimised_System_Vivado_project/Optimised_vivado_project_ap.srcs/sources_1/bd/block_design/block_design.bd}
 update_compile_order -fileset sources_1
-set_property -dict [list CONFIG.PCW_FPGA0_PERIPHERAL_FREQMHZ {100}] [get_bd_cells processing_system7_0]
+set_property -dict [list CONFIG.PCW_FPGA0_PERIPHERAL_FREQMHZ {230}] [get_bd_cells processing_system7_0]
 update_ip_catalog -rebuild
 save_bd_design
-upgrade_ip -vlnv xilinx.com:hls:rayTI:4.8 [get_ips  block_design_rayTI_0_0] -log ip_upgrade.log
+upgrade_ip -vlnv xilinx.com:hls:rayTI:5.7 [get_ips  block_design_rayTI_0_0] -log ip_upgrade.log
 export_ip_user_files -of_objects [get_ips block_design_rayTI_0_0] -no_script -sync -force -quiet
 generate_target all [get_files  /home/nikolas/Git_Repos/RayTracing_FPGA/hardware_implementation/optimisation_aprecision_project/Optimised_System_Vivado_project/Optimised_vivado_project_ap.srcs/sources_1/bd/block_design/block_design.bd]
 catch { config_ip_cache -export [get_ips -all block_design_rayTI_0_0] }

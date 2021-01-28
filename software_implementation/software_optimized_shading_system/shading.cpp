@@ -570,20 +570,64 @@ public:
 			bool isect = false;
 			bool temp_ret;
 			// Loop each object's triangles
+
+			// PREPERATION CODE
+
+			// Simulate data transfer to peripheral buffer 
+			float inputStaticArray[6] = {orig.x,
+																		orig.y,
+																		orig.z,
+																		dir.x,
+																		dir.y,
+																		dir.z};
+
+			// Acount for space for 3 vertecies and 3 floats each 
+			float inputTriangleVertexPos [numTris*3*3];
+			for (uint32_t i = 0; i < numTris; ++i) 
+				{	
+					// V0
+					inputTriangleVertexPos[j] = P[trisIndex[j]].x ;
+					inputTriangleVertexPos[j+1] = P[trisIndex[j]].y ;
+					inputTriangleVertexPos[j+2] = P[trisIndex[j]].z ;
+
+					// V1
+					inputTriangleVertexPos[j+3] = P[trisIndex[j + 1]].x ;
+					inputTriangleVertexPos[j+4] = P[trisIndex[j + 1]].y ;
+					inputTriangleVertexPos[j+5] = P[trisIndex[j + 1]].z ;
+
+					// V2
+					inputTriangleVertexPos[j+6] =  P[trisIndex[j + 2]].x ;
+					inputTriangleVertexPos[j+7] =  P[trisIndex[j + 2]].y ;
+					inputTriangleVertexPos[j+8] =  P[trisIndex[j + 2]].z ;
+
+					j += 9;
+				}	
+
+			j = 0;
+			// NEW PERIPHERAL SATART
 			for (uint32_t i = 0; i < numTris; ++i) 
 				{
-					const Vec3f &v0 = P[trisIndex[j]];
-					const Vec3f &v1 = P[trisIndex[j + 1]];
-					const Vec3f &v2 = P[trisIndex[j + 2]];
+					const float v0_x = inputTriangleVertexPos[j];
+					const float v0_y = inputTriangleVertexPos[j+1];
+					const float v0_z = inputTriangleVertexPos[j+2];
+
+					const float v1_x = inputTriangleVertexPos[j+3];
+					const float v1_y = inputTriangleVertexPos[j+4];
+					const float v1_z = inputTriangleVertexPos[j+5];
+
+					const float v2_x = inputTriangleVertexPos[j+6];
+					const float v2_y = inputTriangleVertexPos[j+7];
+					const float v2_z = inputTriangleVertexPos[j+8];
+
 					float t = kInfinity, u, v;
 					/* a ray may intersect more than one triangle from the mesh therefore we also 
 					need to keep track of the nearest intersection distance as we iterate over the triangles.            
 					*/
-					temp_ret = rayTriangleIntersect(orig.x, orig.y, orig.z, 
-																					dir.x, dir.y, dir.z, 
-																					v0.x, v0.y, v0.z, 
-																					v1.x, v1.y, v1.z, 
-																					v2.x, v2.y, v2.z, 
+					temp_ret = rayTriangleIntersect(inputStaticArray[0], inputStaticArray[1], inputStaticArray[2], 
+																					inputStaticArray[3], inputStaticArray[4], inputStaticArray[5], 
+																					v0_x, v0_y, v0_z, 
+																					v1_x, v1_y, v1_z, 
+																					v2_x, v2_y, v2_z, 
 																					t, u, v);
 					if ( (temp_ret) && t < tNear) 
 						{
@@ -593,8 +637,9 @@ public:
 							triIndex = i;
 							isect = true;
 						}                                                                                                                                                                                                                                
-					j += 3;
+					j += 9;
 				}
+
 			return isect;
 		}
 

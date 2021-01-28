@@ -46,7 +46,6 @@ XRayti_Config *RaytiConfig;
   Pattern 4:  Grey checkerboard
 	Pattern 5:	Solid Grey Colour
 */
-#define PATTERN_5
 
 // Scene Defines
 //Scene 1:  Glass and pen
@@ -70,12 +69,11 @@ XRayti_Config *RaytiConfig;
 //Scene 7:	All MaterialS 
 //#define SCENE_7
 
-// Debug defines 
 
+#define PATTERN_5
 #define DEBUG
 //#define DEBUG_RENDER
 //#define DEBUG_GEO
-
 
 static const float kInfinity = std::numeric_limits<float>::max();
 static const float kEpsilon = 1e-8;
@@ -425,13 +423,13 @@ int readObjectOptionDataFile(const char *file, Matrix44f *o2w)
 	FRESULT f_objectDataFile;
 	FIL objectDataFile;
 	unsigned int readBytes=0;
-	FRESULT fun_ret;	
+	FRESULT fun_ret;
 
 	// Open the file or throw exeption
 	f_objectDataFile = f_open(&objectDataFile, file, FA_READ);
 	if (f_objectDataFile != FR_OK)
 		{
-			std::cerr << "\rERROR: Opening Object Data File (o2w) failed " << file << "\n\r";
+			perror("\rERROR: Opening Object Data File failed\n\r");
 			return XST_FAILURE;
 		}	
 	
@@ -479,7 +477,7 @@ int readObjectOptionDataFile(const char *file, Object *mesh)
 	f_objectDataFile = f_open(&objectDataFile, file, FA_READ);
 	if (f_objectDataFile != FR_OK)
 		{
-			std::cerr << "\rERROR: Opening Object Data File (after o2w) failed " << file << "\n\r";
+			perror("\rERROR: Opening Object Data File failed\n\r");
 			return XST_FAILURE;
 		}	
 
@@ -755,8 +753,25 @@ public:
 					XRayti_Start(&RaytiInstancePTR);
 
 					// Wait util completion
-					while (!XRayti_IsDone(&RaytiInstancePTR)) {}	
-					
+					while (!XRayti_IsDone(&RaytiInstancePTR)) {}
+
+					// Get input values back from the peripheral for debuging purposes
+					/*
+					int orig_temp = XRaytriangleintersect_Get_orig(&RaytiInstancePTR);
+					Vec3f orig_ret = *((Vec3f*)&orig_temp);
+
+					int dir_temp = XRaytriangleintersect_Get_dir(&RaytiInstancePTR);
+					Vec3f dir_ret = *((Vec3f*)&dir_temp);
+
+					int v0_temp = XRaytriangleintersect_Get_v0(&RaytiInstancePTR);
+					Vec3f v0_ret = *((Vec3f*)&v0_temp); 
+
+					int v1_temp = XRaytriangleintersect_Get_v1(&RaytiInstancePTR);
+					Vec3f v1_ret = *((Vec3f*)&v1_temp);
+
+					int v2_temp = XRaytriangleintersect_Get_v2(&RaytiInstancePTR);
+					Vec3f v2_ret = *((Vec3f*)&v2_temp);
+					*/
 					// Set t distance to intersection point
 					ret_t = XRayti_Get_t(&RaytiInstancePTR);
 					local_t = *((float*)&ret_t);
@@ -769,36 +784,38 @@ public:
 					// Set return 
 					temp_return = (bool)XRayti_Get_return(&RaytiInstancePTR);
 					// Print values returned from the peripheral for debuging perposes
-					/*				
-					std::cout << "\n START DEBUG \n";
-					std::cout << "DEBUG: input data \n";							
-					std::cerr << "\nOrig " << orig.x << " " << orig.y << " " << orig.z << " ";
-					std::cerr << "\nDir " << dir.x << " " << dir.y  << " " << dir.z << " ";
-					std::cerr << "\nV0 " << v0.x << " " << v0.y << " " << v0.z << " ";
-					std::cerr << "\nV1 " << v1.x << " " << v1.y << " " << v1.z << " ";
-					std::cerr << "\nV2 " << v2.x << " " << v2.y << " " << v2.z << " ";
-					std::cerr << "\nDEBUG: result int " << ret_t << " " << ret_u << " " << ret_v << " " << temp_return ;
-					std::cerr << "\nDEBUG: result float " << local_t << " " << local_u << " " << local_v << " " << "\n";
-					std::cout << "\nDEBUG: " << local_t << " " << tNear;
-					std::cout << "\nEND DEBUG\n";
+					/*
+					std::cerr << "\nDEBUG:  \n";
+					std::cerr << "\r\nOrig per " << orig_ret ;
+					std::cerr << "\r\nDir per " << dir_ret ;
+					std::cerr << "\r\nv0 per " << v0_ret ;
+					std::cerr << "\r\nv1 per " << v1_ret ;
+					std::cerr << "\r\nv2 per " << v2_ret << "\n\r";
+					std::cerr << "\nOrig local " << local_orig.x << " " << local_orig.y << " " << local_orig.z << " ";
+					std::cerr << "\nDir local " << local_dir.x << " " << local_dir.y  << " " << local_dir.z << " ";
+					std::cerr << "\nV0 local " << local_v0.x << " " << local_v0.y << " " << local_v0.z << " ";
+					std::cerr << "\nV1 local " << local_v1.x << " " << local_v1.y << " " << local_v1.z << " ";
+					std::cerr << "\nV2 local " << local_v2.x << " " << local_v2.y << " " << local_v2.z << " ";
+					std::cerr << "\nDEBUG: result " << ret_t << " " << ret_u << " " << ret_v << " " << temp_return << "\n";
+					std::cerr << "\nDEBUG: result " << local_t << " " << local_u << " " << local_v << " " << "\n";
 					*/
-					
 					if ( (temp_return) && local_t < tNear)
 						{
 							/*
-							std::cout << "\n START DEBUG \n";
-							std::cout << "DEBUG: input data \n";							
+							std::cerr << "\nDEBUG:  \n";
+							std::cerr << "\r\n Orig per " << orig_ret ;
+							std::cerr << "\r\n Dir per " << dir_ret ;
+							std::cerr << "\r\n v0 per " << v0_ret ;
+							std::cerr << "\r\n v1 per " << v1_ret ;
+							std::cerr << "\r\n v2 per " << v2_ret ;
 							std::cerr << "\nOrig " << orig.x << " " << orig.y << " " << orig.z << " ";
 							std::cerr << "\nDir " << dir.x << " " << dir.y  << " " << dir.z << " ";
 							std::cerr << "\nV0 " << v0.x << " " << v0.y << " " << v0.z << " ";
 							std::cerr << "\nV1 " << v1.x << " " << v1.y << " " << v1.z << " ";
 							std::cerr << "\nV2 " << v2.x << " " << v2.y << " " << v2.z << " ";
-							std::cerr << "\nDEBUG: result int " << ret_t << " " << ret_u << " " << ret_v << " " << temp_return ;
-							std::cerr << "\nDEBUG: result float " << local_t << " " << local_u << " " << local_v << " " << "\n";
-							std::cout << "\nDEBUG: " << local_t << " " << tNear;
-							std::cout << "\nEND DEBUG\n";
+							std::cerr << "\nDEBUG: result " << temp_t << " " << temp_u << " " << temp_v << " " << temp_return << "\n";
 							*/
-
+							
 							tNear = local_t;
 							uv.x = local_u;
 							uv.y = local_v;
@@ -869,7 +886,7 @@ TriangleMesh* loadPolyMeshFromFile(const char *file, const Matrix44f &o2w)
 	f_objectDataFile = f_open(&objectDataFile, file, FA_READ);
 	if (f_objectDataFile != FR_OK)
 		{
-			std::cerr << "\rERROR: Opening Scene Data File failed " << file << "\n\r";
+			perror("\rERROR: Opening Object Data File failed\n\r");
 			return nullptr;
 		}	
 
@@ -1214,7 +1231,6 @@ Vec3f castRay(
 {
 	// If maximum depth has been reached then return the background colour
 	if (depth > options.maxDepth) return options.backgroundColor;
-	//std::cout << options.backgroundColor << std::endl;
 	Vec3f hitColor = 0;
 
 	// Intersected object info
@@ -1281,6 +1297,7 @@ Vec3f castRay(
 #endif
 									// If the point is in shadow, the point is black. If vis is set to true, then the color of the point is left unchanged
 									hitColor += vis * pattern * lightIntensity * std::max(0.f, hitNormal.dotProduct(-lightDir));
+									//hitColor += pattern * lightIntensity * std::max(0.f, hitNormal.dotProduct(-lightDir));
 #ifdef DEBUG_RENDER
 									std::cerr << "DEBUG: Diffuse hit colour: " << hitColor << std::endl;
 #endif
@@ -1360,15 +1377,12 @@ Vec3f castRay(
 							break;
 						}
 					default:
-						//hitColor = options.backgroundColor;
-						//std::cout << options.backgroundColor << std::endl;
 						break;
 				}
 		}
 	else 
 		{
 			hitColor = options.backgroundColor;
-			//std::cout << options.backgroundColor << std::endl;
 		}
   return hitColor;
 }
@@ -1440,7 +1454,7 @@ int render(
 					*(pix++) = castRay(orig, dir, objects, lights, options);
 				}
 			// Print the percentage of completion based on height 
-			fprintf(stderr, "\r%3lu%c", uint32_t(j / (float)options.height * 100), '%');
+			//fprintf(stderr, "\r%3lu%c", uint32_t(j / (float)options.height * 100), '%');
 		}
 
 	// Stop timer and messure time
@@ -1583,7 +1597,7 @@ double checkPSNR(Options options)
 	f_gold = f_open(&goldFile, Log_Golden, FA_READ);
 	if (f_gold != FR_OK)
 		{
-			std::cerr << "\rERROR: Opening golden sample failed " << Log_Golden << "\n\r";
+			std::cerr << "\rERROR: Opening Scene Data File failed " << Log_Golden << "\n\r";
 			return XST_FAILURE;
 		}
 	fun_ret = f_lseek(&goldFile, 0);
@@ -1603,7 +1617,7 @@ double checkPSNR(Options options)
 	f_tocheck = f_open(&tocheckFile, Log_Tocheck, FA_READ);
 	if (f_tocheck != FR_OK)
 		{
-			std::cerr << "\rERROR: Opening to check sample failed " << Log_Tocheck << "\n\r";
+			std::cerr << "\rERROR: Opening Scene Data File failed " << Log_Tocheck << "\n\r";
 			return XST_FAILURE;
 		}
 	fun_ret = f_lseek(&tocheckFile, 0);
@@ -1618,10 +1632,8 @@ double checkPSNR(Options options)
 			return XST_FAILURE;
 		}
 	
-	
-
 	// Calculate psnr
-	for(uint32_t i=1; i<options.height; i++)
+	for(uint32_t i=3; i<options.height; i++)
 		{
 			for(uint32_t j=0; j<options.width; j++)
 				{
@@ -1635,7 +1647,6 @@ double checkPSNR(Options options)
 
 	return PSNR;
 }
-
 
 // In the main function of the program, we create the scene (create objects and lights)
 // as well as set the options for the render (image widht and height, maximum recursion
@@ -1883,10 +1894,10 @@ int main(int argc, char **argv)
 					std::cerr << "\n\rAn I/O Error has occurred\n\r";
 					return XST_FAILURE;
 				}
-			std::cout << "Parsing of Object " << i << " Option File (Object to world) Done \n\r";
+			std::cerr << "Parsing of Object " << i << " Option File (Object to world) Done \n\r";
 			// Load object geometry from file
 			TriangleMesh *mesh1 = loadPolyMeshFromFile(argument_table[i+indexfactorgeo], object2world);
-			std::cout << "Parsing of Object " << i << " Geometry Done \n\r";
+			std::cerr << "Parsing of Object " << i << " Geometry Done \n\r";
 			if (mesh1 != nullptr) 
 				{	
 					// Load the rest of the options
@@ -1896,7 +1907,7 @@ int main(int argc, char **argv)
 							std::cerr << "\n\rAn I/O Error has occurred\n\r";
 							return XST_FAILURE;
 						}
-					std::cout << "Parsing of Object " << i << " Option File (Rest of options) Done \n\r";
+					std::cerr << "Parsing of Object " << i << " Option File (Rest of options) Done \n\r";
 					objects.push_back(std::unique_ptr<Object>(mesh1));
 				}
 			// Increment the factors to maintain +2 pattern for input files 
@@ -1913,7 +1924,7 @@ int main(int argc, char **argv)
 			return XST_FAILURE;
 		}
 	xil_printf("End of run \n\r");
-	
+
 	// Check PSNR
 	xil_printf("\n\rChecking Image PSNR \n\r");
 
