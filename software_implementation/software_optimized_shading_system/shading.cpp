@@ -49,6 +49,14 @@ inline
 Vec3f mix(const Vec3f &a, const Vec3f& b, const float &mixValue)
 { return a * (1 - mixValue) + b * mixValue; }
 
+typedef struct vertex
+{
+	float x;
+	float y;
+	float z;
+}vertexT;
+
+
 // Struct to contain scene options 
 struct Options
 {
@@ -496,7 +504,8 @@ public:
 		numTris(0)
 {
 	this->name = "trianglemesh";
-	uint32_t k = 0, maxVertIndex = 0;
+	uint32_t k = 0; 
+	maxVertIndex = 0;
 	// find out how many triangles we need to create for this mesh
 	for (uint32_t i = 0; i < nfaces; ++i) 
 		{
@@ -523,6 +532,7 @@ public:
 			object-to-world matrix (lines 19-22):
 			*/
 			objectToWorld.multVecMatrix(verts[i], P[i]);
+			//std::cout << "P = " << P[i] << " \n" ;
 		}	
         
 		// allocate memory to store triangle indices
@@ -548,6 +558,8 @@ public:
 						trisIndex[l] = vertsIndex[k];
 						trisIndex[l + 1] = vertsIndex[k + j + 1];
 						trisIndex[l + 2] = vertsIndex[k + j + 2];
+						// Debug print
+						//std::cout << "Tris Index: " << trisIndex[l] << " " << trisIndex[l + 1] << " " << trisIndex[l + 2] << "\n";
 						// Transforming normals
 						transformNormals.multDirMatrix(normals[k], N[l]);
 						transformNormals.multDirMatrix(normals[k + j + 1], N[l + 1]);
@@ -574,50 +586,49 @@ public:
 			// PREPERATION CODE
 
 			// Simulate data transfer to peripheral buffer 
-			float inputStaticArray[6] = {orig.x,
-																		orig.y,
-																		orig.z,
-																		dir.x,
-																		dir.y,
-																		dir.z};
+			float inputStaticArray[6] = {orig.x, orig.y, orig.z,
+																		dir.x, dir.y, dir.z};
 
-			// Acount for space for 3 vertecies and 3 floats each 
-			float inputTriangleVertexPos [numTris*3*3];
-			for (uint32_t i = 0; i < numTris; ++i) 
+			// Acount for the number of vertex positions
+			vertexT inputTriangleVertexPos [maxVertIndex];
+			// Acount for the number of vertex positions
+			uint32_t inputTriangleVertexIndex [numTris*3];
+
+			for (uint32_t i = 0; i < numTris*3; i++)
+				{
+					inputTriangleVertexIndex[i] = trisIndex[i];
+				}
+
+			for (uint32_t i = 0; i < maxVertIndex; ++i) 
 				{	
-					// V0
-					inputTriangleVertexPos[j] = P[trisIndex[j]].x ;
-					inputTriangleVertexPos[j+1] = P[trisIndex[j]].y ;
-					inputTriangleVertexPos[j+2] = P[trisIndex[j]].z ;
-
-					// V1
-					inputTriangleVertexPos[j+3] = P[trisIndex[j + 1]].x ;
-					inputTriangleVertexPos[j+4] = P[trisIndex[j + 1]].y ;
-					inputTriangleVertexPos[j+5] = P[trisIndex[j + 1]].z ;
-
-					// V2
-					inputTriangleVertexPos[j+6] =  P[trisIndex[j + 2]].x ;
-					inputTriangleVertexPos[j+7] =  P[trisIndex[j + 2]].y ;
-					inputTriangleVertexPos[j+8] =  P[trisIndex[j + 2]].z ;
-
-					j += 9;
+					inputTriangleVertexPos[i].x = P[i].x ;
+					inputTriangleVertexPos[i].y = P[i].y ;
+					inputTriangleVertexPos[i].z = P[i].z ;
 				}	
 
 			j = 0;
 			// NEW PERIPHERAL SATART
 			for (uint32_t i = 0; i < numTris; ++i) 
 				{
-					const float v0_x = inputTriangleVertexPos[j];
-					const float v0_y = inputTriangleVertexPos[j+1];
-					const float v0_z = inputTriangleVertexPos[j+2];
+					/* Access each vertex from the index of each triangle taking into acount that 
+					each vertex takes up 3 positons 
+					*/
+					uint32_t index;
 
-					const float v1_x = inputTriangleVertexPos[j+3];
-					const float v1_y = inputTriangleVertexPos[j+4];
-					const float v1_z = inputTriangleVertexPos[j+5];
+					index = inputTriangleVertexIndex[j];
+					const float v0_x = inputTriangleVertexPos[index].x;
+					const float v0_y = inputTriangleVertexPos[index].y;
+					const float v0_z = inputTriangleVertexPos[index].z;
 
-					const float v2_x = inputTriangleVertexPos[j+6];
-					const float v2_y = inputTriangleVertexPos[j+7];
-					const float v2_z = inputTriangleVertexPos[j+8];
+					index = inputTriangleVertexIndex[j+1];
+					const float v1_x = inputTriangleVertexPos[index].x;
+					const float v1_y = inputTriangleVertexPos[index].y;
+					const float v1_z = inputTriangleVertexPos[index].z;
+
+					index = inputTriangleVertexIndex[j+2];
+					const float v2_x = inputTriangleVertexPos[index].x;
+					const float v2_y = inputTriangleVertexPos[index].y;
+					const float v2_z = inputTriangleVertexPos[index].z;
 
 					float t = kInfinity, u, v;
 					/* a ray may intersect more than one triangle from the mesh therefore we also 
@@ -637,7 +648,7 @@ public:
 							triIndex = i;
 							isect = true;
 						}                                                                                                                                                                                                                                
-					j += 9;
+					j += 3;
 				}
 
 			return isect;
@@ -684,6 +695,7 @@ public:
     }
 	// member variables
 	uint32_t numTris;                       // number of triangles
+	uint32_t maxVertIndex;									// number of triangles we need to create this mesh 
 	std::unique_ptr<Vec3f []> P;            // triangles vertex position
 	std::unique_ptr<uint32_t []> trisIndex; // vertex index array
 	std::unique_ptr<Vec3f []> N;            // triangles vertex normals

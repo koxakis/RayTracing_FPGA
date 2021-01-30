@@ -27,9 +27,9 @@
 	Pattern 5:	Solid Grey Colour
 */
 #define PATTERN_5
-//#define DEBUG
+#define DEBUG
 //#define DEBUG_RENDER
-//#define DEBUG_GEO
+#define DEBUG_GEO
 
 static const float kInfinity = std::numeric_limits<float>::max();
 static const float kEpsilon = 1e-8;
