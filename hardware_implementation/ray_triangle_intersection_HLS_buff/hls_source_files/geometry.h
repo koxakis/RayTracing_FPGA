@@ -150,14 +150,24 @@ public:
 typedef Vec3<float> Vec3f;
 typedef Vec3<int> Vec3i;
 
+// Vertex pos helper data structure 
+typedef struct vertex
+{
+	float x;
+	float y;
+	float z;
+}vertexT;
+
 // Perform the MT Ray triangle intersecion and return u, v coordinates if intersection occurs
 bool rayTI(
-		const float &orig_x, const float &orig_y, const float &orig_z,
-		const float &dir_x, const float &dir_y, const float &dir_z,
-		const float &v0_x, const float &v0_y, const float &v0_z,
-		const float &v1_x, const float &v1_y, const float &v1_z,
-		const float &v2_x, const float &v2_y, const float &v2_z,
-		float &t, float &u, float &v);
+	vertexT *,
+	uint32_t *,
+	float *,
+	float &,
+	float &,
+	float &,
+	uint32_t &
+	);
 
 //[comment]
 // Implementation of a generic 4x4 Matrix class - Same thing here than with the Vec3 class. It uses

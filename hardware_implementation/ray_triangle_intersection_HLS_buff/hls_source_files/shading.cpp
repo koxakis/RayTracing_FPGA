@@ -48,6 +48,7 @@ inline
 Vec3f mix(const Vec3f &a, const Vec3f& b, const float &mixValue)
 { return a * (1 - mixValue) + b * mixValue; }
 
+
 // Struct to contain scene options 
 struct Options
 {
@@ -413,7 +414,8 @@ public:
 		numTris(0)
 {
 	this->name = "trianglemesh";
-	uint32_t k = 0, maxVertIndex = 0;
+	uint32_t k = 0;
+	maxVertIndex = 0;
 	// find out how many triangles we need to create for this mesh
 	for (uint32_t i = 0; i < nfaces; ++i) 
 		{
@@ -483,34 +485,56 @@ public:
 	// Test if the ray interesests this triangle mesh
 	bool intersect(const Vec3f &orig, const Vec3f &dir, float &tNear, uint32_t &triIndex, Vec2f &uv) const
 		{
-			uint32_t j = 0;
-			bool isect = false;
-			bool temp_ret;
+			bool temp_ret = false;
 			// Loop each object's triangles
-			for (uint32_t i = 0; i < numTris; ++i) 
+
+			// PREPERATION CODE
+			float out_u;
+			float out_v;
+			float out_t;
+			uint32_t out_tris;
+
+			float local_numTris = (float) numTris;
+			float local_maxVertIndex = (float) maxVertIndex;
+
+			// Simulate data transfer to peripheral buffer 
+			float inputStaticArray[] = {orig.x, orig.y, orig.z,
+																		dir.x, dir.y, dir.z,
+																		tNear, local_numTris, local_maxVertIndex};
+
+			// Acount for the number of vertex positions
+			vertexT inputTriangleVertexPos [maxVertIndex];
+			// Acount for the number of vertex positions
+			uint32_t inputTriangleVertexIndex [numTris*3];
+
+			for (uint32_t i = 0; i < numTris*3; i++)
 				{
-					const Vec3f &v0 = P[trisIndex[j]];
-					const Vec3f &v1 = P[trisIndex[j + 1]];
-					const Vec3f &v2 = P[trisIndex[j + 2]];
-					float t = kInfinity;
-					float u;
-					float v;
-					/* a ray may intersect more than one triangle from the mesh therefore we also 
-					need to keep track of the nearest intersection distance as we iterate over the triangles.            
-					*/
-					temp_ret = rayTI(orig.x, orig.y, orig.z, dir.x, dir.y, dir.z, v0.x, v0.y, v0.z, v1.x, v1.y, v1.z, v2.x, v2.y, v2.z, t, u, v);
-					
-					if ((temp_ret) && t < tNear)
-						{
-							tNear = t;
-							uv.x = u;
-							uv.y = v;
-							triIndex = i;
-							isect = true;
-						}                                                                                                                                                                                                                                
-					j += 3;
+					inputTriangleVertexIndex[i] = trisIndex[i];
 				}
-			return isect;
+
+			for (uint32_t i = 0; i < maxVertIndex; ++i) 
+				{	
+					inputTriangleVertexPos[i].x = P[i].x ;
+					inputTriangleVertexPos[i].y = P[i].y ;
+					inputTriangleVertexPos[i].z = P[i].z ;
+				}	
+				
+			temp_ret = rayTI( inputTriangleVertexPos,
+											inputTriangleVertexIndex,
+											inputStaticArray,
+											out_u,
+											out_v,
+											out_t,
+											out_tris);
+			if ( (temp_ret) && out_t < tNear) 
+				{
+					tNear = out_t;
+					uv.x = out_u;
+					uv.y = out_v;
+					triIndex = out_tris;
+				}			
+
+			return temp_ret;
 		}
 
     // Compute Normal at the intersecion point as well as texture coordinates
@@ -554,6 +578,7 @@ public:
     }
 	// member variables
 	uint32_t numTris;                       // number of triangles
+	uint32_t maxVertIndex;									// number of triangles we need to create this mesh 
 	std::unique_ptr<Vec3f []> P;            // triangles vertex position
 	std::unique_ptr<uint32_t []> trisIndex; // vertex index array
 	std::unique_ptr<Vec3f []> N;            // triangles vertex normals
