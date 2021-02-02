@@ -167,18 +167,11 @@ bool rayTriangleIntersect(
 	vertexT localinputTriangleVertexPos [local_maxVertIndex];
 	// Acount for the number of vertex Index
 	uint32_t localinputTriangleVertexIndex [numTris*3];
-
-	for (uint32_t i = 0; i < numTris*3; i++)
-		{
-			localinputTriangleVertexIndex[i] = inputTriangleVertexIndex[i];
-		}
-
-	for (uint32_t i = 0; i < local_maxVertIndex; ++i) 
-		{	
-			localinputTriangleVertexPos[i].x = inputTriangleVertexPos[i].x ;
-			localinputTriangleVertexPos[i].y = inputTriangleVertexPos[i].y ;
-			localinputTriangleVertexPos[i].z = inputTriangleVertexPos[i].z ;
-		}	
+	
+	// Transfer Vertex position array
+	memcpy((vertexT *)&localinputTriangleVertexPos[0], &inputTriangleVertexPos[0], local_maxVertIndex*sizeof(vertexT) );
+	// Transfer Vertex index
+	memcpy((unsigned int*)&localinputTriangleVertexIndex[0], &inputTriangleVertexIndex[0], (numTris*3)*sizeof(unsigned int));
 
 	for (uint32_t i = 0; i < numTris; ++i) 
 		{
