@@ -486,6 +486,7 @@ public:
 	bool intersect(const Vec3f &orig, const Vec3f &dir, float &tNear, uint32_t &triIndex, Vec2f &uv) const
 		{
 			bool temp_ret = false;
+			uint32_t j=0;
 			// Loop each object's triangles
 
 			// PREPERATION CODE
@@ -503,7 +504,7 @@ public:
 																		tNear, local_numTris, local_maxVertIndex};
 
 			// Acount for the number of vertex positions
-			vertexT inputTriangleVertexPos [maxVertIndex];
+			float inputTriangleVertexPos [maxVertIndex*3];
 			// Acount for the number of vertex positions
 			uint32_t inputTriangleVertexIndex [numTris*3];
 
@@ -514,10 +515,12 @@ public:
 
 			for (uint32_t i = 0; i < maxVertIndex; ++i) 
 				{	
-					inputTriangleVertexPos[i].x = P[i].x ;
-					inputTriangleVertexPos[i].y = P[i].y ;
-					inputTriangleVertexPos[i].z = P[i].z ;
-				}	
+					inputTriangleVertexPos[j] = P[i].x ;
+					inputTriangleVertexPos[j+1] = P[i].y ;
+					inputTriangleVertexPos[j+2] = P[i].z ;
+
+					j += 3;
+				}		
 				
 			temp_ret = rayTI( inputTriangleVertexPos,
 											inputTriangleVertexIndex,

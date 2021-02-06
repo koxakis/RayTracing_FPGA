@@ -79,7 +79,8 @@
 			"cinttypes": "cpp",
 			"typeinfo": "cpp",
 			"valarray": "cpp",
-			"complex": "cpp"
+			"complex": "cpp",
+			"xrayti.h": "c"
 		}
 	}
 }

@@ -1,15 +1,8 @@
 // Perform the MT Ray triangle intersecion and return u, v coordinates if intersection occurs
 #include <string.h>
 
-typedef struct vertex
-{
-	float x;
-	float y;
-	float z;
-}vertexT;
-
 bool rayTI(
-	vertexT *inputTriangleVertexPos,
+	float *inputTriangleVertexPos,
 	unsigned int *inputTriangleVertexIndex,
 	float *inputStaticArray,
 	float &out_u,
@@ -18,32 +11,25 @@ bool rayTI(
 	unsigned int &outTris
 	)
 {
-
+// Port decleration
 // Output triangle index
 #pragma HLS INTERFACE s_axilite bundle=out_tris_bundle port=outTris
-
 // Output t
 #pragma HLS INTERFACE s_axilite bundle=out_t_bundle port=out_t
-
 // Output v
 #pragma HLS INTERFACE s_axilite bundle=out_v_bundle port=out_v
-
 // Output u 
 #pragma HLS INTERFACE s_axilite bundle=out_u_bundle port=out_u
 
 // Static input data array 
 #pragma HLS INTERFACE m_axi depth=9 bundle=static_in_bundle port=inputStaticArray offset=slave
-
 // Vertex index array
 #pragma HLS INTERFACE m_axi depth=12719 bundle=vertex_index_bubdle port=inputTriangleVertexIndex offset=slave
-
 // Vertex position array
-#pragma HLS INTERFACE m_axi depth=3241 bundle=vertex_pos_bundle port=inputTriangleVertexPos offset=slave
-
+#pragma HLS INTERFACE m_axi depth=9723 bundle=vertex_pos_bundle port=inputTriangleVertexPos offset=slave
 // Retern port
 #pragma HLS INTERFACE s_axilite port=return bundle=ret_bundle
 
-	// Port decleration
 
 	static const float kEpsilon = 1e-8;
 
@@ -67,34 +53,39 @@ bool rayTI(
 	// Simulating memcpy-burst and transfer to local buffer
 
 	// Acount for the number of vertex positions
-	vertexT localinputTriangleVertexPos [3241];
+	float localinputTriangleVertexPos [9723];
+#pragma HLS ARRAY_PARTITION variable=localinputTriangleVertexPos dim=1 factor=3 cyclic
 	// Acount for the number of vertex Index
 	unsigned int localinputTriangleVertexIndex [12719];
+#pragma HLS ARRAY_PARTITION variable=localinputTriangleVertexIndex dim=1 factor=3 cyclic
 
 	// Transfer Vertex position array
-	memcpy((vertexT *)&localinputTriangleVertexPos[0], &inputTriangleVertexPos[0], local_maxVertIndex*sizeof(vertexT) );
+	memcpy((float *)&localinputTriangleVertexPos[0], &inputTriangleVertexPos[0], ((local_maxVertIndex*3)*sizeof(float)) );
 	// Transfer Vertex index
 	memcpy((unsigned int*)&localinputTriangleVertexIndex[0], &inputTriangleVertexIndex[0], (numTris*3)*sizeof(unsigned int));
 
 	TRIANGLE_TRAVERSAL: for (unsigned int i = 0; i < numTris; ++i) 
 		{
+//#pragma HLS DATAFLOW didnt work 
+#pragma HLS UNROLL factor=4
+//#pragma HLS PIPELINE II=1 rewind
 			/* Access each vertex from the index of each triangle taking into acount that 
 			each vertex takes up 3 positons 
 			*/
-			index = localinputTriangleVertexIndex[j];
-			const float v0_x = localinputTriangleVertexPos[index].x;
-			const float v0_y = localinputTriangleVertexPos[index].y;
-			const float v0_z = localinputTriangleVertexPos[index].z;
+			index = localinputTriangleVertexIndex[j] * 3;
+			const float v0_x = localinputTriangleVertexPos[index];
+			const float v0_y = localinputTriangleVertexPos[index+1];
+			const float v0_z = localinputTriangleVertexPos[index+2];
 
-			index = localinputTriangleVertexIndex[j+1];
-			const float v1_x = localinputTriangleVertexPos[index].x;
-			const float v1_y = localinputTriangleVertexPos[index].y;
-			const float v1_z = localinputTriangleVertexPos[index].z;
+			index = localinputTriangleVertexIndex[j+1] * 3;
+			const float v1_x = localinputTriangleVertexPos[index];
+			const float v1_y = localinputTriangleVertexPos[index+1];
+			const float v1_z = localinputTriangleVertexPos[index+2];
 
-			index = localinputTriangleVertexIndex[j+2];
-			const float v2_x = localinputTriangleVertexPos[index].x;
-			const float v2_y = localinputTriangleVertexPos[index].y;
-			const float v2_z = localinputTriangleVertexPos[index].z;
+			index = localinputTriangleVertexIndex[j+2] * 3;
+			const float v2_x = localinputTriangleVertexPos[index];
+			const float v2_y = localinputTriangleVertexPos[index+1];
+			const float v2_z = localinputTriangleVertexPos[index+2];
 
 			float t , u, v;
 			/* a ray may intersect more than one triangle from the mesh therefore we also 

@@ -117,8 +117,8 @@ public:
     // when vectors are used in loops: the coordinates can be accessed with the
     // loop index (e.g. v[i]).
     //[/comment]
-    const T& operator [] (uint8_t i) const { return (&x)[i]; }
-    T& operator [] (uint8_t i) { return (&x)[i]; }
+    const T& operator [] (unsigned char i) const { return (&x)[i]; }
+    T& operator [] (unsigned char i) { return (&x)[i]; }
     Vec3& normalize()
     {
         T n = norm();
@@ -149,19 +149,6 @@ public:
 //[/comment]
 typedef Vec3<float> Vec3f;
 typedef Vec3<int> Vec3i;
-
-
-// Perform the MT Ray triangle intersecion and return u, v coordinates if intersection occurs
-bool rayTI(
-	float *,
-	uint32_t *,
-	float *,
-	float &,
-	float &,
-	float &,
-	uint32_t &
-	);
-
 //[comment]
 // Implementation of a generic 4x4 Matrix class - Same thing here than with the Vec3 class. It uses
 // a template which is maybe less useful than with vectors but it can be used to
@@ -201,8 +188,8 @@ public:
         x[3][3] = p;
     }
     
-    const T* operator [] (uint8_t i) const { return x[i]; }
-    T* operator [] (uint8_t i) { return x[i]; }
+    const T* operator [] (unsigned char i) const { return x[i]; }
+    T* operator [] (unsigned char i) { return x[i]; }
 
     // Multiply the current matrix with another matrix (rhs)
     Matrix44 operator * (const Matrix44& v) const
@@ -227,14 +214,6 @@ public:
     //[/comment]
     static void multiply(const Matrix44<T> &a, const Matrix44& b, Matrix44 &c)
     {
-#if 0
-        for (uint8_t i = 0; i < 4; ++i) {
-            for (uint8_t j = 0; j < 4; ++j) {
-                c[i][j] = a[i][0] * b[0][j] + a[i][1] * b[1][j] +
-                    a[i][2] * b[2][j] + a[i][3] * b[3][j];
-            }
-        }
-#else
         // A restric qualified pointer (or reference) is basically a promise
         // to the compiler that for the scope of the pointer, the target of the
         // pointer will only be accessed through that pointer (and pointers
@@ -284,22 +263,11 @@ public:
         cp[13] = a0 * bp[1]  + a1 * bp[5]  + a2 * bp[9]  + a3 * bp[13];
         cp[14] = a0 * bp[2]  + a1 * bp[6]  + a2 * bp[10] + a3 * bp[14];
         cp[15] = a0 * bp[3]  + a1 * bp[7]  + a2 * bp[11] + a3 * bp[15];
-#endif
     }
     
     // \brief return a transposed copy of the current matrix as a new matrix
     Matrix44 transposed() const
     {
-#if 0
-        Matrix44 t;
-        for (uint8_t i = 0; i < 4; ++i) {
-            for (uint8_t j = 0; j < 4; ++j) {
-                t[i][j] = x[j][i];
-            }
-        }
-
-        return t;
-#else
         return Matrix44 (x[0][0],
                          x[1][0],
                          x[2][0],
@@ -316,7 +284,6 @@ public:
                          x[1][3],
                          x[2][3],
                          x[3][3]);
-#endif
     }
 
     // \brief transpose itself
@@ -524,32 +491,3 @@ public:
 };
 
 typedef Matrix44<float> Matrix44f;
-
-//[comment]
-// Testing our code. To test the matrix inversion code, we used Maya to output
-// the values of a matrix and its inverse (check the video at the top of this page). Of course this implies
-// that Maya actually does the right thing, but we can probably agree, that is actually does;).
-// These are the values for the input matrix:
-//
-// 0.707107 0 -0.707107 0 -0.331295 0.883452 -0.331295 0 0.624695 0.468521 0.624695 0 4.000574 3.00043 4.000574 1
-//
-// Given the input matrix, the inverse matrix computed by our code should match the following values:
-//
-// 0.707107 -0.331295 0.624695 0 0 0.883452 0.468521 0 -0.707107 -0.331295 0.624695 0 0 0 -6.404043 1
-//[/comment]
-#if 0
-int main(int argc, char **argv)
-{
-    Vec3f v(0, 1, 2);
-    std::cerr << v << std::endl;
-    Matrix44f a, b, c;
-    c = a * b;
-
-    Matrix44f d(0.707107, 0, -0.707107, 0, -0.331295, 0.883452, -0.331295, 0, 0.624695, 0.468521, 0.624695, 0, 4.000574, 3.00043, 4.000574, 1);
-    std::cerr << d << std::endl;
-    d.invert();
-    std::cerr << d << std::endl;
-
-    return 0;
-}
-#endif

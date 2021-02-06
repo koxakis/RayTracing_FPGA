@@ -29,8 +29,11 @@
 #include "xrayti.h"
 
 // Peripheral pointers 
-XRayti RaytiInstancePTR;
-XRayti_Config *RaytiConfig;
+XRayti RaytiInstancePTR_0;
+XRayti_Config *RaytiConfig_0;
+
+XRayti RaytiInstancePTR_1;
+XRayti_Config *RaytiConfig_1;
 
 /*
   Example 1:  Glass and pen
@@ -68,6 +71,7 @@ XRayti_Config *RaytiConfig;
 
 //Scene 7:	All MaterialS 
 //#define SCENE_7
+
 
 #define PATTERN_5
 #define DEBUG
@@ -694,100 +698,237 @@ public:
 	// Test if the ray interesests this triangle mesh
 	bool intersect(const Vec3f &orig, const Vec3f &dir, float &tNear, uint32_t &triIndex, Vec2f &uv) const
 		{
-			bool temp_ret = false;
-			uint32_t j=0;
-			XTime tStart, tEnd;
-			// Loop each object's triangles
 
-			// PREPERATION CODE
-			float out_u;
-			float out_v;
-			float out_t;
-			uint32_t out_tris;
+			uint32_t j = 0;
+			bool isect = false;
+			Vec3f local_orig, local_dir;
+			Vec3f local_v0, local_v1, local_v2;
 
-			uint32_t ret_t;
-			uint32_t ret_u;
-			uint32_t ret_v;
-			uint32_t ret_trisindex;
+			// Set local values to send correctly to the peripheral 
+			local_orig = orig;
+			local_dir = dir;
 
-			float local_numTris = (float) numTris;
-			float local_maxVertIndex = (float) maxVertIndex;
 
-			// Simulate data transfer to peripheral buffer 
-			float inputStaticArray[] = {orig.x, orig.y, orig.z,
-																		dir.x, dir.y, dir.z,
-																		tNear, local_numTris, local_maxVertIndex};
-
-			// Acount for the number of vertex positions
-			float inputTriangleVertexPos [maxVertIndex*3];
-			// Acount for the number of vertex positions
-			uint32_t inputTriangleVertexIndex [numTris*3];
-
-			for (uint32_t i = 0; i < numTris*3; i++)
+			// Case of 1 triangle activate only one peripheral
+			if ( numTris == 1)
 				{
-					inputTriangleVertexIndex[i] = trisIndex[i];
+					float local_t = kInfinity;
+					float local_u = 0, local_v = 0;
+
+					int ret_t, ret_u, ret_v;  
+					bool temp_return;
+
+					Vec3f &v0 = P[trisIndex[j]];
+					local_v0 = v0;
+					Vec3f &v1 = P[trisIndex[j + 1]];
+					local_v1 = v1;
+					Vec3f &v2 = P[trisIndex[j + 2]];
+					local_v2 = v2;
+
+					local_t = kInfinity;
+					/* a ray may intersect more than one triangle from the mesh therefore we also 
+					need to keep track of the nearest intersection distance as we iterate over the triangles.            
+					*/
+					// Set I/O pointers 
+					// Set Ray origin
+					XRayti_Set_orig_x(&RaytiInstancePTR_0, *((u32*)&local_orig.x));
+					XRayti_Set_orig_y(&RaytiInstancePTR_0, *((u32*)&local_orig.y));
+					XRayti_Set_orig_z(&RaytiInstancePTR_0, *((u32*)&local_orig.z));
+					// Set Ray direction
+					XRayti_Set_dir_x(&RaytiInstancePTR_0, *((u32*)&local_dir.x));
+					XRayti_Set_dir_y(&RaytiInstancePTR_0, *((u32*)&local_dir.y));
+					XRayti_Set_dir_z(&RaytiInstancePTR_0, *((u32*)&local_dir.z));
+					// Set triangle V0 
+					XRayti_Set_v0_x(&RaytiInstancePTR_0, *((u32*)&local_v0.x));
+					XRayti_Set_v0_y(&RaytiInstancePTR_0, *((u32*)&local_v0.y));
+					XRayti_Set_v0_z(&RaytiInstancePTR_0, *((u32*)&local_v0.z));
+					// Set triangle V1
+					XRayti_Set_v1_x(&RaytiInstancePTR_0, *((u32*)&local_v1.x));
+					XRayti_Set_v1_y(&RaytiInstancePTR_0, *((u32*)&local_v1.y));
+					XRayti_Set_v1_z(&RaytiInstancePTR_0, *((u32*)&local_v1.z));
+					// Set triangle V2
+					XRayti_Set_v2_x(&RaytiInstancePTR_0, *((u32*)&local_v2.x));
+					XRayti_Set_v2_y(&RaytiInstancePTR_0, *((u32*)&local_v2.y));
+					XRayti_Set_v2_z(&RaytiInstancePTR_0, *((u32*)&local_v2.z));
+
+					// Check if the peripheral is ready
+					if (!XRayti_IsReady(&RaytiInstancePTR_0))
+						{
+							std::cerr << "\rERROR: HLS peripheral is not ready. Exiting...\n\r";
+							exit(-1);
+						}
+					// Start the peripheral
+					XRayti_Start(&RaytiInstancePTR_0);
+
+					// Wait util completion
+					while (!XRayti_IsDone(&RaytiInstancePTR_0)) {}
+
+					// Set t distance to intersection point
+					ret_t = XRayti_Get_t(&RaytiInstancePTR_0);
+					local_t = *((float*)&ret_t);
+					// Set u intersection coordinate 
+					ret_u = XRayti_Get_u(&RaytiInstancePTR_0);
+					local_u = *((float*)&ret_u);
+					// Set v intersection coordinate
+					ret_v = XRayti_Get_v(&RaytiInstancePTR_0);
+					local_v = *((float*)&ret_v);
+					// Set return 
+					temp_return = (bool)XRayti_Get_return(&RaytiInstancePTR_0);
+
+					if ( (temp_return) && local_t < tNear)
+						{							
+							tNear = local_t;
+							uv.x = local_u;
+							uv.y = local_v;
+							triIndex = 1;
+							isect = true;
+						}                                        	
 				}
-
-			for (uint32_t i = 0; i < maxVertIndex; ++i) 
-				{	
-					inputTriangleVertexPos[j] = P[i].x ;
-					inputTriangleVertexPos[j+1] = P[i].y ;
-					inputTriangleVertexPos[j+2] = P[i].z ;
-
-					j += 3;
-				}		
-			// Set I/O ports 
-			XRayti_Set_inputTriangleVertexPos(&RaytiInstancePTR, *((u64*)&inputTriangleVertexPos));
-			XRayti_Set_inputTriangleVertexIndex(&RaytiInstancePTR, (u64) &inputTriangleVertexIndex);
-			XRayti_Set_inputStaticArray(&RaytiInstancePTR, *((u64*)&inputStaticArray));
-
-			// Start timer 
-			//std::cerr << "\n\rStarting peripheral\n\rStarting timer\n\r";
-			//XTime_GetTime(&tStart);
-
-			// Check if the peripheral is ready
-			if (!XRayti_IsReady(&RaytiInstancePTR))
+			// Case of 2 triangles we activate 2 peripherals and set the results at the end
+			else
 				{
-					std::cerr << "\rERROR: HLS peripheral is not ready. Exiting...\n\r";
-					exit(-1);
-				}
+					float local_t_p0 = kInfinity;
+					float local_u_p0 = 0, local_v_p0 = 0;
 
-			// Start the peripheral
-			XRayti_Start(&RaytiInstancePTR);
+					float local_t_p1 = kInfinity;
+					float local_u_p1 = 0, local_v_p1 = 0;
 
-			//std::cerr << "Started computation \n";
-			// Wait util completion
-			while (!XRayti_IsDone(&RaytiInstancePTR)) {}
+					int ret_t_p0, ret_u_p0, ret_v_p0;  
+					bool temp_return_p0;
+
+					int ret_t_p1, ret_u_p1, ret_v_p1;  
+					bool temp_return_p1;
+					// Loop each object's triangles
+					for (uint32_t i = 0; i < numTris; i+=2) 
+						{
+							Vec3f &v0_p0 = P[trisIndex[j]];
+							Vec3f &v1_p0 = P[trisIndex[j + 1]];
+							Vec3f &v2_p0 = P[trisIndex[j + 2]];
+
+
+							Vec3f &v0_p1 = P[trisIndex[j + 3]];
+							Vec3f &v1_p1 = P[trisIndex[j + 4]];
+							Vec3f &v2_p1 = P[trisIndex[j + 5]];
+
+							local_t_p0 = kInfinity;
+							local_t_p1 = kInfinity;
+
+							/* a ray may intersect more than one triangle from the mesh therefore we also 
+							need to keep track of the nearest intersection distance as we iterate over the triangles.            
+							*/
+							// Set I/O pointers for peripheral 0
+							// Set Ray origin
+							XRayti_Set_orig_x(&RaytiInstancePTR_0, *((u32*)&local_orig.x));
+							XRayti_Set_orig_y(&RaytiInstancePTR_0, *((u32*)&local_orig.y));
+							XRayti_Set_orig_z(&RaytiInstancePTR_0, *((u32*)&local_orig.z));
+							// Set Ray direction
+							XRayti_Set_dir_x(&RaytiInstancePTR_0, *((u32*)&local_dir.x));
+							XRayti_Set_dir_y(&RaytiInstancePTR_0, *((u32*)&local_dir.y));
+							XRayti_Set_dir_z(&RaytiInstancePTR_0, *((u32*)&local_dir.z));
+							// Set triangle V0 
+							XRayti_Set_v0_x(&RaytiInstancePTR_0, *((u32*)&v0_p0.x));
+							XRayti_Set_v0_y(&RaytiInstancePTR_0, *((u32*)&v0_p0.y));
+							XRayti_Set_v0_z(&RaytiInstancePTR_0, *((u32*)&v0_p0.z));
+							// Set triangle V1
+							XRayti_Set_v1_x(&RaytiInstancePTR_0, *((u32*)&v1_p0.x));
+							XRayti_Set_v1_y(&RaytiInstancePTR_0, *((u32*)&v1_p0.y));
+							XRayti_Set_v1_z(&RaytiInstancePTR_0, *((u32*)&v1_p0.z));
+							// Set triangle V2
+							XRayti_Set_v2_x(&RaytiInstancePTR_0, *((u32*)&v2_p0.x));
+							XRayti_Set_v2_y(&RaytiInstancePTR_0, *((u32*)&v2_p0.y));
+							XRayti_Set_v2_z(&RaytiInstancePTR_0, *((u32*)&v2_p0.z));
+
+							// Set I/O pointers for peripheral 1
+							// Set Ray origin
+							XRayti_Set_orig_x(&RaytiInstancePTR_1, *((u32*)&local_orig.x));
+							XRayti_Set_orig_y(&RaytiInstancePTR_1, *((u32*)&local_orig.y));
+							XRayti_Set_orig_z(&RaytiInstancePTR_1, *((u32*)&local_orig.z));
+							// Set Ray direction
+							XRayti_Set_dir_x(&RaytiInstancePTR_1, *((u32*)&local_dir.x));
+							XRayti_Set_dir_y(&RaytiInstancePTR_1, *((u32*)&local_dir.y));
+							XRayti_Set_dir_z(&RaytiInstancePTR_1, *((u32*)&local_dir.z));
+							// Set triangle V01
+							XRayti_Set_v0_x(&RaytiInstancePTR_1, *((u32*)&v0_p1.x));
+							XRayti_Set_v0_y(&RaytiInstancePTR_1, *((u32*)&v0_p1.y));
+							XRayti_Set_v0_z(&RaytiInstancePTR_1, *((u32*)&v0_p1.z));
+							// Set triangle V1
+							XRayti_Set_v1_x(&RaytiInstancePTR_1, *((u32*)&v1_p1.x));
+							XRayti_Set_v1_y(&RaytiInstancePTR_1, *((u32*)&v1_p1.y));
+							XRayti_Set_v1_z(&RaytiInstancePTR_1, *((u32*)&v1_p1.z));
+							// Set triangle V2
+							XRayti_Set_v2_x(&RaytiInstancePTR_1, *((u32*)&v2_p1.x));
+							XRayti_Set_v2_y(&RaytiInstancePTR_1, *((u32*)&v2_p1.y));
+							XRayti_Set_v2_z(&RaytiInstancePTR_1, *((u32*)&v2_p1.z));
+
+							// Check if the peripheral is ready
+							if (!XRayti_IsReady(&RaytiInstancePTR_0))
+								{
+									std::cerr << "\rERROR: HLS peripheral is not ready. Exiting...\n\r";
+									exit(-1);
+								}
+					
+							// Check if the peripheral is ready
+							if (!XRayti_IsReady(&RaytiInstancePTR_1))
+								{
+									std::cerr << "\rERROR: HLS peripheral is not ready. Exiting...\n\r";
+									exit(-1);
+								}
+
+							// Start the peripheral
+							XRayti_Start(&RaytiInstancePTR_0);
+							// Start the peripheral
+							XRayti_Start(&RaytiInstancePTR_1);
+
+							// Wait util completion
+							while (!XRayti_IsDone(&RaytiInstancePTR_0)) {}
+							// Wait util completion
+							while (!XRayti_IsDone(&RaytiInstancePTR_1)) {}
+
+							// Set t distance to intersection point
+							ret_t_p0 = XRayti_Get_t(&RaytiInstancePTR_0);
+							local_t_p0 = *((float*)&ret_t_p0);
+							// Set u intersection coordinate 
+							ret_u_p0 = XRayti_Get_u(&RaytiInstancePTR_0);
+							local_u_p0 = *((float*)&ret_u_p0);
+							// Set v intersection coordinate
+							ret_v_p0 = XRayti_Get_v(&RaytiInstancePTR_0);
+							local_v_p0 = *((float*)&ret_v_p0);
+							// Set return 
+							temp_return_p0 = (bool)XRayti_Get_return(&RaytiInstancePTR_0);
 			
-			// Stop timer and messure time
-			//std::cerr << "\n\rMain render loop done\n\r";
-			//XTime_GetTime(&tEnd);
-			//printf("\rEnded with %.4lf secs\r\n",(double)((1.0*(tEnd - tStart))/(COUNTS_PER_SECOND)));
+							// Set t distance to intersection point
+							ret_t_p1 = XRayti_Get_t(&RaytiInstancePTR_1);
+							local_t_p1 = *((float*)&ret_t_p1);
+							// Set u intersection coordinate 
+							ret_u_p1 = XRayti_Get_u(&RaytiInstancePTR_1);
+							local_u_p1 = *((float*)&ret_u_p1);
+							// Set v intersection coordinate
+							ret_v_p1 = XRayti_Get_v(&RaytiInstancePTR_1);
+							local_v_p1 = *((float*)&ret_v_p1);
+							// Set return 
+							temp_return_p1 = (bool)XRayti_Get_return(&RaytiInstancePTR_1);
 
-			// Get outputs 
-			ret_t = XRayti_Get_out_t(&RaytiInstancePTR);
-			out_t = *((float*)&ret_t);
+							if ( (temp_return_p0) && local_t_p0 < tNear )
+								{							
+									tNear = local_t_p0;
+									uv.x = local_u_p0;
+									uv.y = local_v_p0;
+									triIndex = i;
+									isect = true;
+								} 
+							else if ( (temp_return_p1) && local_t_p1 < tNear )
+								{
+									tNear = local_t_p1;
+									uv.x = local_u_p1;
+									uv.y = local_v_p1;
+									triIndex = i+1;
+									isect = true;
+								}                                                                                                                                                                                                                               
+							j += 6;
+						}
+				}	
 
-			ret_u = XRayti_Get_out_u(&RaytiInstancePTR);
-			out_u = *((float*)&ret_u);
-
-			ret_v = XRayti_Get_out_v(&RaytiInstancePTR);
-			out_v = *((float*)&ret_v);
-
-			out_tris = (uint32_t) XRayti_Get_outTris(&RaytiInstancePTR);
-
-			temp_ret = (bool)XRayti_Get_return(&RaytiInstancePTR);
-
-			if ( (temp_ret) && out_t < tNear) 
-				{
-					tNear = out_t;
-					uv.x = out_u;
-					uv.y = out_v;
-					triIndex = out_tris;
-				}			
-    
-
-			return temp_ret;
+			return isect;
 		}
 
     // Compute Normal at the intersecion point as well as texture coordinates
@@ -831,7 +972,6 @@ public:
     }
 	// member variables
 	uint32_t numTris;                       // number of triangles
-	uint32_t maxVertIndex;									// 
 	std::unique_ptr<Vec3f []> P;            // triangles vertex position
 	std::unique_ptr<uint32_t []> trisIndex; // vertex index array
 	std::unique_ptr<Vec3f []> N;            // triangles vertex normals
@@ -1715,13 +1855,38 @@ int main(int argc, char **argv)
 	dsb();
 
 	// Initialize peripheral
-	std::cerr << "\n\rInitialising Ray Triangle Intersection peripheral...\n\r";
-	RaytiConfig = XRayti_LookupConfig(XPAR_RAYTI_0_DEVICE_ID);
-	if (!RaytiConfig)
+	std::cerr << "\n\rInitialising Ray Triangle Intersection peripheral 0...\n\r";
+	RaytiConfig_0 = XRayti_LookupConfig(XPAR_RAYTI_0_DEVICE_ID);
+	if (!RaytiConfig_0)
 		{
 			perror("\rERROR: Lookup of accelerator failed.\n\r");
 			return XST_FAILURE;
 		}
+
+	std::cerr << "\n\rInitialising Ray Triangle Intersection peripherals 1...\n\r";
+	RaytiConfig_1 = XRayti_LookupConfig(XPAR_RAYTI_1_DEVICE_ID);
+	if (!RaytiConfig_1)
+		{
+			perror("\rERROR: Lookup of accelerator failed.\n\r");
+			return XST_FAILURE;
+		}
+	/*
+	std::cerr << "\n\rInitialising Ray Triangle Intersection peripherals 2...\n\r";
+	RaytiConfig_2 = XRayti_LookupConfig(XPAR_RAYTI_2_DEVICE_ID);
+	if (!RaytiConfig_2)
+		{
+			perror("\rERROR: Lookup of accelerator failed.\n\r");
+			return XST_FAILURE;
+		}
+
+	std::cerr << "\n\rInitialising Ray Triangle Intersection peripherals 3...\n\r";
+	RaytiConfig_3 = XRayti_LookupConfig(XPAR_RAYTI_3_DEVICE_ID);
+	if (!RaytiConfig_3)
+		{
+			perror("\rERROR: Lookup of accelerator failed.\n\r");
+			return XST_FAILURE;
+		}
+	*/
 
 	// This table replaces the argv input arguments as the bare metal run does not support CLI arguments
 	//Scene 1:  Glass and pen
@@ -1803,12 +1968,32 @@ int main(int argc, char **argv)
 																"teapot2.ood"};
 #endif
 
-	uint32_t status = XRayti_CfgInitialize(&RaytiInstancePTR, RaytiConfig);
+	uint32_t status = XRayti_CfgInitialize(&RaytiInstancePTR_0, RaytiConfig_0);
 	if (status != XST_SUCCESS)
 		{
 			perror("\rERROR: HLS peripheral setup failed\n\r");
 			return XST_FAILURE;
 		} 
+	status = XRayti_CfgInitialize(&RaytiInstancePTR_1, RaytiConfig_1);
+	if (status != XST_SUCCESS)
+		{
+			perror("\rERROR: HLS peripheral setup failed\n\r");
+			return XST_FAILURE;
+		} 
+	/*
+	status = XRayti_CfgInitialize(&RaytiInstancePTR_2, RaytiConfig_2);
+	if (status != XST_SUCCESS)
+		{
+			perror("\rERROR: HLS peripheral setup failed\n\r");
+			return XST_FAILURE;
+		}
+	status = XRayti_CfgInitialize(&RaytiInstancePTR_3, RaytiConfig_3);
+	if (status != XST_SUCCESS)
+		{
+			perror("\rERROR: HLS peripheral setup failed\n\r");
+			return XST_FAILURE;
+		} 
+	*/
 
 	// Load lighting and scene options
 	uint32_t numoflights;
