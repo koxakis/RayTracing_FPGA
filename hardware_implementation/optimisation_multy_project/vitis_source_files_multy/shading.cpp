@@ -28,6 +28,9 @@
 #include "xrayti_hw.h"
 #include "xrayti.h"
 
+#define x4
+#define x8
+
 // Peripheral pointers 
 XRayti RaytiInstancePTR_0;
 XRayti_Config *RaytiConfig_0;
@@ -40,6 +43,18 @@ XRayti_Config *RaytiConfig_2;
 
 XRayti RaytiInstancePTR_3;
 XRayti_Config *RaytiConfig_3;
+
+XRayti RaytiInstancePTR_4;
+XRayti_Config *RaytiConfig_4;
+
+XRayti RaytiInstancePTR_5;
+XRayti_Config *RaytiConfig_5;
+
+XRayti RaytiInstancePTR_6;
+XRayti_Config *RaytiConfig_6;
+
+XRayti RaytiInstancePTR_7;
+XRayti_Config *RaytiConfig_7;
 
 
 /*
@@ -62,10 +77,10 @@ XRayti_Config *RaytiConfig_3;
 //#define SCENE_1
 
 //Scene 2:  Whole plane
-#define SCENE_2
+//#define SCENE_2
 
 //Scene 3:  4 Glasses refraction
-//#define SCENE_3
+#define SCENE_3
 
 //Scene 4:  4 Glasses refraction Point light
 //#define SCENE_4
@@ -948,6 +963,18 @@ public:
 				float local_t_p3 = kInfinity;
 				float local_u_p3 = 0, local_v_p3 = 0;
 
+				float local_t_p4 = kInfinity;
+				float local_u_p4 = 0, local_v_p4 = 0;
+
+				float local_t_p5 = kInfinity;
+				float local_u_p5 = 0, local_v_p5 = 0;
+
+				float local_t_p6 = kInfinity;
+				float local_u_p6 = 0, local_v_p6 = 0;
+
+				float local_t_p7 = kInfinity;
+				float local_u_p7 = 0, local_v_p7 = 0;
+
 				int ret_t_p0, ret_u_p0, ret_v_p0;
 				bool temp_return_p0;
 
@@ -960,8 +987,20 @@ public:
 				int ret_t_p3, ret_u_p3, ret_v_p3;
 				bool temp_return_p3;
 
+				int ret_t_p4, ret_u_p4, ret_v_p4;
+				bool temp_return_p4;
+
+				int ret_t_p5, ret_u_p5, ret_v_p5;
+				bool temp_return_p5;
+
+				int ret_t_p6, ret_u_p6, ret_v_p6;
+				bool temp_return_p6;
+
+				int ret_t_p7, ret_u_p7, ret_v_p7;
+				bool temp_return_p7;
+
 				// Loop each object's triangles
-				for (uint32_t i = 0; i < numTris; i+=4)
+				for (uint32_t i = 0; i < numTris; i+=8)
 					{
 						Vec3f &v0_p0 = P[trisIndex[j]];
 						Vec3f &v1_p0 = P[trisIndex[j + 1]];
@@ -980,10 +1019,30 @@ public:
 						Vec3f &v1_p3 = P[trisIndex[j + 10]];
 						Vec3f &v2_p3 = P[trisIndex[j + 11]];
 
+						Vec3f &v0_p4 = P[trisIndex[j + 12]];
+						Vec3f &v1_p4 = P[trisIndex[j + 13]];
+						Vec3f &v2_p4 = P[trisIndex[j + 14]];
+
+						Vec3f &v0_p5 = P[trisIndex[j + 15]];
+						Vec3f &v1_p5 = P[trisIndex[j + 16]];
+						Vec3f &v2_p5 = P[trisIndex[j + 17]];
+
+						Vec3f &v0_p6 = P[trisIndex[j + 18]];
+						Vec3f &v1_p6 = P[trisIndex[j + 19]];
+						Vec3f &v2_p6 = P[trisIndex[j + 20]];
+
+						Vec3f &v0_p7 = P[trisIndex[j + 21]];
+						Vec3f &v1_p7 = P[trisIndex[j + 22]];
+						Vec3f &v2_p7 = P[trisIndex[j + 23]];
+
 						local_t_p0 = kInfinity;
 						local_t_p1 = kInfinity;
 						local_t_p2 = kInfinity;
 						local_t_p3 = kInfinity;
+						local_t_p4 = kInfinity;
+						local_t_p5 = kInfinity;
+						local_t_p6 = kInfinity;
+						local_t_p7 = kInfinity;
 
 						/* a ray may intersect more than one triangle from the mesh therefore we also
 						need to keep track of the nearest intersection distance as we iterate over the triangles.
@@ -1076,6 +1135,92 @@ public:
 						XRayti_Set_v2_y(&RaytiInstancePTR_3, *((u32*)&v2_p3.y));
 						XRayti_Set_v2_z(&RaytiInstancePTR_3, *((u32*)&v2_p3.z));
 
+						// Set Ray origin
+						XRayti_Set_orig_x(&RaytiInstancePTR_4, *((u32*)&local_orig.x));
+						XRayti_Set_orig_y(&RaytiInstancePTR_4, *((u32*)&local_orig.y));
+						XRayti_Set_orig_z(&RaytiInstancePTR_4, *((u32*)&local_orig.z));
+						// Set Ray direction
+						XRayti_Set_dir_x(&RaytiInstancePTR_4, *((u32*)&local_dir.x));
+						XRayti_Set_dir_y(&RaytiInstancePTR_4, *((u32*)&local_dir.y));
+						XRayti_Set_dir_z(&RaytiInstancePTR_4, *((u32*)&local_dir.z));
+						// Set triangle V0
+						XRayti_Set_v0_x(&RaytiInstancePTR_4, *((u32*)&v0_p4.x));
+						XRayti_Set_v0_y(&RaytiInstancePTR_4, *((u32*)&v0_p4.y));
+						XRayti_Set_v0_z(&RaytiInstancePTR_4, *((u32*)&v0_p4.z));
+						// Set triangle V1
+						XRayti_Set_v1_x(&RaytiInstancePTR_4, *((u32*)&v1_p4.x));
+						XRayti_Set_v1_y(&RaytiInstancePTR_4, *((u32*)&v1_p4.y));
+						XRayti_Set_v1_z(&RaytiInstancePTR_4, *((u32*)&v1_p4.z));
+						// Set triangle V2
+						XRayti_Set_v2_x(&RaytiInstancePTR_4, *((u32*)&v2_p4.x));
+						XRayti_Set_v2_y(&RaytiInstancePTR_4, *((u32*)&v2_p4.y));
+						XRayti_Set_v2_z(&RaytiInstancePTR_4, *((u32*)&v2_p4.z));
+
+						// Set I/O pointers for peripheral 1
+						// Set Ray origin
+						XRayti_Set_orig_x(&RaytiInstancePTR_5, *((u32*)&local_orig.x));
+						XRayti_Set_orig_y(&RaytiInstancePTR_5, *((u32*)&local_orig.y));
+						XRayti_Set_orig_z(&RaytiInstancePTR_5, *((u32*)&local_orig.z));
+						// Set Ray direction
+						XRayti_Set_dir_x(&RaytiInstancePTR_5, *((u32*)&local_dir.x));
+						XRayti_Set_dir_y(&RaytiInstancePTR_5, *((u32*)&local_dir.y));
+						XRayti_Set_dir_z(&RaytiInstancePTR_5, *((u32*)&local_dir.z));
+						// Set triangle V01
+						XRayti_Set_v0_x(&RaytiInstancePTR_5, *((u32*)&v0_p5.x));
+						XRayti_Set_v0_y(&RaytiInstancePTR_5, *((u32*)&v0_p5.y));
+						XRayti_Set_v0_z(&RaytiInstancePTR_5, *((u32*)&v0_p5.z));
+						// Set triangle V1
+						XRayti_Set_v1_x(&RaytiInstancePTR_5, *((u32*)&v1_p5.x));
+						XRayti_Set_v1_y(&RaytiInstancePTR_5, *((u32*)&v1_p5.y));
+						XRayti_Set_v1_z(&RaytiInstancePTR_5, *((u32*)&v1_p5.z));
+						// Set triangle V2
+						XRayti_Set_v2_x(&RaytiInstancePTR_5, *((u32*)&v2_p5.x));
+						XRayti_Set_v2_y(&RaytiInstancePTR_5, *((u32*)&v2_p5.y));
+						XRayti_Set_v2_z(&RaytiInstancePTR_5, *((u32*)&v2_p5.z));
+
+						// Set I/O pointers for peripheral 2
+						// Set Ray origin
+						XRayti_Set_orig_x(&RaytiInstancePTR_6, *((u32*)&local_orig.x));
+						XRayti_Set_orig_y(&RaytiInstancePTR_6, *((u32*)&local_orig.y));
+						XRayti_Set_orig_z(&RaytiInstancePTR_6, *((u32*)&local_orig.z));
+						// Set Ray direction
+						XRayti_Set_dir_x(&RaytiInstancePTR_6, *((u32*)&local_dir.x));
+						XRayti_Set_dir_y(&RaytiInstancePTR_6, *((u32*)&local_dir.y));
+						XRayti_Set_dir_z(&RaytiInstancePTR_6, *((u32*)&local_dir.z));
+						// Set triangle V01
+						XRayti_Set_v0_x(&RaytiInstancePTR_6, *((u32*)&v0_p6.x));
+						XRayti_Set_v0_y(&RaytiInstancePTR_6, *((u32*)&v0_p6.y));
+						XRayti_Set_v0_z(&RaytiInstancePTR_6, *((u32*)&v0_p6.z));
+						// Set triangle V1
+						XRayti_Set_v1_x(&RaytiInstancePTR_6, *((u32*)&v1_p6.x));
+						XRayti_Set_v1_y(&RaytiInstancePTR_6, *((u32*)&v1_p6.y));
+						XRayti_Set_v1_z(&RaytiInstancePTR_6, *((u32*)&v1_p6.z));
+						// Set triangle V2
+						XRayti_Set_v2_x(&RaytiInstancePTR_6, *((u32*)&v2_p6.x));
+						XRayti_Set_v2_y(&RaytiInstancePTR_6, *((u32*)&v2_p6.y));
+						XRayti_Set_v2_z(&RaytiInstancePTR_6, *((u32*)&v2_p6.z));
+
+						// Set I/O pointers for peripheral 3
+						// Set Ray origin
+						XRayti_Set_orig_x(&RaytiInstancePTR_7, *((u32*)&local_orig.x));
+						XRayti_Set_orig_y(&RaytiInstancePTR_7, *((u32*)&local_orig.y));
+						XRayti_Set_orig_z(&RaytiInstancePTR_7, *((u32*)&local_orig.z));
+						// Set Ray direction
+						XRayti_Set_dir_x(&RaytiInstancePTR_7, *((u32*)&local_dir.x));
+						XRayti_Set_dir_y(&RaytiInstancePTR_7, *((u32*)&local_dir.y));
+						XRayti_Set_dir_z(&RaytiInstancePTR_7, *((u32*)&local_dir.z));
+						// Set triangle V01
+						XRayti_Set_v0_x(&RaytiInstancePTR_7, *((u32*)&v0_p7.x));
+						XRayti_Set_v0_y(&RaytiInstancePTR_7, *((u32*)&v0_p7.y));
+						XRayti_Set_v0_z(&RaytiInstancePTR_7, *((u32*)&v0_p7.z));
+						// Set triangle V1
+						XRayti_Set_v1_x(&RaytiInstancePTR_7, *((u32*)&v1_p7.x));
+						XRayti_Set_v1_y(&RaytiInstancePTR_7, *((u32*)&v1_p7.y));
+						XRayti_Set_v1_z(&RaytiInstancePTR_7, *((u32*)&v1_p7.z));
+						// Set triangle V2
+						XRayti_Set_v2_x(&RaytiInstancePTR_7, *((u32*)&v2_p7.x));
+						XRayti_Set_v2_y(&RaytiInstancePTR_7, *((u32*)&v2_p7.y));
+						XRayti_Set_v2_z(&RaytiInstancePTR_7, *((u32*)&v2_p7.z));
 						// Check if the peripheral is ready
 						if (!XRayti_IsReady(&RaytiInstancePTR_0))
 							{
@@ -1102,6 +1247,32 @@ public:
 								std::cerr << "\rERROR: HLS peripheral is not ready. Exiting...\n\r";
 								exit(-1);
 							}
+						if (!XRayti_IsReady(&RaytiInstancePTR_4))
+							{
+								std::cerr << "\rERROR: HLS peripheral is not ready. Exiting...\n\r";
+								exit(-1);
+							}
+
+						// Check if the peripheral is ready
+						if (!XRayti_IsReady(&RaytiInstancePTR_5))
+							{
+								std::cerr << "\rERROR: HLS peripheral is not ready. Exiting...\n\r";
+								exit(-1);
+							}
+
+						// Check if the peripheral is ready
+						if (!XRayti_IsReady(&RaytiInstancePTR_6))
+							{
+								std::cerr << "\rERROR: HLS peripheral is not ready. Exiting...\n\r";
+								exit(-1);
+							}
+						// Check if the peripheral is ready
+						if (!XRayti_IsReady(&RaytiInstancePTR_7))
+							{
+								std::cerr << "\rERROR: HLS peripheral is not ready. Exiting...\n\r";
+								exit(-1);
+							}
+
 
 						// Start the peripheral
 						XRayti_Start(&RaytiInstancePTR_0);
@@ -1111,15 +1282,17 @@ public:
 						XRayti_Start(&RaytiInstancePTR_2);
 						// Start the peripheral
 						XRayti_Start(&RaytiInstancePTR_3);
-
+						// Start the peripheral
+						XRayti_Start(&RaytiInstancePTR_4);
+						// Start the peripheral
+						XRayti_Start(&RaytiInstancePTR_5);
+						// Start the peripheral
+						XRayti_Start(&RaytiInstancePTR_6);
+						// Start the peripheral
+						XRayti_Start(&RaytiInstancePTR_7);
+						//std::cout<< "\r\n test if block on run\n\r";
 						// Wait util completion
-						while (!XRayti_IsDone(&RaytiInstancePTR_0)) {}
-						// Wait util completion
-						while (!XRayti_IsDone(&RaytiInstancePTR_1)) {}
-						// Wait util completion
-						while (!XRayti_IsDone(&RaytiInstancePTR_2)) {}
-						// Wait util completion
-						while (!XRayti_IsDone(&RaytiInstancePTR_3)) {}
+						while (!XRayti_IsDone(&RaytiInstancePTR_7)) {}
 
 						// Set t distance to intersection point
 						ret_t_p0 = XRayti_Get_t(&RaytiInstancePTR_0);
@@ -1169,6 +1342,54 @@ public:
 						// Set return
 						temp_return_p3 = (bool)XRayti_Get_return(&RaytiInstancePTR_3);
 
+						// Set t distance to intersection point
+						ret_t_p4 = XRayti_Get_t(&RaytiInstancePTR_4);
+						local_t_p4 = *((float*)&ret_t_p4);
+						// Set u intersection coordinate
+						ret_u_p4 = XRayti_Get_u(&RaytiInstancePTR_4);
+						local_u_p4 = *((float*)&ret_u_p4);
+						// Set v intersection coordinate
+						ret_v_p4 = XRayti_Get_v(&RaytiInstancePTR_4);
+						local_v_p4 = *((float*)&ret_v_p4);
+						// Set return
+						temp_return_p4 = (bool)XRayti_Get_return(&RaytiInstancePTR_4);
+
+						// Set t distance to intersection point
+						ret_t_p5 = XRayti_Get_t(&RaytiInstancePTR_5);
+						local_t_p5 = *((float*)&ret_t_p5);
+						// Set u intersection coordinate
+						ret_u_p5 = XRayti_Get_u(&RaytiInstancePTR_5);
+						local_u_p5 = *((float*)&ret_u_p5);
+						// Set v intersection coordinate
+						ret_v_p5 = XRayti_Get_v(&RaytiInstancePTR_5);
+						local_v_p5 = *((float*)&ret_v_p5);
+						// Set return
+						temp_return_p5 = (bool)XRayti_Get_return(&RaytiInstancePTR_5);
+
+						// Set t distance to intersection point
+						ret_t_p6 = XRayti_Get_t(&RaytiInstancePTR_6);
+						local_t_p6 = *((float*)&ret_t_p6);
+						// Set u intersection coordinate
+						ret_u_p6 = XRayti_Get_u(&RaytiInstancePTR_6);
+						local_u_p6 = *((float*)&ret_u_p6);
+						// Set v intersection coordinate
+						ret_v_p6 = XRayti_Get_v(&RaytiInstancePTR_6);
+						local_v_p6 = *((float*)&ret_v_p6);
+						// Set return
+						temp_return_p6 = (bool)XRayti_Get_return(&RaytiInstancePTR_6);
+
+						// Set t distance to intersection point
+						ret_t_p7 = XRayti_Get_t(&RaytiInstancePTR_7);
+						local_t_p7 = *((float*)&ret_t_p7);
+						// Set u intersection coordinate
+						ret_u_p7 = XRayti_Get_u(&RaytiInstancePTR_7);
+						local_u_p7 = *((float*)&ret_u_p7);
+						// Set v intersection coordinate
+						ret_v_p7 = XRayti_Get_v(&RaytiInstancePTR_7);
+						local_v_p7 = *((float*)&ret_v_p7);
+						// Set return
+						temp_return_p7 = (bool)XRayti_Get_return(&RaytiInstancePTR_7);
+
 						if ( (temp_return_p0) && local_t_p0 < tNear )
 							{
 								tNear = local_t_p0;
@@ -1199,6 +1420,38 @@ public:
 								uv.x = local_u_p3;
 								uv.y = local_v_p3;
 								triIndex = i+3;
+								isect = true;
+							}
+						else if ( (temp_return_p4) && local_t_p4 < tNear )
+							{
+								tNear = local_t_p4;
+								uv.x = local_u_p4;
+								uv.y = local_v_p4;
+								triIndex = i+4;
+								isect = true;
+							}
+						else if ( (temp_return_p5) && local_t_p5 < tNear )
+							{
+								tNear = local_t_p5;
+								uv.x = local_u_p5;
+								uv.y = local_v_p5;
+								triIndex = i+5;
+								isect = true;
+							}
+						else if ( (temp_return_p6) && local_t_p6 < tNear )
+							{
+								tNear = local_t_p6;
+								uv.x = local_u_p6;
+								uv.y = local_v_p6;
+								triIndex = i+6;
+								isect = true;
+							}
+						else if ( (temp_return_p7) && local_t_p7 < tNear )
+							{
+								tNear = local_t_p7;
+								uv.x = local_u_p7;
+								uv.y = local_v_p7;
+								triIndex = i+7;
 								isect = true;
 							}
 						j += 12;
@@ -2148,7 +2401,7 @@ int main(int argc, char **argv)
 			perror("\rERROR: Lookup of accelerator failed.\n\r");
 			return XST_FAILURE;
 		}
-#ifdef X4
+#ifdef x4
 	std::cerr << "\n\rInitialising Ray Triangle Intersection peripherals 2...\n\r";
 	RaytiConfig_2 = XRayti_LookupConfig(XPAR_RAYTI_2_DEVICE_ID);
 	if (!RaytiConfig_2)
@@ -2160,6 +2413,40 @@ int main(int argc, char **argv)
 	std::cerr << "\n\rInitialising Ray Triangle Intersection peripherals 3...\n\r";
 	RaytiConfig_3 = XRayti_LookupConfig(XPAR_RAYTI_3_DEVICE_ID);
 	if (!RaytiConfig_3)
+		{
+			perror("\rERROR: Lookup of accelerator failed.\n\r");
+			return XST_FAILURE;
+		}
+#endif
+#ifdef x8
+	// Initialize peripheral
+	std::cerr << "\n\rInitialising Ray Triangle Intersection peripheral 4...\n\r";
+	RaytiConfig_4 = XRayti_LookupConfig(XPAR_RAYTI_4_DEVICE_ID);
+	if (!RaytiConfig_4)
+		{
+			perror("\rERROR: Lookup of accelerator failed.\n\r");
+			return XST_FAILURE;
+		}
+
+	std::cerr << "\n\rInitialising Ray Triangle Intersection peripherals 5...\n\r";
+	RaytiConfig_5 = XRayti_LookupConfig(XPAR_RAYTI_5_DEVICE_ID);
+	if (!RaytiConfig_5)
+		{
+			perror("\rERROR: Lookup of accelerator failed.\n\r");
+			return XST_FAILURE;
+		}
+
+	std::cerr << "\n\rInitialising Ray Triangle Intersection peripherals 6...\n\r";
+	RaytiConfig_6 = XRayti_LookupConfig(XPAR_RAYTI_6_DEVICE_ID);
+	if (!RaytiConfig_6)
+		{
+			perror("\rERROR: Lookup of accelerator failed.\n\r");
+			return XST_FAILURE;
+		}
+
+	std::cerr << "\n\rInitialising Ray Triangle Intersection peripherals 7...\n\r";
+	RaytiConfig_7 = XRayti_LookupConfig(XPAR_RAYTI_7_DEVICE_ID);
+	if (!RaytiConfig_7)
 		{
 			perror("\rERROR: Lookup of accelerator failed.\n\r");
 			return XST_FAILURE;
@@ -2258,7 +2545,7 @@ int main(int argc, char **argv)
 			perror("\rERROR: HLS peripheral setup failed\n\r");
 			return XST_FAILURE;
 		} 
-#ifdef X4
+#ifdef x4
 	status = XRayti_CfgInitialize(&RaytiInstancePTR_2, RaytiConfig_2);
 	if (status != XST_SUCCESS)
 		{
@@ -2266,6 +2553,34 @@ int main(int argc, char **argv)
 			return XST_FAILURE;
 		}
 	status = XRayti_CfgInitialize(&RaytiInstancePTR_3, RaytiConfig_3);
+	if (status != XST_SUCCESS)
+		{
+			perror("\rERROR: HLS peripheral setup failed\n\r");
+			return XST_FAILURE;
+		} 
+#endif
+
+#ifdef x8
+	status = XRayti_CfgInitialize(&RaytiInstancePTR_4, RaytiConfig_4);
+	if (status != XST_SUCCESS)
+		{
+			perror("\rERROR: HLS peripheral setup failed\n\r");
+			return XST_FAILURE;
+		} 
+	status = XRayti_CfgInitialize(&RaytiInstancePTR_5, RaytiConfig_5);
+	if (status != XST_SUCCESS)
+		{
+			perror("\rERROR: HLS peripheral setup failed\n\r");
+			return XST_FAILURE;
+		} 
+
+	status = XRayti_CfgInitialize(&RaytiInstancePTR_6, RaytiConfig_6);
+	if (status != XST_SUCCESS)
+		{
+			perror("\rERROR: HLS peripheral setup failed\n\r");
+			return XST_FAILURE;
+		}
+	status = XRayti_CfgInitialize(&RaytiInstancePTR_7, RaytiConfig_7);
 	if (status != XST_SUCCESS)
 		{
 			perror("\rERROR: HLS peripheral setup failed\n\r");
