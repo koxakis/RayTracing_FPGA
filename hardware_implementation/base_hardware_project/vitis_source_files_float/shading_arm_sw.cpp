@@ -52,7 +52,7 @@ XRayti_Config *RaytiConfig;
 //#define SCENE_1
 
 //Scene 2:  Whole plane
-#define SCENE_2
+//#define SCENE_2
 
 //Scene 3:  4 Glasses refraction
 //#define SCENE_3
@@ -67,12 +67,12 @@ XRayti_Config *RaytiConfig;
 //#define SCENE_6
 
 //Scene 7:	All MaterialS 
-//#define SCENE_7
+#define SCENE_7
 
 // Debug defines 
 
 #define PATTERN_5
-#define DEBUG
+//#define DEBUG
 //#define DEBUG_RENDER
 //#define DEBUG_GEO
 

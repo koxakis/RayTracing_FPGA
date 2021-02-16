@@ -52,7 +52,7 @@ XRayti_Config *RaytiConfig;
 //#define SCENE_1
 
 //Scene 2:  Whole plane
-#define SCENE_2
+//#define SCENE_2
 
 //Scene 3:  4 Glasses refraction
 //#define SCENE_3
@@ -61,7 +61,7 @@ XRayti_Config *RaytiConfig;
 //#define SCENE_4
 
 //Scene 5:  Horizontal Plane
-//#define SCENE_5
+#define SCENE_5
 
 //Scene 6:  Utah Teapod
 //#define SCENE_6
@@ -71,7 +71,7 @@ XRayti_Config *RaytiConfig;
 
 
 #define PATTERN_5
-#define DEBUG
+//#define DEBUG
 //#define DEBUG_RENDER
 //#define DEBUG_GEO
 
@@ -1453,7 +1453,7 @@ int render(
 					*(pix++) = castRay(orig, dir, objects, lights, options);
 				}
 			// Print the percentage of completion based on height 
-			//fprintf(stderr, "\r%3lu%c", uint32_t(j / (float)options.height * 100), '%');
+			fprintf(stderr, "\r%3lu%c", uint32_t(j / (float)options.height * 100), '%');
 		}
 
 	// Stop timer and messure time

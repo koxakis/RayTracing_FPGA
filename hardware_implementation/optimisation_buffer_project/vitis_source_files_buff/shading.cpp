@@ -70,7 +70,7 @@ XRayti_Config *RaytiConfig;
 //#define SCENE_7
 
 #define PATTERN_5
-#define DEBUG
+//#define DEBUG
 //#define DEBUG_RENDER
 //#define DEBUG_GEO
 

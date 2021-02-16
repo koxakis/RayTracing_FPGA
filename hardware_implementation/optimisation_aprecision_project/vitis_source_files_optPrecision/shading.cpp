@@ -52,10 +52,10 @@ XRayti_Config *RaytiConfig;
 //#define SCENE_1
 
 //Scene 2:  Whole plane
-#define SCENE_2
+//#define SCENE_2
 
 //Scene 3:  4 Glasses refraction
-//#define SCENE_3
+#define SCENE_3
 
 //Scene 4:  4 Glasses refraction Point light
 //#define SCENE_4
@@ -71,7 +71,7 @@ XRayti_Config *RaytiConfig;
 
 
 #define PATTERN_5
-#define DEBUG
+//#define DEBUG
 //#define DEBUG_RENDER
 //#define DEBUG_GEO
 
@@ -1454,7 +1454,7 @@ int render(
 					*(pix++) = castRay(orig, dir, objects, lights, options);
 				}
 			// Print the percentage of completion based on height 
-			//fprintf(stderr, "\r%3lu%c", uint32_t(j / (float)options.height * 100), '%');
+			fprintf(stderr, "\r%3lu%c", uint32_t(j / (float)options.height * 100), '%');
 		}
 
 	// Stop timer and messure time
