@@ -24,9 +24,9 @@ bool rayTI(
 // Static input data array 
 #pragma HLS INTERFACE m_axi depth=9 bundle=static_in_bundle port=inputStaticArray offset=slave
 // Vertex index array
-#pragma HLS INTERFACE m_axi depth=12719 bundle=vertex_index_bubdle port=inputTriangleVertexIndex offset=slave
+#pragma HLS INTERFACE m_axi depth=6000 bundle=vertex_index_bubdle port=inputTriangleVertexIndex offset=slave
 // Vertex position array
-#pragma HLS INTERFACE m_axi depth=9723 bundle=vertex_pos_bundle port=inputTriangleVertexPos offset=slave
+#pragma HLS INTERFACE m_axi depth=3000 bundle=vertex_pos_bundle port=inputTriangleVertexPos offset=slave
 // Retern port
 #pragma HLS INTERFACE s_axilite port=return bundle=ret_bundle
 
@@ -53,11 +53,11 @@ bool rayTI(
 	// Simulating memcpy-burst and transfer to local buffer
 
 	// Acount for the number of vertex positions
-	float localinputTriangleVertexPos [9723];
-#pragma HLS ARRAY_PARTITION variable=localinputTriangleVertexPos dim=1 factor=3 cyclic
+	float localinputTriangleVertexPos [3000];
+//#pragma HLS ARRAY_PARTITION variable=localinputTriangleVertexPos dim=1 factor=9 cyclic
 	// Acount for the number of vertex Index
-	unsigned int localinputTriangleVertexIndex [12719];
-#pragma HLS ARRAY_PARTITION variable=localinputTriangleVertexIndex dim=1 factor=3 cyclic
+	unsigned int localinputTriangleVertexIndex [6000];
+//#pragma HLS ARRAY_PARTITION variable=localinputTriangleVertexIndex dim=1 factor=9 cyclic
 
 	// Transfer Vertex position array
 	memcpy((float *)&localinputTriangleVertexPos[0], &inputTriangleVertexPos[0], ((local_maxVertIndex*3)*sizeof(float)) );
@@ -67,8 +67,8 @@ bool rayTI(
 	TRIANGLE_TRAVERSAL: for (unsigned int i = 0; i < numTris; ++i) 
 		{
 //#pragma HLS DATAFLOW didnt work 
-#pragma HLS UNROLL factor=4
-//#pragma HLS PIPELINE II=1 rewind
+//#pragma HLS UNROLL factor=4
+#pragma HLS PIPELINE II=1
 			/* Access each vertex from the index of each triangle taking into acount that 
 			each vertex takes up 3 positons 
 			*/

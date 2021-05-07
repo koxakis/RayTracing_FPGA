@@ -55,13 +55,13 @@ XRayti_Config *RaytiConfig;
 //#define SCENE_2
 
 //Scene 3:  4 Glasses refraction
-#define SCENE_3
+//#define SCENE_3
 
 //Scene 4:  4 Glasses refraction Point light
 //#define SCENE_4
 
 //Scene 5:  Horizontal Plane
-//#define SCENE_5
+#define SCENE_5
 
 //Scene 6:  Utah Teapod
 //#define SCENE_6
